@@ -1,0 +1,155 @@
+- name: Ensure that `www-data` group exists
+  ansible.builtin.group:
+    name: www-data
+    state: present
+    system: true
+
+- name: Ensure that `www-data` user exists
+  ansible.builtin.user:
+    name: www-data
+    group: www-data
+    home: /var/www
+    shell: /usr/sbin/nologin
+    system: true
+
+
+- name: Allow `www-data` to manage chosen services
+  community.general.sudoers:
+    name: www-data-services
+    user: www-data
+    commands:
+      - /usr/sbin/service api restart
+      - /usr/sbin/service webapp restart
+      - /usr/sbin/service php-fpm restart
+      - /usr/sbin/service php-fpm reload
+      - /usr/bin/caddy restart
+      - /usr/bin/caddy reload
+    nopassword: true
+
+
+- name: Create `www-data` database user
+  community.mysql.mysql_user:
+    name: www-data
+    priv: "*.*:ALL,GRANT"
+    state: present
+    login_unix_socket: /run/mysqld/mysqld.sock
+
+
+- name: Create FreeFlarum database
+  community.mysql.mysql_db:
+    name: freeflarum
+    state: present
+    login_unix_socket: /run/mysqld/mysqld.sock
+
+
+- name: Install FreeFlarum settings file
+  ansible.builtin.template:
+    src: files/settings.py.template
+    dest: '{{ playbook_dir }}/../../freeflarum/settings.py'
+    owner: root
+    group: root
+    mode: "0644"
+
+
+- name: Create `/var/log/freeflarum`
+  ansible.builtin.file:
+    state: directory
+    name: /var/log/freeflarum/{{ item }}
+    owner: www-data
+    group: www-data
+    mode: "0755"
+  loop:
+    - api
+    - webapp
+
+
+- name: Make `www-data` own `/var/www`
+  ansible.builtin.file:
+    path: /var/www
+    owner: www-data
+    group: www-data
+    mode: "0755"
+    recurse: true
+
+
+- name: Install FreeFlarum web service files
+  ansible.builtin.template:
+    src: files/etc/systemd/system/{{ item }}
+    dest: /etc/systemd/system/{{ item }}
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - api.service
+    - api.socket
+    - webapp.service
+    - webapp.socket
+    - freeflarum-web.service
+  notify: reload-daemon
+
+
+- name: Create directory for certificates
+  ansible.builtin.file:
+    state: directory
+    name: /etc/ssl/certs/cloudflare/private
+    recurse: true
+    owner: www-data
+    group: www-data
+    mode: "0755"
+
+
+- name: Recursively copy all Cloudflare certificates
+  ansible.builtin.copy:
+    src: files/etc/ssl/certs/cloudflare/
+    dest: /etc/ssl/certs/cloudflare/
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
+
+- name: Write private certificate key for FreeFlarum.com
+  ansible.builtin.copy:
+    content: '{{ freeflarum_com_cert_key }}'
+    dest: /etc/ssl/certs/cloudflare/private/freeflarum.com.key
+    owner: www-data
+    group: www-data
+    mode: "0600"
+
+
+- name: Write private certificate key for Flarum.cloud
+  ansible.builtin.copy:
+    content: '{{ flarum_cloud_cert_key }}'
+    dest: /etc/ssl/certs/cloudflare/private/flarum.cloud.key
+    owner: www-data
+    group: www-data
+    mode: "0600"
+
+
+- name: Download Caddy binary
+  ansible.builtin.get_url:
+    url: "{{ caddy_binary }}"
+    dest: /usr/bin/caddy
+    mode: "0755"
+
+
+- name: Make Caddy binary executable
+  ansible.builtin.file:
+    path: /usr/bin/caddy
+    mode: a+x
+
+
+- name: Install Caddyfile
+  ansible.builtin.template:
+    src: files/Caddyfile
+    dest: "{{ playbook_dir }}/../../Caddyfile"
+    owner: root
+    group: root
+    mode: "0644"
+
+
+- name: Start FreeFlarum web services
+  ansible.builtin.systemd:
+    name: freeflarum-web
+    state: started
+    enabled: true
+    daemon_reload: true

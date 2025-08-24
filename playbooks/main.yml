@@ -1,0 +1,62 @@
+---
+- name: Deploy FreeFlarum
+  hosts: all
+  gather_facts: false
+
+  vars:
+      main_domain: freeflarum.com
+      available_hostnames:
+          - "flarum.cloud"
+
+      # paths
+      freeflarum_repo_root: /srv/freeflarum
+      flarum_hosts_root: /srv/hosts/flarum
+      skeleton_root: "{{ flarum_hosts_root }}/skeleton"
+      backups_root: /backup
+
+      # versions
+      python_version: "3.13"
+      php_version: "8.4"
+      mariadb_version: "11.5"
+      nginx_version: "1.29"
+
+  handlers:
+      - name: Import handlers.yml
+        ansible.builtin.import_tasks: handlers.yml
+
+  tasks:
+      - name: Setup system
+        ansible.builtin.include_tasks: system.yml
+        tags: [system]
+
+      - name: Setup venv for Python {{ python_version }}
+        ansible.builtin.include_tasks: individual/python.yml
+        tags: [python]
+
+      - name: Setup MariaDB {{ mariadb_version }}
+        ansible.builtin.include_tasks: individual/mariadb.yml
+        tags: [mariadb]
+
+      - name: Setup PHP-FPM {{ php_version }}
+        ansible.builtin.include_tasks: individual/php-fpm.yml
+        tags: [php-fpm]
+
+      - name: Setup Caddy and FreeFlarum web services
+        ansible.builtin.include_tasks: individual/web.yml
+        tags: [web]
+
+      - name: Setup Postfix
+        ansible.builtin.include_tasks: individual/postfix.yml
+        tags: [postfix]
+
+      - name: Install Flarum skeleton
+        ansible.builtin.include_tasks: individual/flarum.yml
+        tags: [flarum]
+
+      - name: Install Maxmind's GeoIP
+        ansible.builtin.include_tasks: individual/geoip.yml
+        tags: [geoip]
+
+      - name: Setup Cron tasks
+        ansible.builtin.include_tasks: individual/cron.yml
+        tags: [cron]

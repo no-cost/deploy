@@ -1,0 +1,29 @@
+- name: Update & upgrade all packages
+  ansible.builtin.apt:
+    name: '*'
+    state: present
+    update_cache: true
+
+
+- name: Install system packages
+  ansible.builtin.apt:
+    state: present
+    pkg:
+      - software-properties-common
+      - openssl               # for SSL support
+      - dnsutils              # dig
+      - screen                # for running commands in background
+      - util-linux            # flock
+      - time                  # for benchmarking
+      - unattended-upgrades   # automatic upgrades
+      - iptables              # for ip blacklisting
+      - pdns-recursor         # https://doc.powerdns.com/recursor/
+      - zip
+      - telnet
+
+
+- name: Enable APT automatic upgrades
+  ansible.builtin.copy:
+    src: files/etc/apt/apt.conf.d/20auto-upgrades
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    mode: "0644"

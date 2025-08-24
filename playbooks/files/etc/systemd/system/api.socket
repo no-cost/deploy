@@ -1,0 +1,12 @@
+[Unit]
+Description=API socket
+
+[Socket]
+Accept=no
+ListenStream={{ freeflarum_repo_root }}/api.sock
+SocketUser=www-data
+SocketGroup=www-data
+SocketMode=0660
+
+[Install]
+WantedBy=sockets.target

@@ -1,0 +1,29 @@
+[Unit]
+Description=FreeFlarum Web Service
+
+[Service]
+Type=notify
+
+User=www-data
+Group=www-data
+
+WorkingDirectory={{ freeflarum_repo_root }}
+ExecStart=/usr/bin/caddy run
+ExecReload=/usr/bin/caddy reload
+ExecStop=/usr/bin/caddy stop
+
+Restart=always
+RestartSec=10
+
+LimitNOFILE=infinity
+LimitMEMLOCK=infinity
+
+PrivateDevices=yes
+PrivateTmp=true
+ProtectSystem=full
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+Environment="CLOUDFLARE_TOKEN={{ cloudflare_token }}"
+
+[Install]
+WantedBy=multi-user.target

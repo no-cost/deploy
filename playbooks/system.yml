@@ -1,0 +1,33 @@
+- name: Fix permissions for /root/.ssh/
+  # The permissions tend to mess up after copying files over SFTP from old server
+  ansible.builtin.file:
+    path: /root/.ssh/
+    owner: root
+    group: root
+    mode: "600"
+    recurse: true
+
+
+- name: Install SSH keys
+  ansible.posix.authorized_key:
+    user: root
+    key: '{{ item }}'
+  loop:
+    - "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEA4Ul88vn9oiXl2w5Gz14EmThzDR3LsX7t0UYhB0DVkF3SWmxLA3M7q7PbJzJwXSgRlzv4cPqOLff6eDWyGyyUGyuzxRS41ae2k5+ozNZ6SzDoCS2P8dH6iqeualsRdqKfBaWNCZH/KMtNE+vUx7Qqtt/hlNWKEch2GNiJZ54K2uokonWm2pdl5Ex7bc+v+DZkRJrNikf9kJqyGPpTbArRW4fUXQ/C018u/zXeMyPh4KRJep3AZgSH16ZDdYXqC1V004Grmo60IFrrfasxOiKb1fKJ6Yd8HsZJYAsqtNMIjjMbbhwB79ho+Er4XmkbpQGCsnv4w9rg7Df+lTrku6NWrQ== kevin"
+
+- name: Enforce UTC
+  community.general.timezone:
+    name: UTC
+
+- name: Enforce UTF8 locale
+  ansible.builtin.copy:
+    dest: /etc/default/locale
+    content: "LANG=C.UTF-8\n"
+    mode: "0644"
+
+
+- name: Install root bashrc
+  ansible.builtin.copy:
+    src: files/root/bashrc
+    dest: /root/.bashrc
+    mode: "0644"

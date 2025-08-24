@@ -1,0 +1,60 @@
+{
+    log {
+        output file /var/log/freeflarum/caddy.log {
+            roll_size 10mb
+            roll_keep 7
+            roll_keep_for 31d
+        }
+    }
+
+    on_demand_tls {
+        ask      https://api.{{ main_domain }}/validators/check_domain
+        interval 5m
+        burst    5
+    }
+}
+
+
+
+{{ main_domain }} {
+    encode zstd gzip
+    root * /var/www/freeflarum/freeflarum/web/static/
+
+    reverse_proxy unix/webapp.sock
+
+    file_server browse {
+        hide .*
+    }
+}
+
+
+api.{{ main_domain }} {
+    encode zstd gzip
+    root * {{ freeflarum_repo_root }}freeflarum/web/static/
+
+    reverse_proxy unix/api.sock
+}
+
+
+{% if available_hostnames is not none and available_hostnames|length > 0 %}
+    {% for domain in available_hostnames + [main_domain] %}
+    *.{{ domain }} {
+        encode zstd gzip
+        root * {{ flarum_hosts_root }}/{labels.2}/public
+
+        php_fastcgi unix//run/php/php-fpm.{labels.2}.sock    
+
+        header /assets {
+            +Cache-Control "public, must-revalidate, proxy-revalidate"
+            +Cache-Control "max-age=25000"
+            Pragma "public"
+        }
+
+        file_server
+        import common
+    }
+    {% endfor %}
+{% endif %}
+
+
+import {{ flarum_hosts_root }}/*/custom_host.conf

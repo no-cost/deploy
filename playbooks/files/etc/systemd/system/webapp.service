@@ -1,0 +1,23 @@
+[Unit]
+Description=Webapp daemon
+Requires=webapp.socket
+After=network.target
+PartOf=freeflarum-web.service
+
+[Service]
+Type=notify
+
+User=www-data
+Group=www-data
+
+WorkingDirectory={{ freeflarum_repo_root }}
+
+ExecStart={{ freeflarum_repo_root }}/.venv/bin/gunicorn freeflarum.web:WEBAPP --bind=unix:{{ freeflarum_repo_root }}/webapp.sock -k sync -m 007 -w 4 --capture-output --access-logfile /var/log/freeflarum/webapp/access.log --log-file /var/log/freeflarum/webapp/error.log --access-logformat '{"ts": "%(t)s", "remote_ip":"%(h)s","response_code":"%(s)s","request_method":"%(m)s","request_path":"%(U)s","request_querystring":"%(q)s","request_timetaken":"%(D)s","response_length":"%(B)s"}'
+ExecReload=/bin/kill -s HUP $MAINPID
+
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
