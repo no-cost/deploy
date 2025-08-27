@@ -2,61 +2,70 @@
 - name: Deploy FreeFlarum
   hosts: all
   gather_facts: false
+  become: false
 
-  vars:
-      main_domain: freeflarum.com
-      available_hostnames:
-          - "flarum.cloud"
-
-      # paths
-      freeflarum_repo_root: /srv/freeflarum
-      flarum_hosts_root: /srv/hosts/flarum
-      skeleton_root: "{{ flarum_hosts_root }}/skeleton"
-      backups_root: /backup
-
-      # versions
-      python_version: "3.13"
-      php_version: "8.4"
-      mariadb_version: "11.5"
-      nginx_version: "1.29"
+  vars_files:
+    - "public_vars.{{ environment | default('dev') }}.yml"
+    # is automatically decrypted, see `ansible.cfg`'s `vault_password_file`:
+    - "secret_vars.{{ environment | default('dev') }}.yml"
 
   handlers:
-      - name: Import handlers.yml
-        ansible.builtin.import_tasks: handlers.yml
+    - name: Import handlers
+      ansible.builtin.import_tasks: handlers.yml
 
   tasks:
-      - name: Setup system
-        ansible.builtin.include_tasks: system.yml
-        tags: [system]
+    - name: Packages
+      ansible.builtin.include_tasks: tasks/00-base-packages.yml
+      tags: [base, system]
 
-      - name: Setup venv for Python {{ python_version }}
-        ansible.builtin.include_tasks: individual/python.yml
-        tags: [python]
+    - name: Base system
+      ansible.builtin.include_tasks: tasks/01-base-system.yml
+      tags: [base, system]
 
-      - name: Setup MariaDB {{ mariadb_version }}
-        ansible.builtin.include_tasks: individual/mariadb.yml
-        tags: [mariadb]
+    - name: Security
+      ansible.builtin.include_tasks: tasks/02-security.yml
+      tags: [security]
 
-      - name: Setup PHP-FPM {{ php_version }}
-        ansible.builtin.include_tasks: individual/php-fpm.yml
-        tags: [php-fpm]
+    - name: Nginx
+      ansible.builtin.include_tasks: tasks/03-nginx.yml
+      tags: [nginx, web]
 
-      - name: Setup Caddy and FreeFlarum web services
-        ansible.builtin.include_tasks: individual/web.yml
-        tags: [web]
+    - name: PHP-FPM
+      ansible.builtin.include_tasks: tasks/04-php-fpm.yml
+      tags: [php, php-fpm]
 
-      - name: Setup Postfix
-        ansible.builtin.include_tasks: individual/postfix.yml
-        tags: [postfix]
+    - name: MariaDB
+      ansible.builtin.include_tasks: tasks/05-mariadb.yml
+      tags: [mariadb, database]
 
-      - name: Install Flarum skeleton
-        ansible.builtin.include_tasks: individual/flarum.yml
-        tags: [flarum]
+    - name: Python
+      ansible.builtin.include_tasks: tasks/06-python.yml
+      tags: [python, mainsite]
 
-      - name: Install Maxmind's GeoIP
-        ansible.builtin.include_tasks: individual/geoip.yml
-        tags: [geoip]
+    - name: Chroot
+      ansible.builtin.include_tasks: tasks/07-chroot.yml
+      tags: [chroot, security]
 
-      - name: Setup Cron tasks
-        ansible.builtin.include_tasks: individual/cron.yml
-        tags: [cron]
+    - name: SSL
+      ansible.builtin.include_tasks: tasks/08-ssl.yml
+      tags: [ssl, certificates]
+
+    - name: Postfix
+      ansible.builtin.include_tasks: tasks/09-postfix.yml
+      tags: [mail, postfix]
+
+    - name: Backup
+      ansible.builtin.include_tasks: tasks/10-backup.yml
+      tags: [backup]
+
+    - name: Monitoring
+      ansible.builtin.include_tasks: tasks/11-monitoring.yml
+      tags: [monitoring]
+
+    - name: Deploy freeflarum-backend
+      ansible.builtin.include_tasks: tasks/12-freeflarum-backend.yml
+      tags: [freeflarum, backend, deploy]
+
+    - name: Cron
+      ansible.builtin.include_tasks: tasks/13-cron.yml
+      tags: [cron]

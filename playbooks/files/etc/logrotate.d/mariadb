@@ -1,0 +1,15 @@
+/var/log/mysql/*.log {
+    daily
+    rotate 7
+    missingok
+    compress
+    delaycompress
+    notifempty
+    create 640 mysql mysql
+    sharedscripts
+    postrotate
+        test -x /usr/bin/mysqladmin && \
+        /usr/bin/mysqladmin --defaults-file=/root/.my.cnf ping >/dev/null 2>&1 && \
+        /usr/bin/mysqladmin --defaults-file=/root/.my.cnf flush-logs
+    endscript
+}

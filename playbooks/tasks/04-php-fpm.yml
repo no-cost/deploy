@@ -1,0 +1,134 @@
+---
+- name: Add PHP repository
+  ansible.builtin.apt_repository:
+    repo: "ppa:ondrej/php"
+    state: present
+    update_cache: true
+
+- name: Install PHP-FPM and extensions
+  ansible.builtin.apt:
+    name:
+      - "php{{ php_version }}-fpm"
+      - "php{{ php_version }}-cli"
+      - "php{{ php_version }}-common"
+      - "php{{ php_version }}-mysql"
+      - "php{{ php_version }}-pgsql"
+      - "php{{ php_version }}-sqlite3"
+      - "php{{ php_version }}-xml"
+      - "php{{ php_version }}-curl"
+      - "php{{ php_version }}-gd"
+      - "php{{ php_version }}-imagick"
+      - "php{{ php_version }}-mbstring"
+      - "php{{ php_version }}-zip"
+      - "php{{ php_version }}-bcmath"
+      - "php{{ php_version }}-intl"
+      - "php{{ php_version }}-soap"
+      - "php{{ php_version }}-redis"
+      - "php{{ php_version }}-opcache"
+      - "php{{ php_version }}-readline"
+      - "php{{ php_version }}-ldap"
+      - "php{{ php_version }}-exif"
+    state: present
+
+- name: Symlink configuration directory
+  ansible.builtin.file:
+    src: /etc/php/fpm/{{ php_version }}
+    dest: /etc/php/fpm
+    state: link
+    force: true
+
+- name: Configure PHP-FPM main configuration
+  ansible.builtin.lineinfile:
+    path: "/etc/php/fpm/php-fpm.conf"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    backup: true
+  loop:
+    - { regexp: '^;?emergency_restart_threshold', line: 'emergency_restart_threshold = 10' }
+    - { regexp: '^;?emergency_restart_interval', line: 'emergency_restart_interval = 1m' }
+    - { regexp: '^;?process_control_timeout', line: 'process_control_timeout = 30s' }
+  notify: restart php-fpm
+
+- name: Configure PHP.ini for FPM
+  ansible.builtin.lineinfile:
+    path: "/etc/php/fpm/php.ini"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    backup: true
+  loop:
+    - { regexp: '^memory_limit', line: 'memory_limit = 512M' }
+    - { regexp: '^max_execution_time', line: 'max_execution_time = 300' }
+    - { regexp: '^upload_max_filesize', line: 'upload_max_filesize = 100M' }
+    - { regexp: '^post_max_size', line: 'post_max_size = 100M' }
+    - { regexp: '^max_input_time', line: 'max_input_time = 300' }
+    - { regexp: '^opcache.enable=', line: 'opcache.enable=1' }
+    - { regexp: '^opcache.memory_consumption', line: 'opcache.memory_consumption=256' }
+    - { regexp: '^opcache.max_accelerated_files', line: 'opcache.max_accelerated_files=10000' }
+  notify: restart php-fpm
+
+- name: Remove default www pool
+  ansible.builtin.file:
+    path: "/etc/php/fpm/pool.d/www.conf"
+    state: absent
+
+- name: Create master pool template for chrooted tenants
+  ansible.builtin.copy:
+    src: files/etc/php/fpm/pool-template.conf
+    dest: "/etc/php/fpm/pool-template.conf"
+    mode: '0644'
+
+- name: Configure PHP-FPM systemd override for security
+  ansible.builtin.copy:
+    src: playbooks/files/etc/systemd/system/php-fpm.service.d/override.conf
+    dest: "/etc/systemd/system/php{{ php_version }}-fpm.service.d/override.conf"
+    mode: '0644'
+  notify:
+    - daemon reload
+    - restart php-fpm
+
+- name: Create PHP session directory for chrooted environments
+  ansible.builtin.file:
+    path: "/var/lib/php/sessions/{{ item }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0733'
+  loop: "{{ available_services }}"
+
+- name: Create PHP-FPM log directory
+  ansible.builtin.file:
+    path: /var/log/php-fpm
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: Configure OPcache for production
+  ansible.builtin.copy:
+    dest: "/etc/php/mods-available/opcache.ini"
+    content: |
+      zend_extension=opcache.so
+      opcache.enable=1
+      opcache.enable_cli=0
+      opcache.memory_consumption=256
+      opcache.interned_strings_buffer=16
+      opcache.max_accelerated_files=10000
+      opcache.max_wasted_percentage=5
+      opcache.use_cwd=1
+      opcache.validate_timestamps=0
+      opcache.revalidate_freq=0
+      opcache.save_comments=1
+      opcache.fast_shutdown=1
+      opcache.enable_file_override=1
+      opcache.huge_code_pages=1
+      opcache.jit=tracing
+      opcache.jit_buffer_size=100M
+    mode: '0644'
+  notify: restart php-fpm
+
+- name: Start and enable PHP-FPM service
+  ansible.builtin.systemd:
+    name: "php{{ php_version }}-fpm"
+    enabled: true
+    state: started
+    daemon_reload: true

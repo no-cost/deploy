@@ -1,29 +1,92 @@
-- name: reload-mariadb
-  ansible.builtin.systemd_service:
-    name: mariadb
-    daemon_reload: false
-    state: reloaded
+---
+- name: restart nginx
+  ansible.builtin.systemd:
+      name: nginx
+      state: restarted
+      daemon_reload: true
 
+- name: reload nginx
+  ansible.builtin.systemd:
+      name: nginx
+      state: reloaded
 
-- name: restart-mariadb
-  ansible.builtin.service:
-    name: mariadb
-    state: restarted
+- name: restart php-fpm
+  ansible.builtin.systemd:
+      name: "php{{ php_version }}-fpm"
+      state: restarted
+      daemon_reload: true
 
+- name: restart mariadb
+  ansible.builtin.systemd:
+      name: mariadb
+      state: restarted
+      daemon_reload: true
 
-- name: restart-fpm
-  ansible.builtin.systemd_service:
-    name: php{{ php_version }}-fpm
-    state: restarted
-    daemon_reload: false
+- name: restart postfix
+  ansible.builtin.systemd:
+      name: postfix
+      state: restarted
 
+- name: restart opendkim
+  ansible.builtin.systemd:
+      name: opendkim
+      state: restarted
 
-- name: reload-postfix
-  ansible.builtin.service:
-    name: postfix
-    state: reloaded
+- name: restart spamassassin
+  ansible.builtin.systemd:
+      name: spamassassin
+      state: restarted
 
+- name: restart postgrey
+  ansible.builtin.systemd:
+      name: postgrey
+      state: restarted
 
-- name: reload-daemon
-  ansible.builtin.systemd_service:
-    daemon_reload: false
+- name: restart fail2ban
+  ansible.builtin.systemd:
+      name: fail2ban
+      state: restarted
+
+- name: restart sshd
+  ansible.builtin.systemd:
+      name: ssh
+      state: restarted
+
+- name: restart chrony
+  ansible.builtin.systemd:
+      name: chrony
+      state: restarted
+
+- name: restart sysstat
+  ansible.builtin.systemd:
+      name: sysstat
+      state: restarted
+
+- name: restart freeflarum
+  ansible.builtin.systemd:
+      name: freeflarum
+      state: restarted
+      daemon_reload: true
+
+- name: restart chroot-mounts
+  ansible.builtin.systemd:
+      name: chroot-mounts
+      state: restarted
+      daemon_reload: true
+
+- name: reload apparmor
+  ansible.builtin.systemd:
+      name: apparmor
+      state: reloaded
+
+- name: daemon reload
+  ansible.builtin.systemd:
+      daemon_reload: true
+
+- name: postmap virtual_domains
+  ansible.builtin.command:
+      cmd: postmap /etc/postfix/virtual_domains
+
+- name: postmap sender_restrictions
+  ansible.builtin.command:
+      cmd: postmap /etc/postfix/sender_restrictions

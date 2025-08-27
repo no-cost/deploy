@@ -1,0 +1,24 @@
+#include <tunables/global>
+
+/usr/sbin/php-fpm{{ php_version }} {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/php>
+
+  capability setuid,
+  capability setgid,
+  capability kill,
+  capability dac_override,
+
+  /usr/sbin/php-fpm{{ php_version }} mr,
+  /etc/php/fpm/** r,
+  /run/php/php-fpm.pid rw,
+  /run/php/php-fpm.sock rw,
+  /var/log/php-fpm.log w,
+
+  # chroot access
+  /srv/host/** r,
+
+  # deny everything else
+  deny /** w,
+}

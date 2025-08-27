@@ -1,0 +1,54 @@
+---
+- name: Install Nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+
+- name: Remove default Nginx site
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/nginx/sites-enabled/default
+    - /etc/nginx/sites-available/default
+
+- name: Ensure Nginx cache and log directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  loop:
+    - /var/cache/nginx
+    - /var/log/nginx
+
+- name: Copy Nginx configuration tree
+  ansible.builtin.copy:
+    src: files/etc/nginx/
+    dest: /etc/nginx/
+    mode: '0644'
+    directory_mode: '0755'
+    backup: true
+  notify: reload nginx
+
+- name: Enable main site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/main-site.conf
+    dest: /etc/nginx/sites-enabled/main-site.conf
+    state: link
+  notify: reload nginx
+
+- name: Start Nginx service
+  ansible.builtin.systemd:
+    name: nginx
+    enabled: true
+    state: started
+    daemon_reload: true
+
+# https://linux.die.net/man/8/logrotate
+- name: Set up log rotation for Nginx
+  ansible.builtin.copy:
+    src: files/etc/logrotate.d/nginx
+    dest: /etc/logrotate.d/nginx
+    mode: '0644'

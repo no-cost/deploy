@@ -1,0 +1,196 @@
+---
+- name: Provision New Tenant
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars_files:
+      - ../secrets.yml
+
+  vars:
+      tenants_root: /srv/host
+      skeleton_root: /srv/skeleton
+      php_version: "8.4"
+      primary_domains:
+          - freeflarum.com
+          - flarum.cloud
+
+  vars_prompt:
+      - name: tenant_id
+        prompt: "Enter tenant ID (e.g., tenant001)"
+        private: false
+
+      - name: service_type
+        prompt: "Enter service type (flarum/wordpress)"
+        private: false
+        default: "flarum"
+
+      - name: tenant_domain
+        prompt: "Enter tenant domain (e.g., example.com)"
+        private: false
+
+      - name: tenant_email
+        prompt: "Enter tenant admin email"
+        private: false
+
+  tasks:
+      - name: Validate service type
+        ansible.builtin.fail:
+            msg: "Invalid service type. Must be 'flarum' or 'wordpress'"
+        when: service_type not in ['flarum', 'wordpress']
+
+      - name: Check if tenant already exists
+        ansible.builtin.stat:
+            path: "{{ tenants_root }}/{{ service_type }}/{{ tenant_id }}"
+        register: tenant_exists
+
+      - name: Fail if tenant already exists
+        ansible.builtin.fail:
+            msg: "Tenant {{ tenant_id }} already exists!"
+        when: tenant_exists.stat.exists
+
+      - name: Create tenant chroot structure
+        ansible.builtin.file:
+            path: "{{ tenants_root }}/{{ service_type }}/{{ tenant_id }}/{{ item }}"
+            state: directory
+            owner: www-data
+            group: www-data
+            mode: "0755"
+        loop:
+            - etc
+            - lib
+            - logs
+            - logs/flarum # for Flarum app logs
+            - tmp
+            - usr
+            - public
+            - public/storage
+
+      - name: Create tenant database
+        community.mysql.mysql_db:
+            name: "{{ service_type }}_{{ tenant_id }}"
+            encoding: utf8mb4
+            collation: utf8mb4_unicode_ci
+            state: present
+            login_user: root
+            login_password: "{{ mysql_root_password }}"
+
+      - name: Generate database password
+        ansible.builtin.set_fact:
+            db_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=20') }}"
+
+      - name: Create database user for tenant
+        community.mysql.mysql_user:
+            name: "{{ tenant_id }}"
+            password: "{{ db_password }}"
+            priv: "{{ service_type }}_{{ tenant_id }}.*:ALL"
+            host: localhost
+            state: present
+            login_user: root
+            login_password: "{{ mysql_root_password }}"
+
+      - name: Create PHP-FPM pool for tenant
+        ansible.builtin.copy:
+            src: files/etc/php/fpm/pool-template.conf
+            dest: "/etc/php/{{ php_version }}/fpm/pool.d/{{ tenant_id }}.conf"
+            mode: "0644"
+        notify: restart php-fpm
+
+      - name: Deploy application files
+        block:
+            - name: Deploy Flarum
+              ansible.builtin.include_tasks: tasks/deploy-flarum.yml
+              when: service_type == 'flarum'
+
+            - name: Deploy WordPress
+              ansible.builtin.include_tasks: tasks/deploy-wordpress.yml
+              when: service_type == 'wordpress'
+
+      - name: Create tenant configuration
+        ansible.builtin.copy:
+            dest: "{{ tenants_root }}/{{ service_type }}/{{ tenant_id }}/etc/config.json"
+            content: |
+                {
+                  "tenant_id": "{{ tenant_id }}",
+                  "domain": "{{ tenant_domain }}",
+                  "database": "{{ service_type }}_{{ tenant_id }}",
+                  "db_user": "{{ tenant_id }}",
+                  "db_password": "{{ db_password }}"
+                }
+            owner: www-data
+            group: www-data
+            mode: "0640"
+
+      # Disk quota configuration removed - handle at OS level if needed
+
+      - name: Request SSL certificate for custom domain
+        ansible.builtin.command:
+            cmd: certbot certonly --nginx -d {{ tenant_domain }} --non-interactive --agree-tos --email {{ tenant_email }}
+        when: tenant_domain not in primary_domains
+
+      - name: Configure Nginx for tenant
+        ansible.builtin.copy:
+            src: files/etc/nginx/sites-available/tenant-template.conf
+            dest: "/etc/nginx/sites-available/{{ tenant_id }}"
+            mode: "0644"
+        notify: reload nginx
+
+      - name: Enable tenant site in Nginx
+        ansible.builtin.file:
+            src: "/etc/nginx/sites-available/{{ tenant_id }}"
+            dest: "/etc/nginx/sites-enabled/{{ tenant_id }}"
+            state: link
+        notify: reload nginx
+
+      - name: Create tenant management record
+        ansible.builtin.copy:
+            dest: "/etc/tenants/{{ tenant_id }}.json"
+            content: |
+                {
+                  "id": "{{ tenant_id }}",
+                  "service": "{{ service_type }}",
+                  "domain": "{{ tenant_domain }}",
+                  "email": "{{ tenant_email }}",
+                  "created": "{{ ansible_date_time.iso8601 }}",
+                  "status": "active"
+                }
+            mode: "0644"
+
+      - name: Send welcome email
+        ansible.builtin.mail:
+            to: "{{ tenant_email }}"
+            subject: "Welcome to {{ service_type | capitalize }} Hosting"
+            body: |
+                Your {{ service_type }} instance has been provisioned successfully!
+
+                Domain: {{ tenant_domain }}
+                Service: {{ service_type | capitalize }}
+                Plan: {{ tenant_plan | capitalize }}
+
+                Database Details:
+                - Database: {{ service_type }}_{{ tenant_id }}
+                - Username: {{ tenant_id }}
+                - Password: {{ db_password }}
+
+                Please keep these credentials secure.
+            from: falsereply@{{ primary_domains[0] }}
+        ignore_errors: true
+
+      - name: Restart services
+        ansible.builtin.systemd:
+            name: "{{ item }}"
+            state: restarted
+        loop:
+            - "php{{ php_version }}-fpm"
+            - nginx
+
+  handlers:
+      - name: restart php-fpm
+        ansible.builtin.systemd:
+            name: "php{{ php_version }}-fpm"
+            state: restarted
+
+      - name: reload nginx
+        ansible.builtin.systemd:
+            name: nginx
+            state: reloaded

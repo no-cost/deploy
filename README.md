@@ -1,0 +1,133 @@
+# Deploy
+
+Contains Ansible playbooks for deploying a production FreeFlarum server.
+
+## Prerequisites
+
+- Ubuntu 22.04+ server
+- 16 GB RAM minimum
+- 160 GB main disk + 100GB backup disk
+- Root access (or sudo)
+- Domains configured with Cloudflare
+
+## Information & Terminology
+
+A "(site) tag" is an unique identifier for a site. It's used to identify a tenant (site) in the filesystem and the database (database prefix: `site_`).
+
+The [`freeflarum-backend`](https://github.com/FreeFlarum/freeflarum-backend) repository is cloned into `/srv/freeflarum`. The `/srv/freeflarum/bin` directory contains FreeFlarum management commands (as Python files). The basic management commands are:
+
+- `backup [tag]` – backup all sites, or a specific site;
+- `create <tag> <service> <admin e-mail>` – create a new site with given tag, service type (`flarum`/`wordpress`/`mediawiki`, etc.), and admin e-mail. There can only be 1 site per e-mail, multiple sites per account aren't supported (1 account = 1 site);
+- `info <tag/hostname/admin e-mail>` – get detailed information about a specific site;
+- `sync_vendor [tag]` – sync the `vendor/` directory from skeleton (`/srv/skeleton/<service>`) to specific site, or all sites by default;
+
+### Structure
+
+```plaintext
+/srv/
+├── freeflarum/  # freeflarum-backend repo
+├── host/  # tenant chroots
+│   ├── site1/
+│   │   ├── etc/
+│   │   │   └── config.json
+│   │   ├── lib/  # hard-links from /srv/skeleton/...
+│   │   ├── logs/
+│   │   │   ├── ...
+│   │   │   └── flarum/
+│   │   ├── tmp/
+│   │   ├── usr/
+│   │   ├── public/
+│   │   │   ├── index.php
+│   │   │   ├── ...
+│   │   │   └── vendor/  # hard-linked from /srv/skeleton/flarum/vendor
+│   └── site2/
+├── skeleton/
+│   ├── flarum/
+│   │   ├── etc/
+│   │   │   └── config.json
+│   │   ├── lib/ # hard-links from system
+│   │   ├── logs/
+│   │   │   ├── ...
+│   │   │   └── flarum/
+│   │   ├── tmp/
+│   │   ├── usr/
+│   │   ├── public/
+│   │   │   ├── config.php
+│   │   │   ├── index.php
+│   │   │   ├── ...
+│   │   │   ├── storage/
+│   │   │   │   └── logs/  # Flarum logs, symlink to ../../../../logs/flarum
+│   │   │   └── vendor/
+│   └── wordpress/
+│   │   ├── etc/
+│   │   │   └── config.json
+│   │   ├── lib/
+│   │   ├── tmp/
+│   │   ├── usr/
+│   │   └── var/
+
+/backup/  # backups
+├── host/  # active hosts
+│   ├── forum1/
+│   │   ├── 2025-01-01/
+│   │   │   ├── files.tar.xz
+│   │   │   ├── files.tar.xz.sha256
+│   │   │   ├── database.sql.xz
+│   │   │   └── database.sql.xz.sha256
+│   │   ├── 2025-01-02/
+│   │   │   ├── files.tar.xz
+│   │   │   ├── files.tar.xz.sha256
+│   │   │   ├── database.sql.xz
+│   │   │   └── database.sql.xz.sha256
+│   └── forum2/
+├── attic/  # archived/inactive hosts
+│   ├── flarum/
+│   │   ├── forum1/
+│   │   │   ├── files.tar.xz
+│   │   │   ├── files.tar.xz.sha256
+│   │   │   ├── database.sql.xz
+│   │   │   └── database.sql.xz.sha256
+│   └── wordpress/
+```
+
+### Variables & Secrets
+
+The [`secret_vars.prod.yml`](./secret_vars.prod.yml) file should be present in the root directory of the repository. It contains variables that are encrypted with Ansible Vault, and they should not be `.gitignore`d.
+
+Public variables are stored in the [`public_vars.prod.yml`](./public_vars.prod.yml) file. They are not encrypted, as they do not contain sensitive information.
+
+The development equivalents are [`secret_vars.dev.yml`](./secret_vars.dev.yml) and [`public_vars.dev.yml`](./public_vars.dev.yml). They are used for testing and deployment to a separate development server.
+
+## Deployment
+
+### `ansible.cfg`
+
+The configuration file contains common configuration settings for deployment to all environments.
+
+Ensure that the password to decrypt `secret_vars.yml` is present in the `~/.ssh/ff_vault_password` file.
+
+### Commands
+
+Ensure that Ansible is [installed](https://docs.ansible.com/ansible/latest/installation_guide/installation_distros.html).
+
+Use [`./prod`](./prod) to deploy to the production server, and [`./dev`](./dev) to deploy to the development server. For example, to deploy everything to the production server:
+
+```bash
+./prod
+```
+
+### Deploy Specific Components
+
+```bash
+# base system only
+./prod --tags base,system
+
+# security
+./prod --tags security
+
+# web services (Nginx + PHP)
+./prod --tags nginx,php-fpm
+
+# main site deployment
+./prod --tags mainsite
+```
