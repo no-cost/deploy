@@ -12,8 +12,8 @@
 
   /usr/sbin/php-fpm{{ php_version }} mr,
   /etc/php/fpm/** r,
-  /run/php/php-fpm.pid rw,
-  /run/php/php-fpm.sock rw,
+  /run/php/*.pid rw,
+  /run/php/*.sock rw,
   /var/log/php-fpm.log w,
 
   # chroot access

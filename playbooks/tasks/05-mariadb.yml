@@ -1,76 +1,76 @@
 ---
 - name: Install MariaDB
   ansible.builtin.apt:
-    name:
-      - mariadb-server
-      - mariadb-client
-      - python3-pymysql
-    state: present
+      name:
+          - mariadb-server
+          - mariadb-client
+          - python3-pymysql
+      state: present
 
 - name: Configure MariaDB for production
   ansible.builtin.template:
-    src: files/etc/mysql/mariadb.conf.d/50-server.cnf
-    dest: /etc/mysql/mariadb.conf.d/50-server.cnf
-    mode: '0644'
-    backup: true
+      src: files/etc/mysql/mariadb.conf.d/50-server.cnf
+      dest: /etc/mysql/mariadb.conf.d/50-server.cnf
+      mode: "644"
+      backup: true
   notify: restart mariadb
 
 - name: Set MariaDB systemd limits
   ansible.builtin.copy:
-    src: files/etc/systemd/system/mariadb.service.d/limits.conf
-    dest: /etc/systemd/system/mariadb.service.d/limits.conf
-    mode: '0644'
+      src: files/etc/systemd/system/mariadb.service.d/limits.conf
+      dest: /etc/systemd/system/mariadb.service.d/limits.conf
+      mode: "644"
 
 - name: Ensure MariaDB is running
   ansible.builtin.systemd:
-    name: mariadb
-    enabled: true
-    state: restarted
-    daemon_reload: true
+      name: mariadb
+      enabled: true
+      state: restarted
+      daemon_reload: true
 
 - name: Set MariaDB root password
   community.mysql.mysql_user:
-    name: root
-    password: "{{ mysql_root_password }}"
-    login_unix_socket: /var/run/mysqld/mysqld.sock
-    state: present
+      name: root
+      password: "{{ mysql_root_password }}"
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      state: present
 
 - name: Remove anonymous MySQL users
   community.mysql.mysql_user:
-    name: ''
-    host_all: true
-    state: absent
-    login_user: root
-    login_password: "{{ mysql_root_password }}"
+      name: ""
+      host_all: true
+      state: absent
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
 
 - name: Remove MySQL test database
   community.mysql.mysql_db:
-    name: test
-    state: absent
-    login_user: root
-    login_password: "{{ mysql_root_password }}"
+      name: test
+      state: absent
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
 
 - name: Create databases for services
   community.mysql.mysql_db:
-    name: freeflarum
-    encoding: utf8mb4
-    collation: utf8mb4_unicode_ci
-    state: present
-    login_user: root
-    login_password: "{{ mysql_root_password }}"
+      name: freeflarum
+      encoding: utf8mb4
+      collation: utf8mb4_unicode_ci
+      state: present
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
 
 - name: Create MySQL backup user
   community.mysql.mysql_user:
-    name: backup
-    password: "{{ mysql_backup_password }}"
-    priv: "*.*:SELECT,LOCK TABLES,SHOW VIEW,EVENT,TRIGGER"
-    host: localhost
-    state: present
-    login_user: root
-    login_password: "{{ mysql_root_password }}"
+      name: backup
+      password: "{{ mysql_backup_password }}"
+      priv: "*.*:SELECT,LOCK TABLES,SHOW VIEW,EVENT,TRIGGER"
+      host: localhost
+      state: present
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
 
 - name: Configure log rotation for MariaDB
   ansible.builtin.copy:
-    src: files/etc/logrotate.d/mariadb
-    dest: /etc/logrotate.d/mariadb
-    mode: '0644'
+      src: files/etc/logrotate.d/mariadb
+      dest: /etc/logrotate.d/mariadb
+      mode: "644"

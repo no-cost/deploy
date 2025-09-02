@@ -1,110 +1,110 @@
 ---
 - name: Clone or update freeflarum backend repository
   ansible.builtin.git:
-    repo: "https://github.com/FreeFlarum/freeflarum-backend.git"
-    dest: "{{ freeflarum_root }}"
-    version: "main"
-    force: true
+      repo: "https://github.com/FreeFlarum/freeflarum-backend.git"
+      dest: "{{ freeflarum_root }}"
+      version: "main"
+      force: true
 
 - name: Create required directories for freeflarum
   ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: www-data
-    group: www-data
-    mode: '0755'
+      path: "{{ item }}"
+      state: directory
+      owner: www-data
+      group: www-data
+      mode: "0755"
   loop:
-    - "{{ freeflarum_root }}/public"
-    - "{{ freeflarum_root }}/logs"
-    - "{{ freeflarum_root }}/tmp"
-    - "{{ skeleton_root }}"
-    - "{{ skeleton_root }}/flarum"
-    - "{{ skeleton_root }}/wordpress"
+      - "{{ freeflarum_root }}/public"
+      - "{{ freeflarum_root }}/logs"
+      - "{{ freeflarum_root }}/tmp"
+      - "{{ skeleton_root }}"
+      - "{{ skeleton_root }}/flarum"
+      - "{{ skeleton_root }}/wordpress"
 
 - name: Set permissions on freeflarum directory
   ansible.builtin.file:
-    path: "{{ freeflarum_root }}"
-    owner: www-data
-    group: www-data
-    recurse: true
-    mode: '0755'
+      path: "{{ freeflarum_root }}"
+      owner: www-data
+      group: www-data
+      recurse: true
+      mode: "0755"
 
 - name: Create symlinks for management scripts
   ansible.builtin.file:
-    src: "{{ freeflarum_root }}/bin/{{ item }}"
-    dest: "/usr/local/bin/{{ item }}"
-    state: link
+      src: "{{ freeflarum_root }}/bin/{{ item }}"
+      dest: "/usr/local/bin/{{ item }}"
+      state: link
   loop:
-    - health_check
-    - cleanup
-    - manage-chroot
-    - manage-ssl
-    - monitor-tenant-usage
+      - health_check
+      - cleanup
+      - manage-chroot
+      - manage-ssl
+      - monitor-tenant-usage
 
 - name: Create environment configuration for freeflarum backend
   ansible.builtin.copy:
-    dest: "{{ freeflarum_root }}/.env"
-    content: |
-      # FreeFlarum Backend Configuration
-      DATABASE_HOST=localhost
-      DATABASE_NAME=freeflarum
-      DATABASE_USER=freeflarum
-      DATABASE_PASSWORD={{ freeflarum_db_password }}
+      dest: "{{ freeflarum_root }}/.env"
+      content: |
+          # FreeFlarum Backend Configuration
+          DATABASE_HOST=localhost
+          DATABASE_NAME=freeflarum
+          DATABASE_USER=freeflarum
+          DATABASE_PASSWORD={{ freeflarum_db_password }}
 
-      # Paths
-      TENANT_ROOT={{ tenants_root }}
-      SKELETON_ROOT={{ skeleton_root }}
-      BACKUP_ROOT={{ backup_root }}
+          # Paths
+          TENANT_ROOT={{ tenants_root }}
+          SKELETON_ROOT={{ skeleton_root }}
+          BACKUP_ROOT={{ backup_root }}
 
-      # Domains
-      PRIMARY_DOMAINS=freeflarum.com,flarum.cloud
-    owner: www-data
-    group: www-data
-    mode: '0640'
+          # Domains
+          PRIMARY_DOMAINS=freeflarum.com,flarum.cloud
+      owner: www-data
+      group: www-data
+      mode: "0640"
 
 - name: Create database for freeflarum backend
   community.mysql.mysql_db:
-    name: freeflarum
-    encoding: utf8mb4
-    collation: utf8mb4_unicode_ci
-    state: present
-    login_user: root
-    login_password: "{{ mysql_root_password }}"
+      name: freeflarum
+      encoding: utf8mb4
+      collation: utf8mb4_unicode_ci
+      state: present
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
 
 - name: Create database user for freeflarum backend
   community.mysql.mysql_user:
-    name: freeflarum
-    password: "{{ freeflarum_db_password }}"
-    priv: "freeflarum.*:ALL"
-    host: localhost
-    state: present
-    login_user: root
-    login_password: "{{ mysql_root_password }}"
+      name: freeflarum
+      password: "{{ freeflarum_db_password }}"
+      priv: "freeflarum.*:ALL"
+      host: localhost
+      state: present
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
 
 - name: Setup skeleton structure for Flarum
   ansible.builtin.command:
-    cmd: "{{ freeflarum_root }}/bin/setup-skeleton flarum"
+      cmd: "{{ freeflarum_root }}/bin/setup-skeleton flarum"
   args:
-    creates: "{{ skeleton_root }}/flarum/public"
+      creates: "{{ skeleton_root }}/flarum/public"
 
 - name: Setup skeleton structure for WordPress
   ansible.builtin.command:
-    cmd: "{{ freeflarum_root }}/bin/setup-skeleton wordpress"
+      cmd: "{{ freeflarum_root }}/bin/setup-skeleton wordpress"
   args:
-    creates: "{{ skeleton_root }}/wordpress/public"
+      creates: "{{ skeleton_root }}/wordpress/public"
 
 # TODO: put certs in secrets.yml
 # ensure it can be enumerated to support any number of domains without changing the deploy script
 - name: Configure Cloudflare SSL certificates
   ansible.builtin.copy:
-    content: "{{ item.content }}"
-    dest: "{{ item.dest }}"
-    mode: "{{ item.mode }}"
-    owner: root
-    group: root
+      content: "{{ item.content }}"
+      dest: "{{ item.dest }}"
+      mode: "{{ item.mode }}"
+      owner: root
+      group: root
   loop:
-    - { content: "{{ cloudflare_cert_freeflarum }}", dest: "/etc/ssl/cloudflare/freeflarum.com.pem", mode: "0644" }
-    - { content: "{{ cloudflare_key_freeflarum }}", dest: "/etc/ssl/cloudflare/freeflarum.com.key", mode: "0600" }
-    - { content: "{{ cloudflare_cert_flarum_cloud }}", dest: "/etc/ssl/cloudflare/flarum.cloud.pem", mode: "0644" }
-    - { content: "{{ cloudflare_key_flarum_cloud }}", dest: "/etc/ssl/cloudflare/flarum.cloud.key", mode: "0600" }
+      - { content: "{{ cloudflare_cert_freeflarum }}", dest: "/etc/ssl/cloudflare/freeflarum.com.pem", mode: "644" }
+      - { content: "{{ cloudflare_key_freeflarum }}", dest: "/etc/ssl/cloudflare/freeflarum.com.key", mode: "600" }
+      - { content: "{{ cloudflare_cert_flarum_cloud }}", dest: "/etc/ssl/cloudflare/flarum.cloud.pem", mode: "644" }
+      - { content: "{{ cloudflare_key_flarum_cloud }}", dest: "/etc/ssl/cloudflare/flarum.cloud.key", mode: "600" }
   when: cloudflare_cert_freeflarum is defined

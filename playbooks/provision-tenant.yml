@@ -1,19 +1,16 @@
 ---
 - name: Provision New Tenant
   hosts: all
-  become: true
-  gather_facts: true
+  gather_facts: false
 
   vars_files:
-      - ../secrets.yml
+      - "../public_vars.prod.yml" # base vars
+      - "../public_vars.{{ environment | default('dev') }}.yml"
+      - "../secret_vars.{{ environment | default('dev') }}.yml"
 
   vars:
-      tenants_root: /srv/host
-      skeleton_root: /srv/skeleton
-      php_version: "8.4"
-      primary_domains:
-          - freeflarum.com
-          - flarum.cloud
+      tenants_root: "{{ paths.tenants.root }}"
+      skeleton_root: "{{ paths.tenants.skeleton_root }}"
 
   vars_prompt:
       - name: tenant_id
@@ -55,7 +52,7 @@
             state: directory
             owner: www-data
             group: www-data
-            mode: "0755"
+            mode: "755"
         loop:
             - etc
             - lib
@@ -93,7 +90,7 @@
         ansible.builtin.copy:
             src: files/etc/php/fpm/pool-template.conf
             dest: "/etc/php/{{ php_version }}/fpm/pool.d/{{ tenant_id }}.conf"
-            mode: "0644"
+            mode: "644"
         notify: restart php-fpm
 
       - name: Deploy application files
@@ -119,7 +116,7 @@
                 }
             owner: www-data
             group: www-data
-            mode: "0640"
+            mode: "640"
 
       # Disk quota configuration removed - handle at OS level if needed
 
@@ -132,7 +129,7 @@
         ansible.builtin.copy:
             src: files/etc/nginx/sites-available/tenant-template.conf
             dest: "/etc/nginx/sites-available/{{ tenant_id }}"
-            mode: "0644"
+            mode: "644"
         notify: reload nginx
 
       - name: Enable tenant site in Nginx
@@ -154,7 +151,7 @@
                   "created": "{{ ansible_date_time.iso8601 }}",
                   "status": "active"
                 }
-            mode: "0644"
+            mode: "644"
 
       - name: Send welcome email
         ansible.builtin.mail:

@@ -1,0 +1,26 @@
+{
+  "service": "flarum",
+  "version": "1.8.5",
+  "php_version": "{{ php_version }}",
+  "database": {
+    "driver": "mysql",
+    "host": "localhost",
+    "port": 3306,
+    "database": "",
+    "username": "",
+    "password": "",
+    "prefix": "flarum_",
+    "strict": false,
+    "engine": "InnoDB",
+    "charset": "utf8mb4",
+    "collation": "utf8mb4_unicode_ci"
+  },
+  "paths": {
+    "public": "/public",
+    "storage": "/public/storage",
+    "vendor": "/public/vendor"
+  },
+  "url": "",
+  "debug": false,
+  "offline": false
+}

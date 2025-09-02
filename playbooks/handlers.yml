@@ -68,12 +68,6 @@
       state: restarted
       daemon_reload: true
 
-- name: restart chroot-mounts
-  ansible.builtin.systemd:
-      name: chroot-mounts
-      state: restarted
-      daemon_reload: true
-
 - name: reload apparmor
   ansible.builtin.systemd:
       name: apparmor
@@ -90,3 +84,9 @@
 - name: postmap sender_restrictions
   ansible.builtin.command:
       cmd: postmap /etc/postfix/sender_restrictions
+
+- name: restart monit
+  ansible.builtin.systemd:
+      name: monit
+      state: restarted
+      daemon_reload: true

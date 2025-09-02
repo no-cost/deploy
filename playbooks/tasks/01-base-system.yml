@@ -1,4 +1,47 @@
 ---
+- name: Ensure correct permissions for /root/.ssh/
+  ansible.builtin.file:
+      path: /root/.ssh/
+      owner: root
+      group: root
+      mode: "600"
+      recurse: true
+
+- name: Install SSH keys
+  ansible.posix.authorized_key:
+      user: root
+      key: "{{ item }}"
+  loop:
+      - >-
+          ssh-rsa
+          AAAAB3NzaC1yc2EAAAABJQAAAQEA4Ul88vn9oiXl2w5Gz14EmThzDR3LsX7t0UYhB0DVkF3SWmxLA3M7q7PbJzJwXSgRlzv4cPqOLff6eDWyGyyUGyuzxRS41ae2k5+ozNZ6SzDoCS2P8dH6iqeualsRdqKfBaWNCZH/KMtNE+vUx7Qqtt/hlNWKEch2GNiJZ54K2uokonWm2pdl5Ex7bc+v+DZkRJrNikf9kJqyGPpTbArRW4fUXQ/C018u/zXeMyPh4KRJep3AZgSH16ZDdYXqC1V004Grmo60IFrrfasxOiKb1fKJ6Yd8HsZJYAsqtNMIjjMbbhwB79ho+Er4XmkbpQGCsnv4w9rg7Df+lTrku6NWrQ==
+          kevin
+
+# TODO: auto-mount /data and /backup with 1k partition?
+
+- name: Enforce UTC
+  community.general.timezone:
+      name: UTC
+
+- name: Enforce UTF8 locale
+  ansible.builtin.copy:
+      dest: /etc/default/locale
+      content: "LANG=C.UTF-8\n"
+      mode: "644"
+
+# https://www.gnu.org/software/bash/manual/html_node/Bash-Startup-Files.html
+- name: Install root bashrc
+  ansible.builtin.copy:
+      src: files/root/bashrc
+      dest: /root/.bashrc
+      mode: "644"
+
+- name: Register public IP address
+  ansible.builtin.get_url:
+      url: https://api.ipify.org
+      dest: /etc/public_ip
+      mode: "644"
+
 # https://linux.die.net/man/5/limits.conf
 #
 # <domain>
@@ -7,116 +50,121 @@
 #   '*' for wildcard
 #   '%' for maxlogins limit only, can also be used with '%group' syntax
 # <type>
-# hard
+#  hard
 #   for enforcing hard resource limits. These limits are set by the superuser and enforced by the Kernel.
 #   The user cannot raise his requirement of system resources above such values.
-# soft
+#  soft
 #   for enforcing soft resource limits. These limits are ones that the user can move up or down within
 #   the permitted range by any pre-existing hard limits. The values specified with this token can be thought
 #   of as default values, for normal system usage.
-# -
+#  -
 #   for enforcing both soft and hard resource limits together.
 #
 # Note, if you specify a type of '-' but neglect to supply the item and value fields then the module will
 # never enforce any limits on the specified user/group etc.
 #
 # <item>
-# nofile
+#  [...]
+#  nofile
 #    maximum number of open files
 - name: Configure system limits
   ansible.builtin.copy:
-    dest: /etc/security/limits.d/99-openfiles.conf
-    content: |
-      *         - nofile  65535
-      root      - nofile  65535
-      www-data  - nofile  65535
-    mode: '0644'
+      src: files/etc/security/limits.d/99-openfiles.conf
+      dest: /etc/security/limits.d/99-openfiles.conf
+      mode: "0644"
 
 - name: Configure sysctl for performance
   ansible.posix.sysctl:
-    name: "{{ item.name }}"
-    value: "{{ item.value }}"
-    sysctl_set: true
-    state: present
-    reload: true
+      name: "{{ item.name }}"
+      value: "{{ item.value }}"
+      sysctl_set: true
+      state: present
+      reload: true
   loop:
-  # https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt
-  # https://www.kernel.org/doc/Documentation/sysctl/net.txt
-  # https://www.kernel.org/doc/Documentation/sysctl/vm.txt
-  # https://www.kernel.org/doc/Documentation/sysctl/fs.txt
+      # https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt
+      # https://www.kernel.org/doc/Documentation/sysctl/net.txt
+      # https://www.kernel.org/doc/Documentation/sysctl/vm.txt
+      # https://www.kernel.org/doc/Documentation/sysctl/fs.txt
 
-    # Maximum number of connection requests queued for any listening socket
-    - { name: 'net.core.somaxconn', value: '65535' }
+      # Maximum number of connection requests queued for any listening socket
+      - { name: "net.core.somaxconn", value: "65535" }
 
-    # Maximal number of remembered connection requests (SYN_RECV), which have not received an acknowledgment
-    # from connecting client
-    - { name: 'net.ipv4.tcp_max_syn_backlog', value: '8192' }
+      # Maximal number of remembered connection requests (SYN_RECV), which have not received an acknowledgment
+      # from connecting client
+      - { name: "net.ipv4.tcp_max_syn_backlog", value: "8192" }
 
-    # Maximum number of packets, queued on the INPUT side, when the interface receives packets faster
-    # than kernel can process them.
-    - { name: 'net.core.netdev_max_backlog', value: '5000' }
+      # Maximum number of packets, queued on the INPUT side, when the interface receives packets faster
+      # than kernel can process them.
+      - { name: "net.core.netdev_max_backlog", value: "5000" }
 
-    # The length of time an orphaned (no longer referenced by any application) connection will remain
-    # in the FIN_WAIT_2 state before it is aborted at the local end.
-    - { name: 'net.ipv4.tcp_fin_timeout', value: '30' }
+      # The length of time an orphaned (no longer referenced by any application) connection will remain
+      # in the FIN_WAIT_2 state before it is aborted at the local end.
+      - { name: "net.ipv4.tcp_fin_timeout", value: "30" }
 
-    # How often TCP sends out keepalive messages when keepalive is enabled.
-    - { name: 'net.ipv4.tcp_keepalive_time', value: '300' }
+      # How often TCP sends out keepalive messages when keepalive is enabled.
+      - { name: "net.ipv4.tcp_keepalive_time", value: "300" }
 
-    # Enable reuse of TIME-WAIT sockets for new connections when it is safe from protocol viewpoint.
-    # 0 - disable
-    # 1 - global enable
-    # 2 - enable for loopback traffic only
-    # It should not be changed without advice/request of technical experts.
-    # Default: 2
-    - { name: 'net.ipv4.tcp_tw_reuse', value: '1' }
+      # Enable reuse of TIME-WAIT sockets for new connections when it is safe from protocol viewpoint.
+      # 0 - disable
+      # 1 - global enable
+      # 2 - enable for loopback traffic only
+      # It should not be changed without advice/request of technical experts.
+      # Default: 2
+      - { name: "net.ipv4.tcp_tw_reuse", value: "1" }
 
-    # This control is used to define how aggressive the kernel will swap
-    # memory pages. Higher values will increase aggressiveness, lower values
-    # decrease the amount of swap. A value of 0 instructs the kernel not to
-    # initiate swap until the amount of free and file-backed pages is less
-    # than the high water mark in a zone.
-    #
-    # The default value is 60.
-    - { name: 'vm.swappiness', value: '10' }
+      # This control is used to define how aggressive the kernel will swap
+      # memory pages. Higher values will increase aggressiveness, lower values
+      # decrease the amount of swap. A value of 0 instructs the kernel not to
+      # initiate swap until the amount of free and file-backed pages is less
+      # than the high water mark in a zone.
+      #
+      # The default value is 60.
+      - { name: "vm.swappiness", value: "10" }
 
-    # The value in file-max denotes the maximum number of file-
-    # handles that the Linux kernel will allocate. When you get lots
-    # of error messages about running out of file handles, you might
-    # want to increase this limit.
-    #
-    # Historically,the kernel was able to allocate file handles
-    # dynamically, but not to free them again. The three values in
-    # file-nr denote the number of allocated file handles, the number
-    # of allocated but unused file handles, and the maximum number of
-    # file handles. Linux 2.6 always reports 0 as the number of free
-    # file handles -- this is not an error, it just means that the
-    # number of allocated file handles exactly matches the number of
-    # used file handles.
-    #
-    # Attempts to allocate more file descriptors than file-max are
-    # reported with printk, look for "VFS: file-max limit <number>
-    # reached".
-    - { name: 'fs.file-max', value: '2097152' }
+      # The value in file-max denotes the maximum number of file-
+      # handles that the Linux kernel will allocate. When you get lots
+      # of error messages about running out of file handles, you might
+      # want to increase this limit.
+      #
+      # Historically,the kernel was able to allocate file handles
+      # dynamically, but not to free them again. The three values in
+      # file-nr denote the number of allocated file handles, the number
+      # of allocated but unused file handles, and the maximum number of
+      # file handles. Linux 2.6 always reports 0 as the number of free
+      # file handles -- this is not an error, it just means that the
+      # number of allocated file handles exactly matches the number of
+      # used file handles.
+      #
+      # Attempts to allocate more file descriptors than file-max are
+      # reported with printk, look for "VFS: file-max limit <number>
+      # reached".
+      - { name: "fs.file-max", value: "2097152" }
 
 - name: Set timezone to UTC
   community.general.timezone:
-    name: UTC
+      name: UTC
 
 # https://chrony-project.org/doc/3.4/chrony.conf.html
 - name: Configure chrony for time synchronization
   ansible.builtin.template:
-    src: files/etc/chrony/chrony.conf
-    dest: /etc/chrony/chrony.conf
-    mode: '0644'
+      src: files/etc/chrony/chrony.conf
+      dest: /etc/chrony/chrony.conf
+      mode: "0644"
   notify: restart chrony
 
-- name: Create www-data user
+- name: Ensure www-data user
   ansible.builtin.user:
-    name: "{{ item }}"
-    # https://unix.stackexchange.com/a/155140
-    shell: /sbin/nologin
-    system: true
-    create_home: false
+      name: "{{ item }}"
+      # https://unix.stackexchange.com/a/155140
+      shell: /sbin/nologin
+      system: true
+      create_home: false
   loop:
-    - www-data
+      - www-data
+
+- name: Install pdns-recursor config
+  ansible.builtin.copy:
+      src: "files/etc/powerdns/recursor.conf"
+      dest: "/etc/powerdns/recursor.conf"
+      mode: "644"
+  notify: restart-pdns-recursor

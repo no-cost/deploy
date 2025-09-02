@@ -1,0 +1,105 @@
+---
+- name: Create directory structure for tenants
+  ansible.builtin.file:
+      path: "{{ item }}"
+      state: directory
+      owner: root
+      group: root
+      mode: "755"
+  loop:
+      - "{{ paths.tenants.root }}"
+      - "{{ paths.tenants.skeleton_root }}"
+      - "{{ paths.tenants.skeleton_root }}/flarum"
+      - "{{ paths.tenants.skeleton_root }}/wordpress"
+
+- name: Create Flarum skeleton directories
+  ansible.builtin.file:
+      path: "{{ paths.tenants.skeleton_root }}/flarum/{{ item }}"
+      state: directory
+      owner: root
+      group: root
+      mode: "755"
+  loop:
+      - etc
+      - lib
+      - logs
+      - logs/flarum
+      - tmp
+      - usr
+      - public
+      - public/vendor
+      - public/storage
+
+- name: Create WordPress skeleton directories
+  ansible.builtin.file:
+      path: "{{ paths.tenants.skeleton_root }}/wordpress/{{ item }}"
+      state: directory
+      owner: root
+      group: root
+      mode: "755"
+  loop:
+      - etc
+      - lib
+      - tmp
+      - usr
+      - var
+
+- name: Create symlinks for system libraries in skeletons
+  ansible.builtin.file:
+      src: "/{{ item.src }}"
+      dest: "{{ paths.tenants.skeleton_root }}/{{ item.service }}/{{ item.dest }}"
+      state: link
+      force: yes
+  loop:
+      - { service: flarum, src: "lib/x86_64-linux-gnu", dest: "lib/x86_64-linux-gnu" }
+      - { service: flarum, src: "lib64", dest: "lib64" }
+      - { service: flarum, src: "usr/lib", dest: "usr/lib" }
+      - { service: wordpress, src: "lib/x86_64-linux-gnu", dest: "lib/x86_64-linux-gnu" }
+      - { service: wordpress, src: "lib64", dest: "lib64" }
+      - { service: wordpress, src: "usr/lib", dest: "usr/lib" }
+
+- name: Create Flarum storage logs symlink
+  ansible.builtin.file:
+      src: "../../../../logs/flarum"
+      dest: "{{ paths.tenants.skeleton_root }}/flarum/public/storage/logs"
+      state: link
+      force: true
+
+- name: Set up chroot mount bindings for PHP-FPM
+  ansible.builtin.blockinfile:
+      path: /etc/fstab
+      block: |
+          # PHP-FPM chroot bindings
+          /dev {{ paths.tenants.root }}/dev none bind,ro 0 0
+          /dev/pts {{ paths.tenants.root }}/dev/pts none bind,ro 0 0
+          /proc {{ paths.tenants.root }}/proc none bind,ro 0 0
+          /sys {{ paths.tenants.root }}/sys none bind,ro 0 0
+      marker: "# {mark} ANSIBLE MANAGED BLOCK - PHP-FPM CHROOT"
+      mode: "644"
+      create: true
+      backup: true
+
+- name: Mount chroot filesystems
+  ansible.builtin.mount:
+      path: "{{ item.path }}"
+      src: "{{ item.src }}"
+      fstype: none
+      opts: "{{ item.opts }}"
+      state: mounted
+  loop:
+      - { path: "{{ paths.tenants.root }}/dev", src: "/dev", opts: "bind,ro" }
+      - { path: "{{ paths.tenants.root }}/dev/pts", src: "/dev/pts", opts: "bind,ro" }
+      - { path: "{{ paths.tenants.root }}/proc", src: "/proc", opts: "bind,ro" }
+      - { path: "{{ paths.tenants.root }}/sys", src: "/sys", opts: "bind,ro" }
+  ignore_errors: true
+
+- name: Create skeleton config templates
+  ansible.builtin.template:
+      src: "files/srv/skeleton/{{ item }}/etc/config.json"
+      dest: "{{ paths.tenants.skeleton_root }}/{{ item }}/etc/config.json"
+      owner: root
+      group: root
+      mode: "644"
+  loop:
+      - flarum
+      - wordpress

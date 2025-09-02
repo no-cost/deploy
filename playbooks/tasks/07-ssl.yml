@@ -1,47 +1,47 @@
 ---
 - name: Install Certbot
   ansible.builtin.apt:
-    name:
-      - certbot
-      - python3-certbot-nginx
-    state: present
+      name:
+          - certbot
+          - python3-certbot-nginx
+      state: present
 
 - name: Create SSL directories
   ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    mode: '0755'
-    owner: root
-    group: root
+      path: "{{ item }}"
+      state: directory
+      mode: "755"
+      owner: root
+      group: root
   loop:
-    - /etc/ssl/cloudflare
-    - /etc/letsencrypt
-    - /var/lib/letsencrypt
-    - /var/log/letsencrypt
+      - /etc/ssl/cloudflare
+      - /etc/letsencrypt
+      - /var/lib/letsencrypt
+      - /var/log/letsencrypt
 
 - name: Create symlink to manage-ssl script
   ansible.builtin.file:
-    src: "{{ freeflarum_root }}/bin/manage-ssl"
-    dest: /usr/local/bin/manage-ssl
-    state: link
+      src: "{{ freeflarum_root }}/bin/manage-ssl"
+      dest: /usr/local/bin/manage-ssl
+      state: link
 
 - name: Set up Certbot renewal cron job
   ansible.builtin.cron:
-    name: "Renew Let's Encrypt certificates"
-    minute: "0"
-    hour: "2"
-    job: "/usr/bin/certbot renew --quiet"
-    user: root
-    state: present
+      name: "Renew Let's Encrypt certificates"
+      minute: "0"
+      hour: "2"
+      job: "/usr/bin/certbot renew --quiet"
+      user: root
+      state: present
 
 - name: Configure Certbot webroot
   ansible.builtin.copy:
-    content: |
-      # Certbot configuration
-      rsa-key-size = 4096
-      email = sysadmin@freeflarum.com
-      agree-tos = True
-      non-interactive = True
-      webroot-path = /var/www/certbot
-    dest: /etc/letsencrypt/cli.ini
-    mode: '0644'
+      content: |
+          # Certbot configuration
+          rsa-key-size = 4096
+          email = sysadmin@freeflarum.com
+          agree-tos = True
+          non-interactive = True
+          webroot-path = /var/www/certbot
+      dest: /etc/letsencrypt/cli.ini
+      mode: "644"

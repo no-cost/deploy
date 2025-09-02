@@ -1,85 +1,85 @@
 ---
 - name: Set up system cron jobs
   ansible.builtin.cron:
-    name: "{{ item.name }}"
-    minute: "{{ item.minute }}"
-    hour: "{{ item.hour }}"
-    day: "{{ item.day | default('*') }}"
-    weekday: "{{ item.weekday | default('*') }}"
-    job: "{{ item.job }}"
-    user: "{{ item.user | default('root') }}"
-    state: present
+      name: "{{ item.name }}"
+      minute: "{{ item.minute }}"
+      hour: "{{ item.hour }}"
+      day: "{{ item.day | default('*') }}"
+      weekday: "{{ item.weekday | default('*') }}"
+      job: "{{ item.job }}"
+      user: "{{ item.user | default('root') }}"
+      state: present
   loop:
-    # Maintenance tasks
-    - name: "Tenant maintenance"
-      minute: "0"
-      hour: "4"
-      job: "/usr/local/bin/cron-scripts/tenant-maintenance.sh >> /var/log/cron/tenant-maintenance.log 2>&1"
+      # Maintenance tasks
+      - name: "Tenant maintenance"
+        minute: "0"
+        hour: "4"
+        job: "/usr/local/bin/cron-scripts/tenant-maintenance.sh >> /var/log/cron/tenant-maintenance.log 2>&1"
 
-    # Log cleanup
-    - name: "Log cleanup"
-      minute: "0"
-      hour: "3"
-      weekday: "0"
-      job: "/usr/local/bin/cron-scripts/log-cleanup.sh >> /var/log/cron/log-cleanup.log 2>&1"
+      # Log cleanup
+      - name: "Log cleanup"
+        minute: "0"
+        hour: "3"
+        weekday: "0"
+        job: "/usr/local/bin/cron-scripts/log-cleanup.sh >> /var/log/cron/log-cleanup.log 2>&1"
 
-    # Database optimization
-    - name: "Database optimization"
-      minute: "0"
-      hour: "5"
-      weekday: "0"
-      job: "/usr/local/bin/cron-scripts/db-optimize.sh >> /var/log/cron/db-optimize.log 2>&1"
+      # Database optimization
+      - name: "Database optimization"
+        minute: "0"
+        hour: "5"
+        weekday: "0"
+        job: "/usr/local/bin/cron-scripts/db-optimize.sh >> /var/log/cron/db-optimize.log 2>&1"
 
-    # SSL certificate check
-    - name: "SSL certificate check"
-      minute: "0"
-      hour: "10"
-      job: "/usr/local/bin/cron-scripts/ssl-check.sh"
+      # SSL certificate check
+      - name: "SSL certificate check"
+        minute: "0"
+        hour: "10"
+        job: "/usr/local/bin/cron-scripts/ssl-check.sh"
 
-    # System health report
-    - name: "Daily health report"
-      minute: "0"
-      hour: "8"
-      job: "/usr/local/bin/cron-scripts/health-report.sh"
+      # System health report
+      - name: "Daily health report"
+        minute: "0"
+        hour: "8"
+        job: "/usr/local/bin/cron-scripts/health-report.sh"
 
-    # Update package list
-    - name: "Update package list"
-      minute: "0"
-      hour: "2"
-      job: "/usr/bin/apt-get update -qq"
+      # Update package list
+      - name: "Update package list"
+        minute: "0"
+        hour: "2"
+        job: "/usr/bin/apt-get update -qq"
 
-    # Clear PHP sessions
-    - name: "Clear old PHP sessions"
-      minute: "0"
-      hour: "*/6"
-      job: "/usr/bin/find /var/lib/php/sessions/ -type f -mtime +7 -delete"
+      # Clear PHP sessions
+      - name: "Clear old PHP sessions"
+        minute: "0"
+        hour: "*/6"
+        job: "/usr/bin/find /var/lib/php/sessions/ -type f -mtime +7 -delete"
 
-    # Restart PHP-FPM weekly to prevent memory leaks
-    - name: "Restart PHP-FPM"
-      minute: "0"
-      hour: "6"
-      weekday: "0"
-      job: "/bin/systemctl restart php{{ php_version }}-fpm"
+      # Restart PHP-FPM weekly to prevent memory leaks
+      - name: "Restart PHP-FPM"
+        minute: "0"
+        hour: "6"
+        weekday: "0"
+        job: "/bin/systemctl restart php{{ php_version }}-fpm"
 
 - name: Create cron log directory
   ansible.builtin.file:
-    path: /var/log/cron
-    state: directory
-    mode: '0755'
-    owner: root
-    group: root
+      path: /var/log/cron
+      state: directory
+      mode: "755"
+      owner: root
+      group: root
 
 - name: Configure cron log rotation
   ansible.builtin.copy:
-    dest: /etc/logrotate.d/cron-scripts
-    content: |
-      /var/log/cron/*.log {
-          weekly
-          missingok
-          rotate 4
-          compress
-          delaycompress
-          notifempty
-          create 0640 root root
-      }
-    mode: '0644'
+      dest: /etc/logrotate.d/cron-scripts
+      content: |
+          /var/log/cron/*.log {
+              weekly
+              missingok
+              rotate 4
+              compress
+              delaycompress
+              notifempty
+              create 0640 root root
+          }
+      mode: "644"

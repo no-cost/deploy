@@ -1,47 +1,57 @@
 - name: Update & upgrade all packages
   ansible.builtin.apt:
-    name: '*'
-    state: present
-    update_cache: true
+      name: "*"
+      state: present
+      update_cache: true
 
 - name: Install system packages
   ansible.builtin.apt:
-    state: present
-    pkg:
-      - apt-transport-https
-      - build-essential
-      - ca-certificates
-      - chrony
-      - curl
-      - dnsutils              # dig
-      - fail2ban
-      - git
-      - gnupg
-      - htop
-      - iptables              # for ip blacklisting
-      - jq
-      - logrotate
-      - lsb-release
-      - net-tools
-      - openssl               # for SSL support
-      - pdns-recursor         # https://doc.powerdns.com/recursor/
-      - python3-pip
-      - python3-venv
-      - rsync
-      - screen                # for running commands in background
-      - software-properties-common
-      - sudo
-      - telnet
-      - time                  # for benchmarking
-      - ufw
-      - unattended-upgrades   # automatic upgrades
-      - unzip
-      - util-linux            # flock
-      - wget
-      - zip
+      state: present
+      pkg:
+          - apt-transport-https
+          - build-essential
+          - ca-certificates
+          - chrony # time sync
+          - cron
+          - curl
+          - dnsutils # dig
+          - fail2ban
+          - git
+          - gnupg
+          - htop
+          - iptables # for ip blacklisting
+          - jq
+          - logrotate
+          - lsb-release
+          - net-tools
+          - openssl # for SSL support
+          - pdns-recursor # https://doc.powerdns.com/recursor/
+          - python3-pip
+          - python3-venv
+          - rsync
+          - screen # for running commands in background
+          - software-properties-common
+          - sudo
+          - tar
+          - telnet
+          - time # simple benchmarking
+          - ufw
+          - unattended-upgrades # automatic upgrades
+          - unzip
+          - util-linux # flock
+          - wget
+          - zip
 
 - name: Enable APT automatic upgrades
+# controls update frequency
   ansible.builtin.copy:
-    src: files/etc/apt/apt.conf.d/20auto-upgrades
-    dest: /etc/apt/apt.conf.d/20auto-upgrades
-    mode: "0644"
+      src: files/etc/apt/apt.conf.d/20auto-upgrades
+      dest: /etc/apt/apt.conf.d/20auto-upgrades
+      mode: "644"
+
+- name: Enable APT unattended upgrades
+# controls what gets updated and how
+  ansible.builtin.copy:
+      src: files/etc/apt/apt.conf.d/50unattended-upgrades
+      dest: /etc/apt/apt.conf.d/50unattended-upgrades
+      mode: "644"

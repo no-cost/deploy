@@ -1,27 +1,31 @@
+primary_domains:
+    - freeflarum.com
+    - flarum.cloud
+
 available_services:
-  - flarum
-  - wordpress
+    - flarum
+    - wordpress
 
 paths:
-  freeflarum_root: /srv/freeflarum # freeflarum-backend repo
-  backup_root: /backup
-  backup_host_root: /backup/host
-  backup_attic_root: /backup/attic
+    freeflarum_root: /srv/freeflarum # freeflarum-backend repo
+    backup_root: /backup
+    backup_host_root: /backup/host
+    backup_attic_root: /backup/attic
 
-  tenants:
-    root: /srv/host
-    skeleton_root: /srv/skeleton
-    flarum_skeleton: "{{ tenants.skeleton_root }}/flarum"
-    wordpress_skeleton: "{{ tenants.skeleton_root }}/wordpress"
+    tenants:
+        root: /srv/host
+        skeleton_root: /srv/skeleton
+        flarum_skeleton: "{{ tenants.skeleton_root }}/flarum"
+        wordpress_skeleton: "{{ tenants.skeleton_root }}/wordpress"
 
 python_version: "3.13"
 php_version: "8.4"
 mariadb_version: "11.5"
 nginx_version: "1.29.1"
 
-firewall_allowed_ports:
-  - 22
-  - 80
-  - 443
-  - 25
-  - 587
+ufw_allowed_ports:
+    - 22
+    - 80
+    - 443
+    - 25
+    - 587

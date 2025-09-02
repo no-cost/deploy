@@ -1,65 +1,65 @@
 ---
 - name: Install Python build dependencies
   ansible.builtin.apt:
-    name:
-      - build-essential
-      - libssl-dev
-      - zlib1g-dev
-      - libbz2-dev
-      - libreadline-dev
-      - libsqlite3-dev
-      - wget
-      - curl
-      - llvm
-      - libncurses5-dev
-      - libncursesw5-dev
-      - xz-utils
-      - libffi-dev
-      - liblzma-dev
-      - python3-openssl
-      - git
-    state: present
+      name:
+          - build-essential
+          - libssl-dev
+          - zlib1g-dev
+          - libbz2-dev
+          - libreadline-dev
+          - libsqlite3-dev
+          - wget
+          - curl
+          - llvm
+          - libncurses5-dev
+          - libncursesw5-dev
+          - xz-utils
+          - libffi-dev
+          - liblzma-dev
+          - python3-openssl
+          - git
+      state: present
 
 - name: Install Python {{ python_version }}
   ansible.builtin.apt:
-    name:
-      - "python{{ python_version }}"
-      - "python{{ python_version }}-venv"
-      - "python{{ python_version }}-dev"
-    state: present
+      name:
+          - "python{{ python_version }}"
+          - "python{{ python_version }}-venv"
+          - "python{{ python_version }}-dev"
+      state: present
 
 - name: Install pip for Python {{ python_version }}
   ansible.builtin.apt:
-    name: python3-pip
-    state: present
+      name: python3-pip
+      state: present
 
 # TODO: move to 09
 - name: Create virtual environment for main site
   ansible.builtin.command:
-    cmd: "python{{ python_version }} -m venv {{ main_site_root }}/.venv"
-    creates: "{{ main_site_root }}/.venv/bin/python"
+      cmd: "python{{ python_version }} -m venv {{ main_site_root }}/.venv"
+      creates: "{{ main_site_root }}/.venv/bin/python"
 
 - name: Install Python packages for main site
   ansible.builtin.pip:
-    requirements: "{{ main_site_root }}/requirements.txt"
-    virtualenv: "{{ main_site_root }}/.venv"
-    virtualenv_python: "python{{ python_version }}"
+      requirements: "{{ main_site_root }}/requirements.txt"
+      virtualenv: "{{ main_site_root }}/.venv"
+      virtualenv_python: "python{{ python_version }}"
 
 - name: Create systemd service files for FreeFlarum
   ansible.builtin.template:
-    src: "files/etc/systemd/system/{{ item }}"
-    dest: "/etc/systemd/system/{{ item }}"
-    mode: '0644'
+      src: "files/etc/systemd/system/{{ item }}"
+      dest: "/etc/systemd/system/{{ item }}"
+      mode: "644"
   loop:
-    - freeflarum.service
-    - freeflarum.socket
+      - freeflarum.service
+      - freeflarum.socket
   notify:
-    - daemon reload
-    - restart freeflarum
+      - daemon reload
+      - restart freeflarum
 
 - name: Set proper ownership for main site
   ansible.builtin.file:
-    path: "{{ main_site_root }}"
-    owner: www-data
-    group: www-data
-    recurse: true
+      path: "{{ main_site_root }}"
+      owner: www-data
+      group: www-data
+      recurse: true

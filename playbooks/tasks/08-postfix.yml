@@ -1,120 +1,119 @@
 ---
-
 # FIXME
 
 - name: Install mail packages
   ansible.builtin.apt:
-    name:
-      - postfix
-      - postfix-pcre
-      - opendkim
-      - opendkim-tools
-      - postgrey
-      - spamassassin
-      - spamc
-    state: present
+      name:
+          - postfix
+          - postfix-pcre
+          - opendkim
+          - opendkim-tools
+          - postgrey
+          - spamassassin
+          - spamc
+      state: present
 
 - name: Configure Postfix main.cf
   ansible.builtin.template:
-    src: ../templates/postfix/main.cf.j2
-    dest: /etc/postfix/main.cf
-    mode: '0644'
-    backup: true
+      src: ../templates/postfix/main.cf.j2
+      dest: /etc/postfix/main.cf
+      mode: "644"
+      backup: true
   notify: restart postfix
 
 - name: Configure Postfix master.cf
   ansible.builtin.template:
-    src: ../templates/postfix/master.cf.j2
-    dest: /etc/postfix/master.cf
-    mode: '0644'
-    backup: true
+      src: ../templates/postfix/master.cf.j2
+      dest: /etc/postfix/master.cf
+      mode: "644"
+      backup: true
   notify: restart postfix
 
 - name: Create virtual mailbox domains
   ansible.builtin.template:
-    src: ../templates/postfix/virtual_domains.j2
-    dest: /etc/postfix/virtual_domains
-    mode: '0644'
+      src: ../templates/postfix/virtual_domains.j2
+      dest: /etc/postfix/virtual_domains
+      mode: "644"
   notify: postmap virtual_domains
 
 - name: Create sender restrictions
   ansible.builtin.copy:
-    dest: /etc/postfix/sender_restrictions
-    content: |
-      # Restrict sending from tenant domains
-      /^.*@flarum\.cloud$/  REJECT Unauthorized sender domain
-      /^.*@freeflarum\.com$/  REJECT Unauthorized sender domain
-    mode: '0644'
+      dest: /etc/postfix/sender_restrictions
+      content: |
+          # Restrict sending from tenant domains
+          /^.*@flarum\.cloud$/  REJECT Unauthorized sender domain
+          /^.*@freeflarum\.com$/  REJECT Unauthorized sender domain
+      mode: "644"
   notify: postmap sender_restrictions
 
 - name: Configure OpenDKIM
   ansible.builtin.template:
-    src: ../templates/opendkim/opendkim.conf.j2
-    dest: /etc/opendkim.conf
-    mode: '0644'
+      src: ../templates/opendkim/opendkim.conf.j2
+      dest: /etc/opendkim.conf
+      mode: "644"
   notify: restart opendkim
 
 - name: Create DKIM keys directory
   ansible.builtin.file:
-    path: /etc/opendkim/keys
-    state: directory
-    owner: opendkim
-    group: opendkim
-    mode: '0700'
+      path: /etc/opendkim/keys
+      state: directory
+      owner: opendkim
+      group: opendkim
+      mode: "700"
 
 # TODO: put keys in secrets.yml
 - name: Generate DKIM keys for domains
   ansible.builtin.command:
-    cmd: opendkim-genkey -s mail -d {{ item }} -D /etc/opendkim/keys/
-    creates: /etc/opendkim/keys/mail.private
+      cmd: opendkim-genkey -s mail -d {{ item }} -D /etc/opendkim/keys/
+      creates: /etc/opendkim/keys/mail.private
   loop: "{{ primary_domains }}"
 
 - name: Configure SpamAssassin
   ansible.builtin.template:
-    src: ../templates/spamassassin/local.cf.j2
-    dest: /etc/spamassassin/local.cf
-    mode: '0644'
+      src: ../templates/spamassassin/local.cf.j2
+      dest: /etc/spamassassin/local.cf
+      mode: "644"
   notify: restart spamassassin
 
 - name: Configure Postgrey
   ansible.builtin.lineinfile:
-    path: /etc/default/postgrey
-    regexp: '^POSTGREY_OPTS='
-    line: 'POSTGREY_OPTS="--inet=10023 --delay=60 --max-age=365 --auto-whitelist-clients=5"'
+      path: /etc/default/postgrey
+      regexp: "^POSTGREY_OPTS="
+      line: 'POSTGREY_OPTS="--inet=10023 --delay=60 --max-age=365 --auto-whitelist-clients=5"'
   notify: restart postgrey
 
 - name: Create mail queue monitoring script
   ansible.builtin.template:
-    src: ../templates/scripts/check-mail-queue.sh.j2
-    dest: /usr/local/bin/check-mail-queue
-    mode: '0755'
+      src: ../templates/scripts/check-mail-queue.sh.j2
+      dest: /usr/local/bin/check-mail-queue
+      mode: "755"
 
 - name: Set up mail log rotation
   ansible.builtin.copy:
-    dest: /etc/logrotate.d/mail
-    content: |
-      /var/log/mail.log /var/log/mail.err /var/log/mail.warn {
-          daily
-          missingok
-          rotate 14
-          compress
-          delaycompress
-          notifempty
-          create 0640 syslog adm
-          sharedscripts
-          postrotate
-              /usr/lib/rsyslog/rsyslog-rotate
-          endscript
-      }
-    mode: '0644'
+      dest: /etc/logrotate.d/mail
+      content: |
+          /var/log/mail.log /var/log/mail.err /var/log/mail.warn {
+              daily
+              missingok
+              rotate 14
+              compress
+              delaycompress
+              notifempty
+              create 0640 syslog adm
+              sharedscripts
+              postrotate
+                  /usr/lib/rsyslog/rsyslog-rotate
+              endscript
+          }
+      mode: "644"
 
 - name: Enable and start mail services
   ansible.builtin.systemd:
-    name: "{{ item }}"
-    enabled: true
-    state: started
+      name: "{{ item }}"
+      enabled: true
+      state: started
   loop:
-    - postfix
-    - opendkim
-    - spamassassin
-    - postgrey
+      - postfix
+      - opendkim
+      - spamassassin
+      - postgrey

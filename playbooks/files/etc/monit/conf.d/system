@@ -1,0 +1,10 @@
+check process sshd with pidfile /var/run/sshd.pid
+  start program = "/usr/bin/systemctl start ssh"
+  stop program = "/usr/bin/systemctl stop ssh"
+  if failed port 22 protocol ssh then restart
+  if 5 restarts within 5 cycles then timeout
+
+check process cron with pidfile /var/run/crond.pid
+  start program = "/usr/bin/systemctl start cron"
+  stop program = "/usr/bin/systemctl stop cron"
+  if 5 restarts within 5 cycles then timeout

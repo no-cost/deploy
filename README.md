@@ -10,7 +10,7 @@ Contains Ansible playbooks for deploying a production FreeFlarum server.
 - Root access (or sudo)
 - Domains configured with Cloudflare
 
-## Information & Terminology
+## Basic Info
 
 A "(site) tag" is an unique identifier for a site. It's used to identify a tenant (site) in the filesystem and the database (database prefix: `site_`).
 
