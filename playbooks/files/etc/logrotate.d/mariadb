@@ -1,11 +1,11 @@
 /var/log/mysql/*.log {
     daily
-    rotate 7
     missingok
+    rotate 14
     compress
     delaycompress
     notifempty
-    create 640 mysql mysql
+    create 0640 mysql mysql
     sharedscripts
     postrotate
         test -x /usr/bin/mysqladmin && \
