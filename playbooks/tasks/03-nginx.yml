@@ -10,7 +10,7 @@
       state: absent
   loop:
       - /etc/nginx/sites-enabled/default
-      - /etc/nginx/sites-available/default
+      - /etc/nginx/sites-available
 
 - name: Ensure Nginx cache and log directories exist
   ansible.builtin.file:
@@ -41,19 +41,12 @@
       backup: true
   loop:
       - /etc/nginx/nginx.conf
-      - /etc/nginx/sites-available/dynamic.conf
-      - /etc/nginx/sites-available/main-site.conf
+      - /etc/nginx/sites-enabled/dynamic.conf
+      - /etc/nginx/sites-enabled/main-site.conf
       - /etc/nginx/snippets/gzip.conf
       - /etc/nginx/snippets/rate-limits.conf
       - /etc/nginx/snippets/security-headers.conf
       - /etc/nginx/snippets/ssl-params.conf
-  notify: reload nginx
-
-- name: Enable main site
-  ansible.builtin.file:
-      src: /etc/nginx/sites-available/main-site.conf
-      dest: /etc/nginx/sites-enabled/main-site.conf
-      state: link
   notify: reload nginx
 
 - name: Start Nginx service

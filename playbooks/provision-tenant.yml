@@ -128,16 +128,9 @@
 
       - name: Configure Nginx for tenant
         ansible.builtin.copy:
-            src: files/etc/nginx/sites-available/tenant-template.conf
-            dest: "/etc/nginx/sites-available/{{ tenant_id }}"
-            mode: "644"
-        notify: reload nginx
-
-      - name: Enable tenant site in Nginx
-        ansible.builtin.file:
-            src: "/etc/nginx/sites-available/{{ tenant_id }}"
+            src: files/etc/nginx/sites-enabled/tenant-template.conf
             dest: "/etc/nginx/sites-enabled/{{ tenant_id }}"
-            state: link
+            mode: "644"
         notify: reload nginx
 
       - name: Create tenant management record
