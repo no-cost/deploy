@@ -19,12 +19,6 @@
       - /var/lib/letsencrypt
       - /var/log/letsencrypt
 
-- name: Create symlink to manage-ssl script
-  ansible.builtin.file:
-      src: "{{ freeflarum_root }}/bin/manage-ssl"
-      dest: /usr/local/bin/manage-ssl
-      state: link
-
 - name: Set up Certbot renewal cron job
   ansible.builtin.cron:
       name: "Renew Let's Encrypt certificates"

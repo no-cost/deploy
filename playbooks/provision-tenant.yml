@@ -1,3 +1,4 @@
+# TODO
 ---
 - name: Provision New Tenant
   hosts: all
@@ -70,7 +71,7 @@
             collation: utf8mb4_unicode_ci
             state: present
             login_user: root
-            login_password: "{{ mysql_root_password }}"
+            login_password: "{{ mariadb.root_password }}"
 
       - name: Generate database password
         ansible.builtin.set_fact:
@@ -84,7 +85,7 @@
             host: localhost
             state: present
             login_user: root
-            login_password: "{{ mysql_root_password }}"
+            login_password: "{{ mariadb.root_password }}"
 
       - name: Create PHP-FPM pool for tenant
         ansible.builtin.copy:

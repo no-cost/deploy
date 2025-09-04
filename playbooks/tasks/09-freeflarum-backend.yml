@@ -2,7 +2,7 @@
 - name: Clone or update freeflarum backend repository
   ansible.builtin.git:
       repo: "https://github.com/FreeFlarum/freeflarum-backend.git"
-      dest: "{{ freeflarum_root }}"
+      dest: "{{ freeflarum_backend_repo }}"
       version: "main"
       force: true
 
@@ -14,16 +14,16 @@
       group: www-data
       mode: "0755"
   loop:
-      - "{{ freeflarum_root }}/public"
-      - "{{ freeflarum_root }}/logs"
-      - "{{ freeflarum_root }}/tmp"
+      - "{{ freeflarum_backend_repo }}/public"
+      - "{{ freeflarum_backend_repo }}/logs"
+      - "{{ freeflarum_backend_repo }}/tmp"
       - "{{ skeleton_root }}"
       - "{{ skeleton_root }}/flarum"
       - "{{ skeleton_root }}/wordpress"
 
 - name: Set permissions on freeflarum directory
   ansible.builtin.file:
-      path: "{{ freeflarum_root }}"
+      path: "{{ freeflarum_backend_repo }}"
       owner: www-data
       group: www-data
       recurse: true
@@ -31,7 +31,7 @@
 
 - name: Create symlinks for management scripts
   ansible.builtin.file:
-      src: "{{ freeflarum_root }}/bin/{{ item }}"
+      src: "{{ freeflarum_backend_repo }}/bin/{{ item }}"
       dest: "/usr/local/bin/{{ item }}"
       state: link
   loop:
@@ -43,13 +43,13 @@
 
 - name: Create environment configuration for freeflarum backend
   ansible.builtin.copy:
-      dest: "{{ freeflarum_root }}/.env"
+      dest: "{{ freeflarum_backend_repo }}/.env"
       content: |
           # FreeFlarum Backend Configuration
           DATABASE_HOST=localhost
           DATABASE_NAME=freeflarum
           DATABASE_USER=freeflarum
-          DATABASE_PASSWORD={{ freeflarum_db_password }}
+          DATABASE_PASSWORD={{ mariadb.freeflarum_password }}
 
           # Paths
           TENANT_ROOT={{ tenants_root }}
@@ -69,27 +69,27 @@
       collation: utf8mb4_unicode_ci
       state: present
       login_user: root
-      login_password: "{{ mysql_root_password }}"
+      login_password: "{{ mariadb.root_password }}"
 
 - name: Create database user for freeflarum backend
   community.mysql.mysql_user:
       name: freeflarum
-      password: "{{ freeflarum_db_password }}"
+      password: "{{ mariadb.freeflarum_password }}"
       priv: "freeflarum.*:ALL"
       host: localhost
       state: present
       login_user: root
-      login_password: "{{ mysql_root_password }}"
+      login_password: "{{ mariadb.root_password }}"
 
 - name: Setup skeleton structure for Flarum
   ansible.builtin.command:
-      cmd: "{{ freeflarum_root }}/bin/setup-skeleton flarum"
+      cmd: "{{ freeflarum_backend_repo }}/bin/setup-skeleton flarum"
   args:
       creates: "{{ skeleton_root }}/flarum/public"
 
 - name: Setup skeleton structure for WordPress
   ansible.builtin.command:
-      cmd: "{{ freeflarum_root }}/bin/setup-skeleton wordpress"
+      cmd: "{{ freeflarum_backend_repo }}/bin/setup-skeleton wordpress"
   args:
       creates: "{{ skeleton_root }}/wordpress/public"
 

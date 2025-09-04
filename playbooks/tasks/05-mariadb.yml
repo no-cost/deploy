@@ -28,10 +28,12 @@
       state: restarted
       daemon_reload: true
 
+# TODO: MariaDB login only via sock, no remote connection allowed, no binding to ports
+
 - name: Set MariaDB root password
   community.mysql.mysql_user:
       name: root
-      password: "{{ mysql_root_password }}"
+      password: "{{ mariadb.root_password }}"
       login_unix_socket: /var/run/mysqld/mysqld.sock
       state: present
 
@@ -41,14 +43,14 @@
       host_all: true
       state: absent
       login_user: root
-      login_password: "{{ mysql_root_password }}"
+      login_password: "{{ mariadb.root_password }}"
 
 - name: Remove MySQL test database
   community.mysql.mysql_db:
       name: test
       state: absent
       login_user: root
-      login_password: "{{ mysql_root_password }}"
+      login_password: "{{ mariadb.root_password }}"
 
 - name: Create databases for services
   community.mysql.mysql_db:
@@ -57,17 +59,17 @@
       collation: utf8mb4_unicode_ci
       state: present
       login_user: root
-      login_password: "{{ mysql_root_password }}"
+      login_password: "{{ mariadb.root_password }}"
 
 - name: Create MySQL backup user
   community.mysql.mysql_user:
       name: backup
-      password: "{{ mysql_backup_password }}"
+      password: "{{ mariadb.backup_password }}"
       priv: "*.*:SELECT,LOCK TABLES,SHOW VIEW,EVENT,TRIGGER"
       host: localhost
       state: present
       login_user: root
-      login_password: "{{ mysql_root_password }}"
+      login_password: "{{ mariadb.root_password }}"
 
 - name: Configure log rotation for MariaDB
   ansible.builtin.copy:

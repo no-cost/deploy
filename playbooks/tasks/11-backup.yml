@@ -32,12 +32,12 @@
 - name: Create MySQL backup user
   community.mysql.mysql_user:
       name: backup
-      password: "{{ mysql_backup_password }}"
+      password: "{{ mariadb.backup_password }}"
       priv: "*.*:SELECT,LOCK TABLES,SHOW VIEW,EVENT,TRIGGER"
       host: localhost
       state: present
       login_user: root
-      login_password: "{{ mysql_root_password }}"
+      login_password: "{{ mariadb.root_password }}"
 
 - name: Create backup scripts directory
   ansible.builtin.file:
