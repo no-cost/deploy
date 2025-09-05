@@ -77,13 +77,13 @@
   ansible.builtin.systemd:
       daemon_reload: true
 
-- name: postmap virtual_domains
+- name: postmap postfix_virtual
   ansible.builtin.command:
-      cmd: postmap /etc/postfix/virtual_domains
+      cmd: postmap /etc/postfix/virtual
 
-- name: postmap sender_restrictions
+- name: postmap postfix_sender_access
   ansible.builtin.command:
-      cmd: postmap /etc/postfix/sender_restrictions
+      cmd: postmap /etc/postfix/sender_access
 
 - name: restart monit
   ansible.builtin.systemd:

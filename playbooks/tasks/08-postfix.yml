@@ -8,6 +8,7 @@
           - postfix-pcre
           - opendkim
           - opendkim-tools
+          - opendmarc
           - postgrey
           - spamassassin
           - spamc
@@ -15,7 +16,7 @@
 
 - name: Configure Postfix main.cf
   ansible.builtin.template:
-      src: ../templates/postfix/main.cf.j2
+      src: files/etc/postfix/main.cf
       dest: /etc/postfix/main.cf
       mode: "644"
       backup: true
@@ -23,7 +24,7 @@
 
 - name: Configure Postfix master.cf
   ansible.builtin.template:
-      src: ../templates/postfix/master.cf.j2
+      src: files/etc/postfix/master.cf
       dest: /etc/postfix/master.cf
       mode: "644"
       backup: true
@@ -31,24 +32,21 @@
 
 - name: Create virtual mailbox domains
   ansible.builtin.template:
-      src: ../templates/postfix/virtual_domains.j2
-      dest: /etc/postfix/virtual_domains
+      src: files/etc/postfix/virtual
+      dest: /etc/postfix/virtual
       mode: "644"
-  notify: postmap virtual_domains
+  notify: postmap postfix_virtual
 
-- name: Create sender restrictions
-  ansible.builtin.copy:
-      dest: /etc/postfix/sender_restrictions
-      content: |
-          # Restrict sending from tenant domains
-          /^.*@flarum\.cloud$/  REJECT Unauthorized sender domain
-          /^.*@freeflarum\.com$/  REJECT Unauthorized sender domain
+- name: Create sender access file
+  ansible.builtin.template:
+      src: files/etc/postfix/sender_access
+      dest: /etc/postfix/sender_access
       mode: "644"
-  notify: postmap sender_restrictions
+  notify: postmap postfix_sender_access
 
 - name: Configure OpenDKIM
   ansible.builtin.template:
-      src: ../templates/opendkim/opendkim.conf.j2
+      src: files/etc/opendkim.conf
       dest: /etc/opendkim.conf
       mode: "644"
   notify: restart opendkim
@@ -61,7 +59,7 @@
       group: opendkim
       mode: "700"
 
-# TODO: put keys in secrets.yml
+# TODO: put current keys in secrets.yml
 - name: Generate DKIM keys for domains
   ansible.builtin.command:
       cmd: opendkim-genkey -s mail -d {{ item }} -D /etc/opendkim/keys/
@@ -70,41 +68,22 @@
 
 - name: Configure SpamAssassin
   ansible.builtin.template:
-      src: ../templates/spamassassin/local.cf.j2
+      src: files/etc/spamassassin/local.cf
       dest: /etc/spamassassin/local.cf
       mode: "644"
   notify: restart spamassassin
 
 - name: Configure Postgrey
-  ansible.builtin.lineinfile:
-      path: /etc/default/postgrey
-      regexp: "^POSTGREY_OPTS="
-      line: 'POSTGREY_OPTS="--inet=10023 --delay=60 --max-age=365 --auto-whitelist-clients=5"'
+  ansible.builtin.file:
+      src: files/etc/default/postgrey
+      dest: /etc/default/postgrey
+      mode: "644"
   notify: restart postgrey
-
-- name: Create mail queue monitoring script
-  ansible.builtin.template:
-      src: ../templates/scripts/check-mail-queue.sh.j2
-      dest: /usr/local/bin/check-mail-queue
-      mode: "755"
 
 - name: Set up mail log rotation
   ansible.builtin.copy:
-      dest: /etc/logrotate.d/mail
-      content: |
-          /var/log/mail.log /var/log/mail.err /var/log/mail.warn {
-              daily
-              missingok
-              rotate 14
-              compress
-              delaycompress
-              notifempty
-              create 0640 syslog adm
-              sharedscripts
-              postrotate
-                  /usr/lib/rsyslog/rsyslog-rotate
-              endscript
-          }
+      src: files/etc/logrotate.d/postfix
+      dest: /etc/logrotate.d/postfix
       mode: "644"
 
 - name: Enable and start mail services
@@ -115,5 +94,6 @@
   loop:
       - postfix
       - opendkim
+      - opendmarc
       - spamassassin
       - postgrey

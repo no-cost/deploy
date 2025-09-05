@@ -1,1 +1,0 @@
-/(info|postmaster|root)@freeflarum\.com/    {{ forward_emails }}

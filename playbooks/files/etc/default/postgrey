@@ -9,4 +9,4 @@ POSTGREY_OPTS="--unix=/var/spool/postfix/postgrey/postgrey.sock"
 
 # the --greylist-text commandline argument can not be easily passed through
 # POSTGREY_OPTS when it contains spaces:
-POSTGREY_TEXT="Greylisted, see http://postgrey.schweikert.ch/help/{{ main_domain }}.html"
+POSTGREY_TEXT="Greylisted, see http://postgrey.schweikert.ch/help/{{ postfix.host }}.html"

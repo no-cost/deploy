@@ -10,18 +10,18 @@
           - logwatch
           - monit
       state: present
-      update_cache: yes
+      update_cache: true
 
 - name: Enable and start sysstat
   ansible.builtin.systemd:
       name: sysstat
-      enabled: yes
+      enabled: true
       state: started
 
 - name: Enable and start vnstat
   ansible.builtin.systemd:
       name: vnstat
-      enabled: yes
+      enabled: true
       state: started
 
 - name: Configure fail2ban for SSH
@@ -84,7 +84,7 @@
 - name: Start and enable fail2ban
   ansible.builtin.systemd:
       name: fail2ban
-      enabled: yes
+      enabled: true
       state: started
 
 - name: Configure Monit
@@ -149,7 +149,7 @@
           if [ -d "{{ paths.tenants.root }}" ]; then
               total_sites=$(find {{ paths.tenants.root }} -maxdepth 1 -type d | wc -l)
               echo "Total sites: $((total_sites - 1))"
-              
+
               # Count by service type
               for service in {{ available_services | join(' ') }}; do
                   count=$(find {{ paths.tenants.root }} -maxdepth 2 -path "*/etc/config.json" -exec grep -l "\"service\": \"$service\"" {} \; | wc -l)
@@ -276,5 +276,5 @@
 - name: Start and enable monit
   ansible.builtin.systemd:
       name: monit
-      enabled: yes
+      enabled: true
       state: started

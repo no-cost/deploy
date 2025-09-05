@@ -49,7 +49,7 @@
       src: "/{{ item.src }}"
       dest: "{{ paths.tenants.skeleton_root }}/{{ item.service }}/{{ item.dest }}"
       state: link
-      force: yes
+      force: true
   loop:
       - { service: flarum, src: "lib/x86_64-linux-gnu", dest: "lib/x86_64-linux-gnu" }
       - { service: flarum, src: "lib64", dest: "lib64" }
@@ -83,7 +83,7 @@
   ansible.builtin.mount:
       path: "{{ item.path }}"
       src: "{{ item.src }}"
-      fstype: none
+      fstype: falsene
       opts: "{{ item.opts }}"
       state: mounted
   loop:

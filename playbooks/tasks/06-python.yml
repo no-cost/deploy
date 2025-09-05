@@ -32,34 +32,3 @@
   ansible.builtin.apt:
       name: python3-pip
       state: present
-
-# TODO: move to 09
-- name: Create virtual environment for main site
-  ansible.builtin.command:
-      cmd: "python{{ python_version }} -m venv {{ main_site_root }}/.venv"
-      creates: "{{ main_site_root }}/.venv/bin/python"
-
-- name: Install Python packages for main site
-  ansible.builtin.pip:
-      requirements: "{{ main_site_root }}/requirements.txt"
-      virtualenv: "{{ main_site_root }}/.venv"
-      virtualenv_python: "python{{ python_version }}"
-
-- name: Create systemd service files for FreeFlarum
-  ansible.builtin.template:
-      src: "files/etc/systemd/system/{{ item }}"
-      dest: "/etc/systemd/system/{{ item }}"
-      mode: "644"
-  loop:
-      - freeflarum.service
-      - freeflarum.socket
-  notify:
-      - daemon reload
-      - restart freeflarum
-
-- name: Set proper ownership for main site
-  ansible.builtin.file:
-      path: "{{ main_site_root }}"
-      owner: www-data
-      group: www-data
-      recurse: true

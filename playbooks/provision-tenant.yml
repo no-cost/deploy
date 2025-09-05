@@ -69,9 +69,8 @@
             name: "{{ service_type }}_{{ tenant_id }}"
             encoding: utf8mb4
             collation: utf8mb4_unicode_ci
+            login_unix_socket: /var/run/mysqld/mysqld.sock
             state: present
-            login_user: root
-            login_password: "{{ mariadb.root_password }}"
 
       - name: Generate database password
         ansible.builtin.set_fact:
@@ -83,9 +82,8 @@
             password: "{{ db_password }}"
             priv: "{{ service_type }}_{{ tenant_id }}.*:ALL"
             host: localhost
+            login_unix_socket: /var/run/mysqld/mysqld.sock
             state: present
-            login_user: root
-            login_password: "{{ mariadb.root_password }}"
 
       - name: Create PHP-FPM pool for tenant
         ansible.builtin.copy:

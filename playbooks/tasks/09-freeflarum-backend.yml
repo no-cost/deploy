@@ -29,6 +29,29 @@
       recurse: true
       mode: "0755"
 
+- name: Create virtual environment for main site
+  ansible.builtin.command:
+      cmd: "python{{ python_version }} -m venv {{ freeflarum_backend_repo }}/.venv"
+      creates: "{{ freeflarum_backend_repo }}/.venv/bin/python"
+
+- name: Install Python packages for main site
+  ansible.builtin.pip:
+      requirements: "{{ freeflarum_backend_repo }}/requirements.txt"
+      virtualenv: "{{ freeflarum_backend_repo }}/.venv"
+      virtualenv_python: "python{{ python_version }}"
+
+- name: Create systemd service files for FreeFlarum
+  ansible.builtin.template:
+      src: "files/etc/systemd/system/{{ item }}"
+      dest: "/etc/systemd/system/{{ item }}"
+      mode: "644"
+  loop:
+      - freeflarum.service
+      - freeflarum.socket
+  notify:
+      - daemon reload
+      - restart freeflarum
+
 - name: Create symlinks for management scripts
   ansible.builtin.file:
       src: "{{ freeflarum_backend_repo }}/bin/{{ item }}"
@@ -44,12 +67,12 @@
 - name: Create environment configuration for freeflarum backend
   ansible.builtin.copy:
       dest: "{{ freeflarum_backend_repo }}/.env"
+      # TODO
       content: |
           # FreeFlarum Backend Configuration
           DATABASE_HOST=localhost
           DATABASE_NAME=freeflarum
           DATABASE_USER=freeflarum
-          DATABASE_PASSWORD={{ mariadb.freeflarum_password }}
 
           # Paths
           TENANT_ROOT={{ tenants_root }}
@@ -67,44 +90,17 @@
       name: freeflarum
       encoding: utf8mb4
       collation: utf8mb4_unicode_ci
+      login_unix_socket: /var/run/mysqld/mysqld.sock
       state: present
-      login_user: root
-      login_password: "{{ mariadb.root_password }}"
 
 - name: Create database user for freeflarum backend
   community.mysql.mysql_user:
       name: freeflarum
-      password: "{{ mariadb.freeflarum_password }}"
       priv: "freeflarum.*:ALL"
+      plugin: unix_socket
+      plugin_auth_string: ""
       host: localhost
+      login_unix_socket: /var/run/mysqld/mysqld.sock
       state: present
-      login_user: root
-      login_password: "{{ mariadb.root_password }}"
 
-- name: Setup skeleton structure for Flarum
-  ansible.builtin.command:
-      cmd: "{{ freeflarum_backend_repo }}/bin/setup-skeleton flarum"
-  args:
-      creates: "{{ skeleton_root }}/flarum/public"
-
-- name: Setup skeleton structure for WordPress
-  ansible.builtin.command:
-      cmd: "{{ freeflarum_backend_repo }}/bin/setup-skeleton wordpress"
-  args:
-      creates: "{{ skeleton_root }}/wordpress/public"
-
-# TODO: put certs in secrets.yml
-# ensure it can be enumerated to support any number of domains without changing the deploy script
-- name: Configure Cloudflare SSL certificates
-  ansible.builtin.copy:
-      content: "{{ item.content }}"
-      dest: "{{ item.dest }}"
-      mode: "{{ item.mode }}"
-      owner: root
-      group: root
-  loop:
-      - { content: "{{ cloudflare_cert_freeflarum }}", dest: "/etc/ssl/cloudflare/freeflarum.com.pem", mode: "644" }
-      - { content: "{{ cloudflare_key_freeflarum }}", dest: "/etc/ssl/cloudflare/freeflarum.com.key", mode: "600" }
-      - { content: "{{ cloudflare_cert_flarum_cloud }}", dest: "/etc/ssl/cloudflare/flarum.cloud.pem", mode: "644" }
-      - { content: "{{ cloudflare_key_flarum_cloud }}", dest: "/etc/ssl/cloudflare/flarum.cloud.key", mode: "600" }
-  when: cloudflare_cert_freeflarum is defined
+# TODO: setup skeletons in separate tasks, recursively include them

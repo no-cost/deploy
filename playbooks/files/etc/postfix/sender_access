@@ -1,0 +1,2 @@
+@{{ main_domain }}    OK
+/./                REJECT Sender address not allowed.
