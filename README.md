@@ -98,6 +98,13 @@ Public variables are stored in the [`public_vars.prod.yml`](./public_vars.prod.y
 
 The development equivalents are [`secret_vars.dev.yml`](./secret_vars.dev.yml) and [`public_vars.dev.yml`](./public_vars.dev.yml). They are used for testing and deployment to a separate development server.
 
+#### Editing secrets
+
+Secrets can be edited by running `ansible-vault edit <secret_vars.prod.yml>`.
+
+You can set the `EDITOR` environment variable to control which editor is used for the vault.
+For example, on MacOS: `export EDITOR="open -Wn -a TextEdit"` to edit via the TextEdit app (to save, press Ctrl + S and then right-click on TextEdit in the dock and quit it entirely, Ctrl + C in the CLI will interrupt the editor without saving).
+
 ## Deployment
 
 ### `ansible.cfg`
