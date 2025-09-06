@@ -1,6 +1,4 @@
 ---
-# FIXME
-
 - name: Install mail packages
   ansible.builtin.apt:
       name:
