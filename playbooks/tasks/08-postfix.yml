@@ -51,7 +51,7 @@
       mode: "644"
   notify: restart opendkim
 
-- name: Create DKIM keys directory
+- name: Create OpenDKIM keys directory
   ansible.builtin.file:
       path: /etc/opendkim/keys
       state: directory
@@ -59,12 +59,34 @@
       group: opendkim
       mode: "700"
 
-# TODO: put current keys in secrets.yml
-- name: Generate DKIM keys for domains
-  ansible.builtin.command:
-      cmd: opendkim-genkey -s mail -d {{ item }} -D /etc/opendkim/keys/
-      creates: /etc/opendkim/keys/mail.private
-  loop: "{{ primary_domains }}"
+- name: Create OpenDKIM main domain key directory
+  ansible.builtin.file:
+      path: "/etc/opendkim/keys/{{ main_domain }}"
+      state: directory
+      owner: opendkim
+      group: opendkim
+      mode: "700"
+
+- name: Copy OpenDKIM mail.private for main domain
+  ansible.builtin.copy:
+      dest: "/etc/opendkim/keys/{{ main_domain }}/mail.private"
+      content: "{{ postfix.opendkim_domain_key }}"
+      owner: opendkim
+      group: opendkim
+      mode: "644"
+
+- name: Render OpenDKIM tables
+  ansible.builtin.template:
+      dest: "{{ item }}"
+      src: "files{{ item }}"
+      owner: opendkim
+      group: opendkim
+      mode: "644"
+  loop:
+      - /etc/opendkim/KeyTable
+      - /etc/opendkim/SigningTable
+      - /etc/opendkim/TrustedHosts
+  notify: restart opendkim
 
 - name: Configure SpamAssassin
   ansible.builtin.template:
