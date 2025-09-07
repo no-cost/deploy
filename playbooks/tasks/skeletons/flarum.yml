@@ -1,0 +1,45 @@
+---
+- name: Create required directories for Flarum skeleton
+  ansible.builtin.file:
+      state: "directory"
+      path: "{{ paths.tenants.flarum_skeleton }}/{{ item }}"
+      mode: "775"
+      recurse: true
+  loop:
+      - "bin"
+      - "etc"
+      - "lib"
+      - "public"
+      - "sessions"
+      - "tmp"
+      - "usr"
+
+- name: Hardink required libraries
+  ansible.builtin.file:
+      src: "{{ item }}"
+      dest: "/data/host/skeleton{{ item }}"
+      state: "hard"
+      mode: "644"
+      recurse: true
+  loop:
+      - "/bin/sh"
+      - "/etc/ssl/certs/ca-certificates.crt"
+      - "/usr/lib/x86_64-linux-gnu/libnss_dns.so.2"
+      - "/usr/share/zoneinfo/"
+
+- name: Create Flarum skeleton database
+  community.mysql.mysql_db:
+      name: "host_flarum_skeleton"
+      encoding: utf8mb4
+      collation: utf8mb4_unicode_ci
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      state: present
+
+- name: Create Flarum skeleton user
+  community.mysql.mysql_user:
+      name: "host_flarum_skeleton"
+      login_password: "{{ skeletons.flarum_db_password }}"
+      priv: "*.*:ALL"
+      host: localhost
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      state: present
