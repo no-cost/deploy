@@ -1,0 +1,35 @@
+---
+- name: Set up system cron jobs
+  ansible.builtin.cron:
+      name: "{{ item.name }}"
+      minute: "{{ item.minute }}"
+      hour: "{{ item.hour }}"
+      day: "{{ item.day | default('*') }}"
+      weekday: "{{ item.weekday | default('*') }}"
+      job: "{{ item.job }}"
+      user: "{{ item.user | default('root') }}"
+      state: present
+  loop:
+      - name: "Flarum log cleanup"
+        minute: "0"
+        hour: "3"
+        weekday: "0"
+        job: "/bin/rm {{ paths.tenants.root }}/app/storage/logs/flarum*.log >> /var/log/cron/flarum-log-cleanup.log 2>&1"
+
+      - name: "Restart PHP-FPM (to prevent memory leaks)"
+        minute: "0"
+        hour: "6"
+        weekday: "0"
+        job: "/bin/systemctl restart php{{ php_version }}-fpm"
+
+- name: Create cron log directory
+  ansible.builtin.file:
+      path: /var/log/cron
+      state: directory
+      mode: "755"
+
+- name: Configure cron log rotation
+  ansible.builtin.copy:
+      dest: /etc/logrotate.d/cron-scripts
+      src: files/etc/logrotate.d/cron-scripts
+      mode: "644"

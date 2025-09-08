@@ -18,9 +18,7 @@
           - fail2ban
           - git
           - gnupg
-          - htop
           - iptables # for ip blacklisting
-          - jq
           - logrotate
           - lsb-release
           - net-tools

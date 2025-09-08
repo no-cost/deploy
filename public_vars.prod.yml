@@ -1,10 +1,6 @@
-primary_domains:
-    - freeflarum.com
-    - flarum.cloud
-
-available_services:
+main_domain: "freeflarum.com"
+public_services:
     - flarum
-    - wordpress
 
 python_version: "3.13"
 php_version: "8.4"

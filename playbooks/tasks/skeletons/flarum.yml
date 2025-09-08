@@ -3,21 +3,32 @@
   ansible.builtin.file:
       state: "directory"
       path: "{{ paths.tenants.flarum_skeleton }}/{{ item }}"
+      owner: www-data
+      group: www-data
       mode: "775"
       recurse: true
   loop:
+      - "app/public"
       - "bin"
       - "etc"
       - "lib"
-      - "public"
       - "sessions"
       - "tmp"
       - "usr"
 
+- name: Create a symlink for public dir
+  ansible.builtin.file:
+      src: "{{ paths.tenants.flarum_skeleton }}/app/public"
+      dest: "{{ paths.tenants.flarum_skeleton }}/public"
+      owner: www-data
+      group: www-data
+      force: true
+      state: link
+
 - name: Hardink required libraries
   ansible.builtin.file:
       src: "{{ item }}"
-      dest: "/data/host/skeleton{{ item }}"
+      dest: "{{ paths.tenants.flarum_skeleton }}{{ item }}"
       state: "hard"
       mode: "644"
       recurse: true
@@ -29,7 +40,7 @@
 
 - name: Create Flarum skeleton database
   community.mysql.mysql_db:
-      name: "host_flarum_skeleton"
+      name: "skeleton_flarum"
       encoding: utf8mb4
       collation: utf8mb4_unicode_ci
       login_unix_socket: /var/run/mysqld/mysqld.sock
@@ -37,9 +48,36 @@
 
 - name: Create Flarum skeleton user
   community.mysql.mysql_user:
-      name: "host_flarum_skeleton"
+      name: "skeleton_flarum"
       login_password: "{{ skeletons.flarum_db_password }}"
       priv: "*.*:ALL"
       host: localhost
       login_unix_socket: /var/run/mysqld/mysqld.sock
       state: present
+
+# https://docs.flarum.org/install/
+- name: Install Flarum
+  ansible.builtin.command:
+      cmd: "composer create-project flarum/flarum:^1.8.0 {{ paths.tenants.flarum_skeleton }}/app"
+      creates: "{{ paths.tenants.flarum_skeleton }}/app/composer.json"
+  become: true
+  become_user: "www-data"
+
+- name: Overwrite config.php with JSON loader from /etc/config.json
+  ansible.builtin.copy:
+      src: files/srv/skeleton/flarum/app/config.php
+      dest: /srv/skeleton/flarum/app/config.php
+      owner: "www-data"
+      group: "www-data"
+      mode: "644"
+
+- name: Write /etc/config.json
+  ansible.builtin.template:
+      src: files/srv/skeleton/flarum/etc/config.json
+      dest: files/srv/skeleton/flarum/etc/config.json
+      owner: "www-data"
+      group: "www-data"
+      mode: "640"
+  vars:
+      tenant_tag: "flarum_skeleton"
+      tenant_db_password: "{{ skeletons.flarum_db_password }}"

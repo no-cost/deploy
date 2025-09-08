@@ -17,17 +17,29 @@ enabled = true
 filter = nginx-http-auth
 port = http,https
 logpath = /var/log/nginx/error.log
+maxretry = 3
+bantime = 3600
 
-[nginx-limit-req]
-enabled = true
-filter = nginx-limit-req
-port = http,https
-logpath = /var/log/nginx/error.log
-maxretry = 10
-
-[nginx-botsearch]
+[nginx-noscript]
 enabled = true
 port = http,https
-filter = nginx-botsearch
+filter = nginx-noscript
+logpath = /var/log/nginx/access.log
+maxretry = 3
+bantime = 3600
+
+[nginx-badbots]
+enabled = true
+port = http,https
+filter = nginx-badbots
 logpath = /var/log/nginx/access.log
 maxretry = 2
+bantime = 86400
+
+[nginx-noproxy]
+enabled = true
+port = http,https
+filter = nginx-noproxy
+logpath = /var/log/nginx/error.log
+maxretry = 2
+bantime = 86400

@@ -162,13 +162,11 @@
 
 - name: Ensure www-data user
   ansible.builtin.user:
-      name: "{{ item }}"
+      name: "www-data"
       # https://unix.stackexchange.com/a/155140
       shell: /sbin/nologin
       system: true
       create_home: false
-  loop:
-      - www-data
 
 - name: Install pdns-recursor config
   ansible.builtin.copy:
