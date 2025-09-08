@@ -45,8 +45,8 @@
       state: present
 
 - name: Configure rkhunter
-  ansible.builtin.lineinfile:
-      path: files/etc/rkhunter.conf
+  ansible.builtin.copy:
+      src: files/etc/rkhunter.conf
       dest: /etc/rkhunter.conf
       mode: "644"
 

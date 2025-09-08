@@ -5,6 +5,7 @@
     src: "app/storage/logs"
     dest: "logs/flarum"
     force: true
+    follow: false
     owner: "tenant_{{ tenant_id }}"
     group: "tenant_{{ tenant_id }}"
     mode: "644"

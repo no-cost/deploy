@@ -38,7 +38,6 @@
       src: "files{{ item }}"
       dest: "{{ item }}"
       mode: "0644"
-      backup: true
   loop:
       - /etc/nginx/nginx.conf
       - /etc/nginx/sites-enabled/dynamic.conf

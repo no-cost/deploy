@@ -29,9 +29,10 @@
 
 - name: Symlink configuration directory
   ansible.builtin.file:
-      src: /etc/php/fpm/{{ php_version }}
+      src: /etc/php/{{ php_version }}/fpm
       dest: /etc/php/fpm
       state: link
+      follow: false
       force: true
 
 - name: Configure PHP-FPM
@@ -42,7 +43,7 @@
   loop:
       - /etc/php/fpm/php-fpm.conf
       - /etc/php/fpm/php.ini
-      - /etc/php/fpm/generic-pool.conf
+      - /etc/php/fpm/base-pool.conf
   notify: restart php-fpm
 
 - name: Remove default www pool
@@ -50,9 +51,15 @@
       path: "/etc/php/fpm/pool.d/www.conf"
       state: absent
 
-- name: Configure PHP-FPM systemd override for security
+- name: Ensure PHP-FPM override directory exists
+  ansible.builtin.file:
+      path: /etc/systemd/system/php{{ php_version }}-fpm.service.d
+      state: directory
+      mode: "644"
+
+- name: Configure PHP-FPM systemd override
   ansible.builtin.copy:
-      src: playbooks/files/etc/systemd/system/php-fpm.service.d/override.conf
+      src: files/etc/systemd/system/php-fpm.service.d/override.conf
       dest: "/etc/systemd/system/php{{ php_version }}-fpm.service.d/override.conf"
       mode: "644"
   notify:
@@ -66,6 +73,12 @@
       owner: www-data
       group: www-data
       mode: "755"
+
+- name: Ensure mods-available directory exists
+  ansible.builtin.file:
+      path: /etc/php/mods-available
+      state: directory
+      mode: "644"
 
 - name: Configure OPcache for production
   ansible.builtin.copy:

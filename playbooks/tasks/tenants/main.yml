@@ -1,11 +1,12 @@
 ---
 - name: Provision new tenant
-  hosts: all
+  hosts: localhost
+  connection: local
   gather_facts: false
 
   vars_files:
-      - "public_vars.prod.yml"
-      - "public_vars.{{ environment | default('dev') }}.yml"
+      - "../../../public_vars.prod.yml"
+      - "../../../public_vars.{{ env | default('dev') }}.yml"
 
   vars_prompt:
       - name: tenant_tag
@@ -109,8 +110,8 @@
 
       - name: Mount vendor directory as read-only bind mount
         ansible.posix.mount:
-            path: "{{ paths.tenants.root }}/{{ tenant_id }}/app/vendor"
             src: "{{ paths.tenants.skeleton_root }}/{{ service_type }}/app/vendor"
+            dest: "{{ paths.tenants.root }}/{{ tenant_id }}/app/vendor"
             opts: ro,bind
             state: mounted
             fstype: none

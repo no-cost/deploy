@@ -9,6 +9,8 @@ Contains Ansible playbooks for deploying a production FreeFlarum server.
 - 160 GB main disk + 100GB backup disk
 - Root access (or sudo)
 - Domains configured with Cloudflare
+- Install required Ansible modules on local machine: `ansible-galaxy install -r requirements.yml`
+- Define `freeflarum` and `freeflarum.dev` hosts in your `~/.ssh/config`
 
 ## Basic Info
 

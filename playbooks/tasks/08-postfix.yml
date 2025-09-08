@@ -8,7 +8,7 @@
           - opendkim-tools
           - opendmarc
           - postgrey
-          - spamassassin
+          - spamd
           - spamc
       state: present
 
@@ -17,7 +17,6 @@
       src: files/etc/postfix/main.cf
       dest: /etc/postfix/main.cf
       mode: "644"
-      backup: true
   notify: restart postfix
 
 - name: Configure Postfix master.cf
@@ -25,7 +24,6 @@
       src: files/etc/postfix/master.cf
       dest: /etc/postfix/master.cf
       mode: "644"
-      backup: true
   notify: restart postfix
 
 - name: Create virtual mailbox domains
@@ -94,7 +92,7 @@
   notify: restart spamassassin
 
 - name: Configure Postgrey
-  ansible.builtin.file:
+  ansible.builtin.template:
       src: files/etc/default/postgrey
       dest: /etc/default/postgrey
       mode: "644"
@@ -115,5 +113,5 @@
       - postfix
       - opendkim
       - opendmarc
-      - spamassassin
+      - spamd
       - postgrey

@@ -5,7 +5,6 @@ public_services:
 python_version: "3.13"
 php_version: "8.4"
 mariadb_version: "11.5"
-nginx_version: "1.29.1"
 
 ufw_allowed_ports:
     - 22
@@ -24,5 +23,5 @@ paths:
     tenants:
         root: /srv/host
         skeleton_root: /srv/skeleton
-        flarum_skeleton: "{{ tenants.skeleton_root }}/flarum"
-        wordpress_skeleton: "{{ tenants.skeleton_root }}/wordpress"
+        flarum_skeleton: "{{ paths.tenants.skeleton_root }}/flarum"
+        wordpress_skeleton: "{{ paths.tenants.skeleton_root }}/wordpress"

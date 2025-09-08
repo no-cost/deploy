@@ -1,4 +1,10 @@
 ---
+- name: Get available memory
+  ansible.builtin.setup:
+      gather_subset:
+          - hardware
+      filter: ansible_memtotal_mb
+
 - name: Install MariaDB
   ansible.builtin.apt:
       name:
@@ -12,8 +18,13 @@
       src: files/etc/mysql/mariadb.conf.d/50-server.cnf
       dest: /etc/mysql/mariadb.conf.d/50-server.cnf
       mode: "644"
-      backup: true
   notify: restart mariadb
+
+- name: Ensure MariaDB override directory exists
+  ansible.builtin.file:
+      path: /etc/systemd/system/mariadb.service.d
+      state: directory
+      mode: "644"
 
 - name: Set MariaDB systemd limits
   ansible.builtin.copy:

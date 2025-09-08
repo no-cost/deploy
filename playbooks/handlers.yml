@@ -22,6 +22,11 @@
       state: restarted
       daemon_reload: true
 
+- name: restart pdns-recursor
+  ansible.builtin.systemd:
+      name: pdns-recursor
+      state: restarted
+
 - name: restart postfix
   ansible.builtin.systemd:
       name: postfix
@@ -34,7 +39,7 @@
 
 - name: restart spamassassin
   ansible.builtin.systemd:
-      name: spamassassin
+      name: spamd
       state: restarted
 
 - name: restart postgrey

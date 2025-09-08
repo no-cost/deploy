@@ -20,6 +20,12 @@
           - git
       state: present
 
+- name: Add Python repository
+  ansible.builtin.apt_repository:
+      repo: "ppa:deadsnakes/ppa"
+      state: present
+      update_cache: true
+
 - name: Install Python {{ python_version }}
   ansible.builtin.apt:
       name:
