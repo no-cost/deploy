@@ -70,23 +70,6 @@
           - "--link-dest=/usr/share/zoneinfo"
   delegate_to: "{{ inventory_hostname }}"
 
-- name: Create Flarum skeleton database
-  community.mysql.mysql_db:
-      name: "skeleton_flarum"
-      encoding: utf8mb4
-      collation: utf8mb4_unicode_ci
-      login_unix_socket: /var/run/mysqld/mysqld.sock
-      state: present
-
-- name: Create Flarum skeleton user
-  community.mysql.mysql_user:
-      name: "skeleton_flarum"
-      login_password: "{{ skeletons.flarum_db_password }}"
-      priv: "*.*:ALL"
-      host: localhost
-      login_unix_socket: /var/run/mysqld/mysqld.sock
-      state: present
-
 # https://docs.flarum.org/install/
 - name: Install Flarum
   ansible.builtin.command:
@@ -103,13 +86,11 @@
       group: "www-data"
       mode: "644"
 
-- name: Write /etc/config.json
-  ansible.builtin.template:
-      src: files/srv/skeleton/flarum/etc/config.json
-      dest: "{{ paths.tenants.flarum_skeleton }}/etc/config.json"
-      owner: "www-data"
-      group: "www-data"
-      mode: "640"
+- name: Create skeleton host instance
+  ansible.builtin.include_tasks: ../tenants/main.yml
   vars:
       tenant_tag: "flarum_skeleton"
       tenant_db_password: "{{ skeletons.flarum_db_password }}"
+      service_type: "flarum"
+      tenant_admin_email: "info@{{ main_domain }}"
+      force: true

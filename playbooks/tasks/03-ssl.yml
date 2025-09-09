@@ -40,8 +40,8 @@
       content: "{{ domains[item].ssl_certificate_pem }}"
       dest: "/etc/ssl/cloudflare/{{ item }}.pem"
       mode: "644"
-      owner: root
-      group: root
+      owner: www-data
+      group: www-data
   loop: "{{ domains.keys() | list }}"
   when: domains is defined
 
@@ -50,7 +50,7 @@
       content: "{{ domains[item].ssl_certificate_key }}"
       dest: "/etc/ssl/cloudflare/{{ item }}.key"
       mode: "600"
-      owner: root
-      group: root
+      owner: www-data
+      group: www-data
   loop: "{{ domains.keys() | list }}"
   when: domains is defined

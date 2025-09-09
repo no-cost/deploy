@@ -1,4 +1,3 @@
----
 - name: restart nginx
   ansible.builtin.systemd:
       name: nginx
@@ -15,6 +14,11 @@
       name: "php{{ php_version }}-fpm"
       state: restarted
       daemon_reload: true
+
+- name: reload php-fpm
+  ansible.builtin.systemd:
+      name: "php{{ php_version }}-fpm"
+      state: reloaded
 
 - name: restart mariadb
   ansible.builtin.systemd:

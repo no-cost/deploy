@@ -1,167 +1,127 @@
----
-- name: Provision new tenant
-  hosts: localhost
-  connection: local
-  gather_facts: false
+- name: Check if tenant already exists
+  ansible.builtin.stat:
+      path: "{{ paths.tenants.root }}/{{ tenant_tag }}"
+  register: tenant_exists
 
-  vars_files:
-      - "../../../public_vars.prod.yml"
-      - "../../../public_vars.{{ env | default('dev') }}.yml"
+- name: Fail if tenant already exists
+  ansible.builtin.fail:
+      msg: "Tenant directory `{{ paths.tenants.root }}/{{ tenant_tag }}` already exists!"
+  when: not force and tenant_exists.stat.exists
 
-  vars_prompt:
-      - name: tenant_tag
-        prompt: "Enter tenant tag (unique ID)"
-        private: false
+# TODO: check if tenant is "online" in main db
 
-      - name: service_type
-        prompt: "Enter service type (`flarum` / `wordpress` / `mediawiki`)"
-        private: false
+- name: Create tenant Linux user
+  ansible.builtin.user:
+      name: "tenant_{{ tenant_tag }}"
+      shell: /sbin/nologin
+      create_home: false
 
-      - name: tenant_admin_email
-        prompt: "Enter tenant admin's e-mail (used to send password reset e-mail)"
-        private: false
+- name: Create base skeleton directory structure
+  ansible.builtin.file:
+      path: "{{ paths.tenants.root }}/{{ tenant_tag }}/{{ item }}"
+      state: directory
+      owner: "tenant_{{ tenant_tag }}"
+      group: "tenant_{{ tenant_tag }}"
+      mode: "755"
+  loop:
+      - app
+      - etc
+      - lib
+      - logs
+      - tmp
+      - usr
 
-  tasks:
-      - name: Check if tenant already exists
-        ansible.builtin.stat:
-            path: "{{ paths.tenants.root }}/{{ tenant_tag }}"
-        register: tenant_exists
+- name: Create tenant database
+  community.mysql.mysql_db:
+      name: "tenant_{{ tenant_tag }}"
+      encoding: utf8mb4
+      collation: utf8mb4_unicode_ci
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      state: present
 
-      - name: Fail if tenant already exists
-        ansible.builtin.fail:
-            msg: "Tenant directory `{{ paths.tenants.root }}/{{ tenant_tag }}` already exists!"
-        when: tenant_exists.stat.exists
+- name: Generate database password
+  ansible.builtin.set_fact:
+      db_password: "{{ tenant_db_password | default(lookup('password', '/dev/null chars=ascii_letters,digits length=20')) }}"
 
-      # TODO: check if tenant is "online" in main db
+- name: Create database user for tenant
+  community.mysql.mysql_user:
+      name: "tenant_{{ tenant_tag }}"
+      password: "{{ db_password }}"
+      priv: "tenant_{{ tenant_tag }}.*:ALL"
+      host: localhost
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      state: present
 
-      - name: Create tenant Linux user
-        ansible.builtin.user:
-            name: "tenant_{{ tenant_tag }}"
-            shell: /sbin/nologin
-            create_home: false
+- name: Create PHP-FPM pool for tenant
+  ansible.builtin.template:
+      src: files/etc/php/fpm/pool-template.conf
+      dest: /etc/php/fpm/pool.d/{{ tenant_tag }}.conf
+      mode: "644"
 
-      - name: Create skeleton directory structure
-        ansible.builtin.file:
-            path: "{{ paths.tenants.root }}/{{ tenant_tag }}/{{ item }}"
-            state: directory
-            owner: "tenant_{{ tenant_tag }}"
-            group: "tenant_{{ tenant_tag }}"
-            mode: "755"
-        loop:
-            - app
-            - etc
-            - lib
-            - logs
-            - public
-            - tmp
-            - usr
+- name: Check if vendor directory exists
+  ansible.builtin.stat:
+      path: "{{ paths.tenants.root }}/{{ tenant_tag }}/app/vendor"
+  register: vendor_dir
 
-      - name: Create tenant database
-        community.mysql.mysql_db:
-            name: "tenant_{{ tenant_tag }}"
-            encoding: utf8mb4
-            collation: utf8mb4_unicode_ci
-            login_unix_socket: /var/run/mysqld/mysqld.sock
-            state: present
+- name: Create mount point for vendor directory if it doesn't exist
+  ansible.builtin.file:
+      path: "{{ paths.tenants.root }}/{{ tenant_tag }}/app/vendor"
+      state: directory
+      owner: "tenant_{{ tenant_tag }}"
+      group: "tenant_{{ tenant_tag }}"
+      mode: "755"
+  when: not vendor_dir.stat.exists
 
-      - name: Generate database password
-        ansible.builtin.set_fact:
-            db_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=20') }}"
+- name: Mount vendor directory as read-only bind mount
+  ansible.posix.mount:
+      src: "{{ paths.tenants.skeleton_root }}/{{ service_type }}/app/vendor"
+      path: "{{ paths.tenants.root }}/{{ tenant_tag }}/app/vendor"
+      opts: ro,bind
+      state: mounted
+      fstype: none
 
-      - name: Create database user for tenant
-        community.mysql.mysql_user:
-            name: "tenant_{{ tenant_tag }}"
-            password: "{{ db_password }}"
-            priv: "tenant_{{ tenant_tag }}.*:ALL"
-            host: localhost
-            login_unix_socket: /var/run/mysqld/mysqld.sock
-            state: present
+- name: Deploy application files
+  block:
+      - name: Deploy Flarum
+        ansible.builtin.include_tasks: ./flarum/deploy.yml
+        when: service_type == 'flarum'
 
-      - name: Create PHP-FPM pool for tenant
-        ansible.builtin.template:
-            src: files/etc/php/fpm/pool-template.conf
-            dest: /etc/php/fpm/pool.d/{{ tenant_tag }}.conf
-            mode: "644"
+      - name: Deploy WordPress
+        ansible.builtin.include_tasks: ./wordpress/deploy.yml
+        when: service_type == 'wordpress'
 
-      - name: Copy skeleton directory structure
-        ansible.posix.synchronize:
-            src: "{{ paths.tenants.skeleton_root }}/{{ service_type }}"
-            dest: "{{ paths.tenants.root }}/{{ tenant_id }}/"
-            rsync_opts:
-                - "--exclude=/etc/config.json"
-                - "--exclude=/app/vendor"
-            recursive: true
+# TODO: recursively set owner and group to "tenant_{{ tenant_tag }}"
+# listing all files and conditional "not path == 'vendor'" is very slow
+# would be cool if the posix.synchronize module could set the owner of the synced files
 
-      - name: Render config.json template with tenant information
-        ansible.builtin.template:
-            src: files/srv/skeleton/flarum/etc/config.json
-            dest: "{{ paths.tenants.root }}/{{ tenant_id }}/etc/config.json"
-            owner: "tenant_{{ tenant_tag }}"
-            group: "tenant_{{ tenant_tag }}"
-            mode: "644"
+- name: Create tenant configuration
+  ansible.builtin.template:
+      src: "./config.json"
+      dest: "{{ paths.tenants.root }}/{{ tenant_tag }}/etc/config.json"
+      owner: "tenant_{{ tenant_tag }}"
+      group: "tenant_{{ tenant_tag }}"
+      mode: "640"
 
-      - name: Create mount point for vendor directory if it doesn't exist
-        ansible.builtin.file:
-            path: "{{ paths.tenants.root }}/{{ tenant_id }}/app/vendor"
-            state: directory
-            owner: "tenant_{{ tenant_tag }}"
-            group: "tenant_{{ tenant_tag }}"
-            mode: "755"
+# TODO: insert tenant record in database, check if already exists/is online
 
-      - name: Mount vendor directory as read-only bind mount
-        ansible.posix.mount:
-            src: "{{ paths.tenants.skeleton_root }}/{{ service_type }}/app/vendor"
-            dest: "{{ paths.tenants.root }}/{{ tenant_id }}/app/vendor"
-            opts: ro,bind
-            state: mounted
-            fstype: none
+- name: Send welcome email
+  community.general.mail:
+      to: "{{ tenant_admin_email }}"
+      subject: "Welcome to FreeFlarum!"
+      body: |
+          Your `{{ service_type }}` instance has been provisioned successfully!
 
-      - name: Set ownership and permissions for tenant directory
-        ansible.builtin.file:
-            path: "{{ paths.tenants.root }}/{{ tenant_id }}"
-            owner: "tenant_{{ tenant_tag }}"
-            group: "tenant_{{ tenant_tag }}"
-            recurse: true
-            state: directory
+          Domain: {{ tenant_tag }}.freeflarum.com
+          Service: {{ service_type | capitalize }}
 
-      - name: Deploy application files
-        block:
-            - name: Deploy Flarum
-              ansible.builtin.include_tasks: ./flarum/deploy.yml
-              when: service_type == 'flarum'
+          If you have any questions, please let us know by replying to this e-mail.
+      from: "noreply@{{ main_domain }}"
+  failed_when: false
 
-            - name: Deploy WordPress
-              ansible.builtin.include_tasks: ./wordpress/deploy.yml
-              when: service_type == 'wordpress'
-
-      - name: Create tenant configuration
-        ansible.builtin.template:
-            src: "./config.json"
-            dest: "{{ paths.tenants.root }}/{{ tenant_tag }}/etc/config.json"
-            owner: "tenant_{{ tenant_tag }}"
-            group: "tenant_{{ tenant_tag }}"
-            mode: "640"
-
-      # TODO: insert tenant record in database, check if already exists/is online
-
-      - name: Send welcome email
-        ansible.builtin.mail:
-            to: "{{ tenant_admin_email }}"
-            subject: "Welcome to FreeFlarum!"
-            body: |
-                Your `{{ service_type }}` instance has been provisioned successfully!
-
-                Domain: {{ tenant_tag }}.freeflarum.com
-                Service: {{ service_type | capitalize }}
-
-                If you have any questions, please let us know by replying to this e-mail.
-            from: noreply@{{ main_domain  }}
-        ignore_errors: true
-
-      - name: Reload services
-        ansible.builtin.systemd:
-            name: "{{ item }}"
-            state: reload
-        loop:
-            - "php{{ php_version }}-fpm"
-            - nginx
+- name: Reload services
+  ansible.builtin.systemd:
+      name: "{{ item }}"
+      state: reload
+  loop:
+      - "php{{ php_version }}-fpm"
+      - nginx

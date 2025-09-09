@@ -61,3 +61,8 @@
       src: files/etc/logrotate.d/nginx
       dest: /etc/logrotate.d/nginx
       mode: "644"
+
+- name: Restart Nginx
+  ansible.builtin.systemd:
+      name: nginx
+      state: restarted

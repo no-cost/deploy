@@ -1,12 +1,20 @@
 ---
 - name: Install Composer 2
   ansible.builtin.get_url:
-    url: https://getcomposer.org/download/latest-stable/composer.phar
-    dest: /usr/local/bin/composer
-    mode: '0755'
-    force: true
+      url: https://getcomposer.org/download/latest-stable/composer.phar
+      dest: /usr/local/bin/composer
+      mode: "0755"
+      force: true
+
+- name: Ensure tenants root
+  ansible.builtin.file:
+      path: "{{ paths.tenants.root }}"
+      state: directory
+      owner: www-data
+      group: www-data
+      mode: "755"
 
 - name: Include all skeleton tasks
   ansible.builtin.include_tasks: "{{ item }}"
   with_fileglob:
-    - ./skeletons/*.yml
+      - ./skeletons/*.yml

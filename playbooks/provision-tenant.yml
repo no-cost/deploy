@@ -1,0 +1,26 @@
+---
+- name: Provision new tenant
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_files:
+      - "../public_vars.prod.yml"
+      - "../public_vars.{{ env | default('dev') }}.yml"
+
+  vars_prompt:
+      - name: tenant_tag
+        prompt: "Enter tenant tag (unique ID)"
+        private: false
+
+      - name: service_type
+        prompt: "Enter service type (`flarum` / `wordpress` / `mediawiki`)"
+        private: false
+
+      - name: tenant_admin_email
+        prompt: "Enter tenant admin's e-mail (used to send password reset e-mail)"
+        private: false
+
+  tasks:
+      - name: Include tenant provisioning tasks
+        ansible.builtin.include_tasks: tasks/tenants/main.yml

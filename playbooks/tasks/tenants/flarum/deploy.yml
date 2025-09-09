@@ -1,13 +1,26 @@
 ---
+- name: Copy skeleton directory structure
+  ansible.posix.synchronize:
+      src: "{{ paths.tenants.skeleton_root }}/{{ service_type }}"
+      dest: "{{ paths.tenants.root }}/{{ tenant_tag }}/"
+      rsync_opts:
+          - "--exclude=/etc/config.json"
+          - "--exclude=/app/vendor"
+      recursive: true
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: Render config.json template with tenant information
+  ansible.builtin.template:
+      src: files/srv/skeleton/flarum/etc/config.json
+      dest: "{{ paths.tenants.root }}/{{ tenant_tag }}/etc/config.json"
+      owner: "tenant_{{ tenant_tag }}"
+      group: "tenant_{{ tenant_tag }}"
+      mode: "644"
+
 - name: Create symbolic link for Flarum logs
-  ansible.builtin.file:
-    state: link
-    src: "app/storage/logs"
-    dest: "logs/flarum"
-    force: true
-    follow: false
-    owner: "tenant_{{ tenant_id }}"
-    group: "tenant_{{ tenant_id }}"
-    mode: "644"
-  args:
-    chdir: "{{ paths.tenants.root }}/{{ tenant_id }}"
+  ansible.builtin.shell:
+      cmd: |
+          cd "{{ paths.tenants.root }}/{{ tenant_tag }}"
+          ln -sfn app/storage/logs logs/flarum
+          chown -h "tenant_{{ tenant_tag }}:tenant_{{ tenant_tag }}" logs/flarum
+      creates: "{{ paths.tenants.root }}/{{ tenant_tag }}/logs/flarum"

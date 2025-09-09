@@ -1,6 +1,6 @@
 [Unit]
 Description=API daemon
-Requires=api.socket
+Requires=freeflarum.socket
 After=network.target
 PartOf=freeflarum-web.service
 
@@ -12,7 +12,7 @@ Group=www-data
 
 WorkingDirectory={{ paths.freeflarum_backend_repo }}
 
-ExecStart={{ paths.freeflarum_backend_repo }}/.venv/bin/gunicorn freeflarum.web.api:API --bind=unix:{{ paths.freeflarum_backend_repo }}/api.sock -k uvicorn.workers.UvicornWorker -m 007 -w 4 --capture-output --access-logfile /var/log/freeflarum/api/access.log --log-file /var/log/freeflarum/api/error.log --access-logformat '{"ts": "%(t)s", "remote_ip":"%(h)s","response_code":"%(s)s","request_method":"%(m)s","request_path":"%(U)s","request_querystring":"%(q)s","request_timetaken":"%(D)s","response_length":"%(B)s"}'
+ExecStart={{ paths.freeflarum_backend_repo }}/.venv/bin/gunicorn main:FF_API --bind=unix:{{ paths.freeflarum_backend_repo }}/api.sock -k uvicorn.workers.UvicornWorker -m 007 -w 4 --capture-output --access-logfile /var/log/freeflarum/api/access.log --log-file /var/log/freeflarum/api/error.log --access-logformat '{"ts": "%(t)s", "remote_ip":"%(h)s","response_code":"%(s)s","request_method":"%(m)s","request_path":"%(U)s","request_querystring":"%(q)s","request_timetaken":"%(D)s","response_length":"%(B)s"}'
 ExecReload=/bin/kill -s HUP $MAINPID
 
 KillMode=mixed

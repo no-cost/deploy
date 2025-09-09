@@ -28,6 +28,12 @@
       virtualenv: "{{ paths.freeflarum_backend_repo }}/.venv"
       virtualenv_python: "python{{ python_version }}"
 
+- name: Ensure FreeFlarum log directory
+  ansible.builtin.file:
+      path: /var/log/freeflarum/api/
+      state: directory
+      mode: "644"
+
 - name: Create systemd service files for FreeFlarum
   ansible.builtin.template:
       src: "files/etc/systemd/system/{{ item }}"

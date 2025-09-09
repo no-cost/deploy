@@ -9,15 +9,25 @@
   capability setgid,
   capability kill,
   capability dac_override,
+  capability sys_resource,
 
-  /usr/sbin/php-fpm{{ php_version }} mr,
+  /usr/sbin/php-fpm{{ php_version }} mrix,
   /etc/php/fpm/** r,
   /run/php/*.pid rw,
   /run/php/*.sock rw,
   /var/log/php-fpm.log w,
 
   # chroot access
-  /srv/host/** r,
+  {{ paths.tenants.root }}/** r,
+  
+  # opcache and jit execution
+  /usr/lib/php/** mr,
+  /tmp/** rwm,
+  /var/tmp/** rwm,
+  /dev/shm/** rwm,
+
+  # other
+  /dev/null rwm,
 
   # deny everything else
   deny /** w,
