@@ -10,12 +10,33 @@
 - name: Install SSH keys
   ansible.posix.authorized_key:
       user: root
-      key: "{{ item }}"
+      key: "{{ key }}"
   loop:
       - >-
           ssh-rsa
           AAAAB3NzaC1yc2EAAAABJQAAAQEA4Ul88vn9oiXl2w5Gz14EmThzDR3LsX7t0UYhB0DVkF3SWmxLA3M7q7PbJzJwXSgRlzv4cPqOLff6eDWyGyyUGyuzxRS41ae2k5+ozNZ6SzDoCS2P8dH6iqeualsRdqKfBaWNCZH/KMtNE+vUx7Qqtt/hlNWKEch2GNiJZ54K2uokonWm2pdl5Ex7bc+v+DZkRJrNikf9kJqyGPpTbArRW4fUXQ/C018u/zXeMyPh4KRJep3AZgSH16ZDdYXqC1V004Grmo60IFrrfasxOiKb1fKJ6Yd8HsZJYAsqtNMIjjMbbhwB79ho+Er4XmkbpQGCsnv4w9rg7Df+lTrku6NWrQ==
           kevin
+  loop_control:
+      loop_var: key
+
+- name: Write known_hosts
+  # so we can use git without confirming the key exchange
+  ansible.builtin.copy:
+      src: files/root/.ssh/known_hosts
+      dest: /root/.ssh/known_hosts
+      mode: "644"
+
+- name: Write id_rsa
+  ansible.builtin.copy:
+      dest: /root/.ssh/id_rsa
+      content: "{{ id_rsa }}"
+      mode: "600"
+
+- name: Write id_rsa.pub
+  ansible.builtin.copy:
+      dest: /root/.ssh/id_rsa.pub
+      content: "{{ id_rsa_pub }}"
+      mode: "644"
 
 # TODO: auto-mount /data and /backup with 1k partition?
 
@@ -31,8 +52,8 @@
 
 # https://www.gnu.org/software/bash/manual/html_node/Bash-Startup-Files.html
 - name: Install root bashrc
-  ansible.builtin.copy:
-      src: files/root/bashrc
+  ansible.builtin.template:
+      src: files/root/.bashrc
       dest: /root/.bashrc
       mode: "644"
 
@@ -75,8 +96,8 @@
 
 - name: Configure sysctl for performance
   ansible.posix.sysctl:
-      name: "{{ item.name }}"
-      value: "{{ item.value }}"
+      name: "{{ sysctl_conf.name }}"
+      value: "{{ sysctl_conf.value }}"
       sysctl_set: true
       state: present
       reload: true
@@ -147,6 +168,8 @@
       # reached".
       - name: "fs.file-max"
         value: "2097152"
+  loop_control:
+      loop_var: sysctl_conf
 
 - name: Set timezone to UTC
   community.general.timezone:

@@ -103,7 +103,7 @@ export LANG="C.UTF-8"
 
 
 export GIT_AUTHOR_NAME='FreeFlarum'
-export GIT_AUTHOR_EMAIL='info@freeflarum.com'
+export GIT_AUTHOR_EMAIL='info@{{ main_domain }}'
 export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
 export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
 

@@ -18,7 +18,7 @@
 
 - name: Create base skeleton directory structure
   ansible.builtin.file:
-      path: "{{ paths.tenants.root }}/{{ tenant_tag }}/{{ item }}"
+      path: "{{ paths.tenants.root }}/{{ tenant_tag }}/{{ tenant_rootdir }}"
       state: directory
       owner: "tenant_{{ tenant_tag }}"
       group: "tenant_{{ tenant_tag }}"
@@ -30,6 +30,8 @@
       - logs
       - tmp
       - usr
+  loop_control:
+      loop_var: tenant_rootdir
 
 - name: Create tenant database
   community.mysql.mysql_db:
@@ -120,8 +122,10 @@
 
 - name: Reload services
   ansible.builtin.systemd:
-      name: "{{ item }}"
-      state: reload
+      name: "{{ web_service }}"
+      state: reloaded
   loop:
       - "php{{ php_version }}-fpm"
       - nginx
+  loop_control:
+      loop_var: web_service

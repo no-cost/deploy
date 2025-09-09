@@ -1,5 +1,5 @@
 postmaster		root
 sysadmin        root
-root			info@freeflarum.com
+root			info@{{ main_domain }}
 
-info@freeflarum.com	{{ postfix.forward_mail_to }}
+info@{{ main_domain }}	{{ postfix.forward_mail_to }}

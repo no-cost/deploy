@@ -8,14 +8,16 @@
 
 - name: Create required directories for freeflarum
   ansible.builtin.file:
-      path: "{{ item }}"
+      path: "{{ tenant_dir }}"
       state: directory
       owner: www-data
       group: www-data
       mode: "0755"
   loop:
-      - "{{ paths.tenants.flarum_skeleton }}/flarum"
-      - "{{ paths.tenants.wordpress_skeleton }}/wordpress"
+      - "{{ paths.tenants.flarum_skeleton }}"
+      - "{{ paths.tenants.wordpress_skeleton }}"
+  loop_control:
+      loop_var: tenant_dir
 
 - name: Create virtual environment for main site
   ansible.builtin.command:
@@ -32,19 +34,28 @@
   ansible.builtin.file:
       path: /var/log/freeflarum/api/
       state: directory
-      mode: "644"
+      owner: www-data
+      group: www-data
+      mode: "755"
 
 - name: Create systemd service files for FreeFlarum
   ansible.builtin.template:
-      src: "files/etc/systemd/system/{{ item }}"
-      dest: "/etc/systemd/system/{{ item }}"
+      src: "files/etc/systemd/system/{{ freeflarum_service }}"
+      dest: "/etc/systemd/system/{{ freeflarum_service }}"
       mode: "644"
   loop:
       - freeflarum.service
       - freeflarum.socket
+  loop_control:
+      loop_var: freeflarum_service
   notify:
       - daemon reload
-      - restart freeflarum
+
+- name: Enable FreeFlarum service
+  ansible.builtin.systemd:
+      name: freeflarum.service
+      enabled: true
+      state: started
 
 - name: Create environment configuration for freeflarum backend
   ansible.builtin.copy:

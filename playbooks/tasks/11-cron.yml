@@ -1,13 +1,13 @@
 ---
 - name: Set up system cron jobs
   ansible.builtin.cron:
-      name: "{{ item.name }}"
-      minute: "{{ item.minute }}"
-      hour: "{{ item.hour }}"
-      day: "{{ item.day | default('*') }}"
-      weekday: "{{ item.weekday | default('*') }}"
-      job: "{{ item.job }}"
-      user: "{{ item.user | default('root') }}"
+      name: "{{ job.name }}"
+      minute: "{{ job.minute }}"
+      hour: "{{ job.hour }}"
+      day: "{{ job.day | default('*') }}"
+      weekday: "{{ job.weekday | default('*') }}"
+      job: "{{ job.job }}"
+      user: "{{ job.user | default('root') }}"
       state: present
   loop:
       - name: "Flarum log cleanup"
@@ -21,6 +21,8 @@
         hour: "6"
         weekday: "0"
         job: "/bin/systemctl restart php{{ php_version }}-fpm"
+  loop_control:
+      loop_var: job
 
 - name: Create cron log directory
   ansible.builtin.file:

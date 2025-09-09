@@ -5,6 +5,21 @@
           - hardware
       filter: ansible_memtotal_mb
 
+- name: Download MariaDB repository setup script
+  ansible.builtin.get_url:
+      url: https://r.mariadb.com/downloads/mariadb_repo_setup
+      dest: /tmp/mariadb_repo_setup
+      mode: "0755"
+
+- name: Setup MariaDB 11.8 repository
+  ansible.builtin.command:
+      cmd: /tmp/mariadb_repo_setup --mariadb-server-version="mariadb-{{ mariadb_version }}"
+      creates: /etc/apt/sources.list.d/mariadb.list
+
+- name: Update apt cache after adding MariaDB repository
+  ansible.builtin.apt:
+      update_cache: true
+
 - name: Install MariaDB
   ansible.builtin.apt:
       name:
@@ -12,6 +27,14 @@
           - mariadb-client
           - python3-pymysql
       state: present
+
+- name: Ensure MySQL log directory exists
+  ansible.builtin.file:
+      path: /var/log/mysql
+      state: directory
+      owner: mysql
+      group: adm
+      mode: "750"
 
 - name: Configure MariaDB for production
   ansible.builtin.template:

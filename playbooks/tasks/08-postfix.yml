@@ -8,7 +8,7 @@
           - opendkim-tools
           - opendmarc
           - postgrey
-          - spamd
+          - spamassassin
           - spamc
       state: present
 
@@ -71,10 +71,18 @@
       group: opendkim
       mode: "644"
 
+- name: Copy OpenDKIM mail.txt for main domain
+  ansible.builtin.copy:
+      dest: "/etc/opendkim/keys/{{ main_domain }}/mail.txt"
+      content: "{{ postfix.opendkim_dns_txt }}"
+      owner: opendkim
+      group: opendkim
+      mode: "644"
+
 - name: Render OpenDKIM tables
   ansible.builtin.template:
-      dest: "{{ item }}"
-      src: "files{{ item }}"
+      dest: "{{ dkim_table }}"
+      src: "files{{ dkim_table }}"
       owner: opendkim
       group: opendkim
       mode: "644"
@@ -82,6 +90,8 @@
       - /etc/opendkim/KeyTable
       - /etc/opendkim/SigningTable
       - /etc/opendkim/TrustedHosts
+  loop_control:
+      loop_var: dkim_table
   notify: restart opendkim
 
 - name: Configure SpamAssassin
@@ -106,12 +116,14 @@
 
 - name: Enable and start mail services
   ansible.builtin.systemd:
-      name: "{{ item }}"
+      name: "{{ mail_service }}"
       enabled: true
       state: started
   loop:
       - postfix
       - opendkim
       - opendmarc
-      - spamd
+      - spamassassin
       - postgrey
+  loop_control:
+      loop_var: mail_service

@@ -36,8 +36,8 @@
 
 - name: Create Monit service configurations
   ansible.builtin.template:
-      src: "files/etc/monit/conf.d/{{ item }}"
-      dest: "/etc/monit/conf.d/{{ item }}"
+      src: "files/etc/monit/conf.d/{{ monit_service }}"
+      dest: "/etc/monit/conf.d/{{ monit_service }}"
       owner: root
       group: root
       mode: "644"
@@ -48,6 +48,8 @@
       - postfix
       - disk
       - system
+  loop_control:
+      loop_var: monit_service
   notify: restart monit
 
 - name: Start and enable monit

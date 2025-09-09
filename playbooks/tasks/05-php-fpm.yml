@@ -37,13 +37,15 @@
 
 - name: Configure PHP-FPM
   ansible.builtin.template:
-      src: "files{{ item }}"
-      dest: "{{ item }}"
+      src: "files{{ php_conf }}"
+      dest: "{{ php_conf }}"
       mode: "644"
   loop:
       - /etc/php/fpm/php-fpm.conf
       - /etc/php/fpm/php.ini
       - /etc/php/fpm/base-pool.conf
+  loop_control:
+      loop_var: php_conf
   notify: restart php-fpm
 
 - name: Remove default www pool

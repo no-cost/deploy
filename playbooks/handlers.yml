@@ -43,7 +43,7 @@
 
 - name: restart spamassassin
   ansible.builtin.systemd:
-      name: spamd
+      name: spamassassin
       state: restarted
 
 - name: restart postgrey
@@ -76,11 +76,6 @@
       name: freeflarum
       state: restarted
       daemon_reload: true
-
-- name: reload apparmor
-  ansible.builtin.systemd:
-      name: apparmor
-      state: reloaded
 
 - name: daemon reload
   ansible.builtin.systemd:

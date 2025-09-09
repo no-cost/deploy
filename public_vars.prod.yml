@@ -4,7 +4,7 @@ public_services:
 
 python_version: "3.13"
 php_version: "8.4"
-mariadb_version: "11.5"
+mariadb_version: "11.8"
 
 ufw_allowed_ports:
     - 22

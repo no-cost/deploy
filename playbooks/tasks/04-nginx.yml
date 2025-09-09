@@ -6,15 +6,17 @@
 
 - name: Remove default Nginx site
   ansible.builtin.file:
-      path: "{{ item }}"
+      path: "{{ nginx_path }}"
       state: absent
   loop:
       - /etc/nginx/sites-enabled/default
       - /etc/nginx/sites-available
+  loop_control:
+      loop_var: nginx_path
 
 - name: Ensure Nginx cache and log directories exist
   ansible.builtin.file:
-      path: "{{ item }}"
+      path: "{{ nginx_log_path }}"
       state: directory
       mode: "755"
       owner: root
@@ -22,21 +24,25 @@
   loop:
       - /var/cache/nginx
       - /var/log/nginx
+  loop_control:
+      loop_var: nginx_log_path
 
 - name: Ensure Nginx subdirectories exist
   ansible.builtin.file:
-      path: "{{ item }}"
+      path: "{{ nginx_subdir }}"
       state: directory
       mode: "0755"
   loop:
       - /etc/nginx/sites-available
       - /etc/nginx/sites-enabled
       - /etc/nginx/snippets
+  loop_control:
+      loop_var: nginx_subdir
 
 - name: Process Nginx configuration templates
   ansible.builtin.template:
-      src: "files{{ item }}"
-      dest: "{{ item }}"
+      src: "files{{ nginx_conf }}"
+      dest: "{{ nginx_conf }}"
       mode: "0644"
   loop:
       - /etc/nginx/nginx.conf
@@ -46,6 +52,8 @@
       - /etc/nginx/snippets/rate-limits.conf
       - /etc/nginx/snippets/security-headers.conf
       - /etc/nginx/snippets/ssl-params.conf
+  loop_control:
+      loop_var: nginx_conf
   notify: reload nginx
 
 - name: Start Nginx service
