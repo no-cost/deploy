@@ -1,10 +1,4 @@
 ---
-- name: Get available memory
-  ansible.builtin.setup:
-      gather_subset:
-          - hardware
-      filter: ansible_memtotal_mb
-
 - name: Download MariaDB repository setup script
   ansible.builtin.get_url:
       url: https://r.mariadb.com/downloads/mariadb_repo_setup

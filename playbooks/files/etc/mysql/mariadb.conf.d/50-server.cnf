@@ -17,8 +17,8 @@ tmpdir                  = /tmp
 # safe to skip if there are no "host by domain name" access grants
 skip-name-resolve
 
-# no need to listen for TCP/IP connections, server is local only
-skip-networking
+# skip-networking
+bind-address = 127.0.0.1
 
 #
 # * Fine Tuning

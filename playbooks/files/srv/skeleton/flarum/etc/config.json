@@ -1,6 +1,8 @@
 {
   "debug": true,
   "database": {
+    "host": "127.0.0.1",
+    "database": "tenant_{{ tenant_tag }}",
     "username": "tenant_{{ tenant_tag }}",
     "password": "{{ tenant_db_password }}"
   },

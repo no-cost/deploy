@@ -1,79 +1,14 @@
 ---
-- name: Gather architecture facts
-  ansible.builtin.setup:
-      gather_subset:
-          - architecture
-
-- name: Create required directories for Flarum skeleton
-  ansible.builtin.file:
-      state: "directory"
-      path: "{{ paths.tenants.flarum_skeleton }}{{ flarum_dir }}"
-      owner: www-data
-      group: www-data
-      mode: "775"
-      recurse: true
-  loop:
-      - "/app"
-      - "/bin"
-      - "/etc/ssl/certs"
-      - "/sessions"
-      - "/tmp"
-      - "/usr/bin"
-      - "/usr/lib/{{ ansible_architecture }}-linux-gnu"
-      - "/usr/share/zoneinfo"
-  loop_control:
-      loop_var: "flarum_dir"
-
-- name: Create hardlinks for required system files
-  ansible.builtin.file:
-      src: "{{ flarum_hardlink.src }}"
-      dest: "{{ flarum_hardlink.dest }}"
-      state: hard
-      mode: "{{ flarum_hardlink.mode | default('644') }}"
-      force: true
-  loop:
-      - src: "/usr/bin/dash"
-        dest: "{{ paths.tenants.flarum_skeleton }}/usr/bin/dash"
-        mode: "755"
-      - src: "/etc/ssl/certs/ca-certificates.crt"
-        dest: "{{ paths.tenants.flarum_skeleton }}/etc/ssl/certs/ca-certificates.crt"
-      - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libnss_dns.so.2"
-        dest: "{{ paths.tenants.flarum_skeleton }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libnss_dns.so.2"
-  loop_control:
-      loop_var: flarum_hardlink
-
-- name: Create symlinks
-  ansible.builtin.file:
-      src: "{{ flarum_symlink.src }}"
-      dest: "{{ flarum_symlink.dest }}"
-      owner: www-data
-      group: www-data
-      force: true
-      follow: false
-      state: link
-  loop:
-      # relative paths for chroot
-      - src: "app/public"
-        dest: "{{ paths.tenants.flarum_skeleton }}/public"
-      - src: "usr/bin/dash"
-        dest: "{{ paths.tenants.flarum_skeleton }}/bin/sh"
-      - src: "usr/lib"
-        dest: "{{ paths.tenants.flarum_skeleton }}/lib"
-  loop_control:
-      loop_var: flarum_symlink
-
-- name: Recursively hardlink zoneinfo
-  ansible.posix.synchronize:
-      src: /usr/share/zoneinfo/
-      dest: "{{ paths.tenants.flarum_skeleton }}/usr/share/zoneinfo"
-      rsync_opts:
-          - "--link-dest=/usr/share/zoneinfo"
-  delegate_to: "{{ inventory_hostname }}"
+- name: Setup common skeleton app structure
+  ansible.builtin.include_tasks: ./common.yml
+  vars:
+      skeleton_root_dir: "{{ paths.tenants.flarum_skeleton }}"
 
 # https://docs.flarum.org/install/
-- name: Install Flarum
+- name: Install Flarum in app directory
   ansible.builtin.command:
-      cmd: "composer create-project flarum/flarum:^1.8.0 {{ paths.tenants.flarum_skeleton }}/app"
+      cmd: "composer create-project flarum/flarum:^1.8.0 app"
+      chdir: "{{ paths.tenants.flarum_skeleton }}"
       creates: "{{ paths.tenants.flarum_skeleton }}/app/composer.json"
   become: true
   become_user: "www-data"
@@ -91,6 +26,8 @@
   vars:
       tenant_tag: "flarum_skeleton"
       tenant_db_password: "{{ skeletons.flarum_db_password }}"
+      # bcrypt encrypted:
+      tenant_admin_password: "{{ skeletons.flarum_admin_password }}"
       service_type: "flarum"
       tenant_admin_email: "info@{{ main_domain }}"
       force: true

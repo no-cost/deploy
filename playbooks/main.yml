@@ -1,7 +1,6 @@
 ---
 - name: Deploy FreeFlarum
   hosts: all
-  gather_facts: false
 
   vars_files:
       # base vars

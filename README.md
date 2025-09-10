@@ -125,6 +125,8 @@ Use [`./prod`](./prod) to deploy to the production server, and [`./dev`](./dev) 
 ./prod
 ```
 
+NB you must connect on the server at least one (to add its key to the `~/.ssh/known_hosts` file, so Ansible can connect)
+
 ### Deploy Specific Components
 
 ```bash

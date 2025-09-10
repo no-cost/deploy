@@ -1,7 +1,0 @@
-{
-    "tenant_tag": "{{ tenant_tag }}",
-    "domain": "{{ tenant_tag }}.{{ main_domain }}",
-    "database": "tenant_{{ tenant_tag }}",
-    "db_user": "{{ tenant_tag }}",
-    "db_password": "{{ db_password }}"
-}

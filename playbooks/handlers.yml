@@ -43,7 +43,7 @@
 
 - name: restart spamassassin
   ansible.builtin.systemd:
-      name: spamassassin
+      name: "{{ 'spamassassin' if ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('24.04', '<') else 'spamd' }}"
       state: restarted
 
 - name: restart postgrey

@@ -8,30 +8,27 @@
       msg: "Tenant directory `{{ paths.tenants.root }}/{{ tenant_tag }}` already exists!"
   when: not force and tenant_exists.stat.exists
 
-# TODO: check if tenant is "online" in main db
-
 - name: Create tenant Linux user
   ansible.builtin.user:
       name: "tenant_{{ tenant_tag }}"
       shell: /sbin/nologin
       create_home: false
 
-- name: Create base skeleton directory structure
-  ansible.builtin.file:
-      path: "{{ paths.tenants.root }}/{{ tenant_tag }}/{{ tenant_rootdir }}"
-      state: directory
-      owner: "tenant_{{ tenant_tag }}"
-      group: "tenant_{{ tenant_tag }}"
-      mode: "755"
-  loop:
-      - app
-      - etc
-      - lib
-      - logs
-      - tmp
-      - usr
-  loop_control:
-      loop_var: tenant_rootdir
+- name: Copy skeleton directory structure
+  ansible.posix.synchronize:
+      src: "{{ paths.tenants.skeleton_root }}/{{ service_type }}/"
+      dest: "{{ paths.tenants.root }}/{{ tenant_tag }}/"
+      rsync_opts:
+          - "--exclude=/etc/config.json"
+          - "--exclude=/app/vendor"
+      recursive: true
+      links: true
+  delegate_to: "{{ inventory_hostname }}"
+
+# TODO: recursively set owner and group to "tenant_{{ tenant_tag }}"
+# listing all files and conditional "not path == 'vendor'" is very slow
+# would be cool if the posix.synchronize module could set the owner of the synced files
+
 
 - name: Create tenant database
   community.mysql.mysql_db:
@@ -50,9 +47,36 @@
       name: "tenant_{{ tenant_tag }}"
       password: "{{ db_password }}"
       priv: "tenant_{{ tenant_tag }}.*:ALL"
-      host: localhost
+      host: 127.0.0.1
       login_unix_socket: /var/run/mysqld/mysqld.sock
       state: present
+
+- name: Check database template availability
+  ansible.builtin.stat:
+      path: "files/srv/skeleton/{{ service_type }}/database.sql"
+  delegate_to: localhost
+  register: database_template
+
+- name: Render db template
+  ansible.builtin.template:
+      src: "files/srv/skeleton/{{ service_type }}/database.sql"
+      dest: "/tmp/tenant_{{ tenant_tag }}_database.sql"
+      mode: "600"
+  when: database_template.stat.exists
+
+- name: Import rendered db template
+  community.mysql.mysql_db:
+      name: "tenant_{{ tenant_tag }}"
+      state: import
+      target: "/tmp/tenant_{{ tenant_tag }}_database.sql"
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+  when: database_template.stat.exists
+
+- name: Cleanup rendered temp db template
+  ansible.builtin.file:
+      path: "/tmp/tenant_{{ tenant_tag }}_database.sql"
+      state: absent
+  when: database_template.stat.exists
 
 - name: Create PHP-FPM pool for tenant
   ansible.builtin.template:
@@ -92,20 +116,15 @@
         ansible.builtin.include_tasks: ./wordpress/deploy.yml
         when: service_type == 'wordpress'
 
-# TODO: recursively set owner and group to "tenant_{{ tenant_tag }}"
-# listing all files and conditional "not path == 'vendor'" is very slow
-# would be cool if the posix.synchronize module could set the owner of the synced files
-
 - name: Create tenant configuration
   ansible.builtin.template:
-      src: "./config.json"
+      src: "files/srv/skeleton/flarum/etc/config.json"
       dest: "{{ paths.tenants.root }}/{{ tenant_tag }}/etc/config.json"
       owner: "tenant_{{ tenant_tag }}"
       group: "tenant_{{ tenant_tag }}"
       mode: "640"
 
-# TODO: insert tenant record in database, check if already exists/is online
-
+# TODO: fix mail sending
 - name: Send welcome email
   community.general.mail:
       to: "{{ tenant_admin_email }}"

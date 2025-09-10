@@ -1,0 +1,72 @@
+---
+- name: Create required directories for app skeleton
+  ansible.builtin.file:
+      state: "directory"
+      path: "{{ skeleton_root_dir }}{{ php_dir }}"
+      owner: www-data
+      group: www-data
+      mode: "775"
+      recurse: true
+  loop:
+      - "/app"
+      - "/bin"
+      - "/etc/ssl/certs"
+      - "/tmp"
+      - "/usr/bin"
+      - "/usr/lib/{{ ansible_architecture }}-linux-gnu"
+      - "/usr/share/zoneinfo"
+  loop_control:
+      loop_var: "php_dir"
+
+- name: Create hardlinks for required system files
+  ansible.builtin.file:
+      src: "{{ php_hardlink.src }}"
+      dest: "{{ php_hardlink.dest }}"
+      state: hard
+      mode: "{{ php_hardlink.mode | default('644') }}"
+      force: true
+  loop:
+      - src: "/etc/ssl/certs/ca-certificates.crt"
+        dest: "{{ skeleton_root_dir }}/etc/ssl/certs/ca-certificates.crt"
+      - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libnss_dns.so.2"
+        dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libnss_dns.so.2"
+      - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libc.so.6"
+        dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libc.so.6"
+      - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/ld-linux-{{ ansible_architecture }}.so.1"
+        dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/ld-linux-{{ ansible_architecture }}.so.1"
+        mode: "755"
+      - src: "/usr/sbin/sendmail"
+        dest: "{{ skeleton_root_dir }}/bin/sendmail"
+      - src: "/usr/bin/dash"
+        dest: "{{ skeleton_root_dir }}/usr/bin/dash"
+        mode: "755"
+  loop_control:
+      loop_var: php_hardlink
+
+- name: Create symlinks
+  ansible.builtin.file:
+      src: "{{ php_symlink.src }}"
+      dest: "{{ php_symlink.dest }}"
+      owner: www-data
+      group: www-data
+      force: true
+      follow: false
+      state: link
+  loop:
+      # relative paths for chroot
+      - src: "app/public"
+        dest: "{{ skeleton_root_dir }}/public"
+      - src: "usr/bin/dash"
+        dest: "{{ skeleton_root_dir }}/bin/sh"
+      - src: "usr/lib"
+        dest: "{{ skeleton_root_dir }}/lib"
+  loop_control:
+      loop_var: php_symlink
+
+- name: Recursively hardlink zoneinfo
+  ansible.posix.synchronize:
+      src: /usr/share/zoneinfo/
+      dest: "{{ skeleton_root_dir }}/usr/share/zoneinfo"
+      rsync_opts:
+          - "--link-dest=/usr/share/zoneinfo"
+  delegate_to: "{{ inventory_hostname }}"

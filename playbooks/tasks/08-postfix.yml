@@ -8,9 +8,21 @@
           - opendkim-tools
           - opendmarc
           - postgrey
-          - spamassassin
           - spamc
       state: present
+
+# spamassassin was renamed to spamd in Ubuntu 24.04
+- name: Install SpamAssassin (Ubuntu < 24.04)
+  ansible.builtin.apt:
+      name: spamassassin
+      state: present
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('24.04', '<')
+
+- name: Install SpamAssassin (Ubuntu >= 24.04)
+  ansible.builtin.apt:
+      name: spamd
+      state: present
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('24.04', '>=')
 
 - name: Configure Postfix main.cf
   ansible.builtin.template:
@@ -114,7 +126,7 @@
       dest: /etc/logrotate.d/postfix
       mode: "644"
 
-- name: Enable and start mail services
+- name: Enable and start mail services (except SpamAssassin)
   ansible.builtin.systemd:
       name: "{{ mail_service }}"
       enabled: true
@@ -123,7 +135,20 @@
       - postfix
       - opendkim
       - opendmarc
-      - spamassassin
       - postgrey
   loop_control:
       loop_var: mail_service
+
+- name: Enable and start SpamAssassin service (Ubuntu < 24.04)
+  ansible.builtin.systemd:
+      name: spamassassin
+      enabled: true
+      state: started
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('24.04', '<')
+
+- name: Enable and start SpamAssassin service (Ubuntu >= 24.04)
+  ansible.builtin.systemd:
+      name: spamd
+      enabled: true
+      state: started
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('24.04', '>=')
