@@ -1,5 +1,5 @@
 {
-  "debug": true,
+  "debug": false,
   "database": {
     "host": "127.0.0.1",
     "database": "tenant_{{ tenant_tag }}",
