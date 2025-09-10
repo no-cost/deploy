@@ -2,19 +2,19 @@
 - name: Create required directories for app skeleton
   ansible.builtin.file:
       state: "directory"
-      path: "{{ skeleton_root_dir }}{{ php_dir }}"
+      path: "{{ skeleton_root_dir }}/{{ php_dir }}"
       owner: www-data
       group: www-data
       mode: "775"
       recurse: true
   loop:
-      - "/app"
-      - "/bin"
-      - "/etc/ssl/certs"
-      - "/tmp"
-      - "/usr/bin"
-      - "/usr/lib/{{ ansible_architecture }}-linux-gnu"
-      - "/usr/share/zoneinfo"
+      - "app"
+      - "bin"
+      - "etc/ssl/certs"
+      - "tmp"
+      - "usr/bin"
+      - "usr/lib/{{ ansible_architecture }}-linux-gnu"
+      - "usr/share/zoneinfo"
   loop_control:
       loop_var: "php_dir"
 
