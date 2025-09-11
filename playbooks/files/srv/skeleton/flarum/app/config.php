@@ -1,6 +1,5 @@
 <?php
-$configPath = '/etc/config.json';
-
+$configPath = dirname(__FILE__) . '/../etc/config.json';
 if (!file_exists($configPath)) {
     throw new RuntimeException("file not found: `{$configPath}`");
 }

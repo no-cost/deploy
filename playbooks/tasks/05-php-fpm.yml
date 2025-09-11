@@ -60,7 +60,7 @@
       mode: "644"
 
 - name: Configure PHP-FPM systemd override
-  ansible.builtin.copy:
+  ansible.builtin.template:
       src: files/etc/systemd/system/php-fpm.service.d/override.conf
       dest: "/etc/systemd/system/php{{ php_version }}-fpm.service.d/override.conf"
       mode: "644"

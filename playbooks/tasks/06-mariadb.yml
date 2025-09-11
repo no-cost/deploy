@@ -7,7 +7,7 @@
 
 - name: Setup MariaDB 11.8 repository
   ansible.builtin.command:
-      cmd: /tmp/mariadb_repo_setup --mariadb-server-version="mariadb-{{ mariadb_version }}"
+      cmd: "/tmp/mariadb_repo_setup --mariadb-server-version={{ ('mariadb-' + mariadb_version) | quote }}"
       creates: /etc/apt/sources.list.d/mariadb.list
 
 - name: Update apt cache after adding MariaDB repository

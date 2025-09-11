@@ -7,7 +7,7 @@
 # https://docs.flarum.org/install/
 - name: Install Flarum in app directory
   ansible.builtin.command:
-      cmd: "composer create-project flarum/flarum:^1.8.0 app"
+      cmd: "composer create-project flarum/flarum:^1.8.1 app"
       chdir: "{{ paths.tenants.flarum_skeleton }}"
       creates: "{{ paths.tenants.flarum_skeleton }}/app/composer.json"
   become: true

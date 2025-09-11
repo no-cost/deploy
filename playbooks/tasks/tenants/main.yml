@@ -25,10 +25,14 @@
       links: true
   delegate_to: "{{ inventory_hostname }}"
 
-# TODO: recursively set owner and group to "tenant_{{ tenant_tag }}"
-# listing all files and conditional "not path == 'vendor'" is very slow
-# would be cool if the posix.synchronize module could set the owner of the synced files
-
+- name: Set ownership for tenant dirs
+  ansible.builtin.shell:
+      cmd: |
+          find {{ (paths.tenants.root + "/" + tenant_tag) | quote }} \
+          -path {{ (paths.tenants.root + "/" + tenant_tag + "/app/vendor") | quote }} -prune -o \
+          -exec chown {{ ("tenant_" + tenant_tag + ":tenant_" + tenant_tag) | quote }} {} +
+      executable: /bin/bash
+  changed_when: true
 
 - name: Create tenant database
   community.mysql.mysql_db:

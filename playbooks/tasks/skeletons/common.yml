@@ -13,6 +13,7 @@
       - "etc/ssl/certs"
       - "tmp"
       - "usr/bin"
+      - "usr/sbin"
       - "usr/lib/{{ ansible_architecture }}-linux-gnu"
       - "usr/share/zoneinfo"
   loop_control:
@@ -23,23 +24,24 @@
       src: "{{ php_hardlink.src }}"
       dest: "{{ php_hardlink.dest }}"
       state: hard
-      mode: "{{ php_hardlink.mode | default('644') }}"
       force: true
   loop:
       - src: "/etc/ssl/certs/ca-certificates.crt"
         dest: "{{ skeleton_root_dir }}/etc/ssl/certs/ca-certificates.crt"
-      - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libnss_dns.so.2"
-        dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libnss_dns.so.2"
-      - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libc.so.6"
-        dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libc.so.6"
       - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/ld-linux-{{ ansible_architecture }}.so.1"
         dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/ld-linux-{{ ansible_architecture }}.so.1"
-        mode: "755"
+      - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libc.so.6"
+        dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libc.so.6"
+      - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libtinfo.so.6"
+        dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libtinfo.so.6"
+      - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libnss_dns.so.2"
+        dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libnss_dns.so.2"
       - src: "/usr/sbin/sendmail"
-        dest: "{{ skeleton_root_dir }}/bin/sendmail"
+        dest: "{{ skeleton_root_dir }}/usr/sbin/sendmail"
+      - src: "/usr/bin/bash"
+        dest: "{{ skeleton_root_dir }}/usr/bin/bash"
       - src: "/usr/bin/dash"
         dest: "{{ skeleton_root_dir }}/usr/bin/dash"
-        mode: "755"
   loop_control:
       loop_var: php_hardlink
 
@@ -56,8 +58,10 @@
       # relative paths for chroot
       - src: "app/public"
         dest: "{{ skeleton_root_dir }}/public"
-      - src: "usr/bin/dash"
-        dest: "{{ skeleton_root_dir }}/bin/sh"
+      - src: "usr/bin"
+        dest: "{{ skeleton_root_dir }}/bin"
+      - src: "usr/sbin"
+        dest: "{{ skeleton_root_dir }}/sbin"
       - src: "usr/lib"
         dest: "{{ skeleton_root_dir }}/lib"
   loop_control:

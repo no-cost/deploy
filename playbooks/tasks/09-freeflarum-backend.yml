@@ -21,7 +21,7 @@
 
 - name: Create virtual environment for main site
   ansible.builtin.command:
-      cmd: "python{{ python_version }} -m venv {{ paths.freeflarum_backend_repo }}/.venv"
+      cmd: "python{{ python_version }} -m venv {{ (paths.freeflarum_backend_repo + '/.venv') | quote }}"
       creates: "{{ paths.freeflarum_backend_repo }}/.venv/bin/python"
 
 - name: Install Python packages for main site
