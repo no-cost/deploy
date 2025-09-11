@@ -19,12 +19,21 @@
   loop_control:
       loop_var: "php_dir"
 
+- name: Resolve libtinfo symlink
+  ansible.builtin.stat:
+      path: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libtinfo.so.6"
+      follow: true
+  register: libtinfo_stat
+
 - name: Create hardlinks for required system files
   ansible.builtin.file:
       src: "{{ php_hardlink.src }}"
       dest: "{{ php_hardlink.dest }}"
       state: hard
       force: true
+      owner: root
+      group: root
+      mode: "755"
   loop:
       - src: "/etc/ssl/certs/ca-certificates.crt"
         dest: "{{ skeleton_root_dir }}/etc/ssl/certs/ca-certificates.crt"
@@ -32,10 +41,10 @@
         dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/ld-linux-{{ ansible_architecture }}.so.1"
       - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libc.so.6"
         dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libc.so.6"
-      - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libtinfo.so.6"
-        dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libtinfo.so.6"
       - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libnss_dns.so.2"
         dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libnss_dns.so.2"
+      - src: "/usr/lib/ld-linux-aarch64.so.1"
+        dest: "{{ skeleton_root_dir }}/usr/lib/ld-linux-aarch64.so.1"
       - src: "/usr/sbin/sendmail"
         dest: "{{ skeleton_root_dir }}/usr/sbin/sendmail"
       - src: "/usr/bin/bash"
@@ -44,6 +53,26 @@
         dest: "{{ skeleton_root_dir }}/usr/bin/dash"
   loop_control:
       loop_var: php_hardlink
+
+# for bash
+- name: Create hardlink for libtinfo
+  ansible.builtin.file:
+      src: "{{ libtinfo_stat.stat.lnk_source | default('/usr/lib/' + ansible_architecture + '-linux-gnu/libtinfo.so.6.4') }}"
+      dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/{{ libtinfo_stat.stat.lnk_source | basename | default('libtinfo.so.6') }}"
+      state: hard
+      force: true
+      owner: root
+      group: root
+      mode: "755"
+  when: libtinfo_stat.stat.exists
+
+- name: Create libtinfo symlink in chroot
+  ansible.builtin.file:
+      src: "{{ libtinfo_stat.stat.lnk_source | basename | default('libtinfo.so.6') }}"
+      dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libtinfo.so.6"
+      state: link
+      force: true
+  when: libtinfo_stat.stat.exists and libtinfo_stat.stat.islnk
 
 - name: Create symlinks
   ansible.builtin.file:
