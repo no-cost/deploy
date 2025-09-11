@@ -27,8 +27,9 @@
 
 - name: Set ownership for tenant dirs
   ansible.builtin.shell:
+      # must chown /app only, or else it will set perms on hardlinked libs
       cmd: |
-          find {{ (paths.tenants.root + "/" + tenant_tag) | quote }} \
+          find {{ (paths.tenants.root + "/" + tenant_tag + "/app") | quote }} \
           -path {{ (paths.tenants.root + "/" + tenant_tag + "/app/vendor") | quote }} -prune -o \
           -exec chown {{ ("tenant_" + tenant_tag + ":tenant_" + tenant_tag) | quote }} {} +
       executable: /bin/bash
