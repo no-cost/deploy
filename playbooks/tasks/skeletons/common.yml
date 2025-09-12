@@ -10,7 +10,9 @@
   loop:
       - "app"
       - "bin"
+      - "dev"
       - "etc/ssl/certs"
+      - "session"
       - "tmp"
       - "usr/bin"
       - "usr/sbin"
@@ -18,6 +20,55 @@
       - "usr/share/zoneinfo"
   loop_control:
       loop_var: "php_dir"
+
+- name: Create dev files
+  ansible.builtin.command:
+      cmd: "mknod -m {{ dev_file.mode }} {{ skeleton_root_dir }}/dev/{{ dev_file.name }} {{ dev_file.type }} {{ dev_file.major }} {{ dev_file.minor }}"
+      creates: "{{ skeleton_root_dir }}/dev/{{ dev_file.name }}"
+  become: true
+  loop:
+      - name: "null"
+        type: "c"
+        major: 1
+        minor: 3
+        mode: "666"
+      - name: "zero"
+        type: "c"
+        major: 1
+        minor: 5
+        mode: "666"
+      - name: "full"
+        type: "c"
+        major: 1
+        minor: 7
+        mode: "666"
+      - name: "random"
+        type: "c"
+        major: 1
+        minor: 8
+        mode: "444"
+      - name: "urandom"
+        type: "c"
+        major: 1
+        minor: 9
+        mode: "444"
+      - name: "tty"
+        type: "c"
+        major: 5
+        minor: 0
+        mode: "666"
+      - name: "console"
+        type: "c"
+        major: 5
+        minor: 1
+        mode: "600"
+      - name: "ptmx"
+        type: "c"
+        major: 5
+        minor: 2
+        mode: "666"
+  loop_control:
+      loop_var: "dev_file"
 
 - name: Resolve libtinfo symlink
   ansible.builtin.stat:
@@ -31,6 +82,7 @@
       dest: "{{ php_hardlink.dest }}"
       state: hard
       force: true
+      # must be root:root 775, because chmod/chown hardlink (inode) changes the file across all hardlinks
       owner: root
       group: root
       mode: "755"

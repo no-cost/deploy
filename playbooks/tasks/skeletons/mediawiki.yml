@@ -1,0 +1,60 @@
+---
+- name: Setup common skeleton app structure
+  ansible.builtin.include_tasks: ./common.yml
+  vars:
+      skeleton_root_dir: "{{ paths.tenants.mediawiki_skeleton }}"
+
+- name: Install MediaWiki dependencies
+  ansible.builtin.apt:
+      name:
+          - imagemagick
+          - diffutils
+      state: present
+      update_cache: true
+
+- name: Create hardlinks for MediaWiki binaries
+  ansible.builtin.file:
+      src: "{{ mw_hardlink.src }}"
+      dest: "{{ mw_hardlink.dest }}"
+      state: hard
+      force: true
+      owner: root
+      group: root
+      mode: "755"
+  loop:
+      - src: "/usr/bin/convert"
+        dest: "{{ paths.tenants.mediawiki_skeleton }}/usr/bin/convert"
+      - src: "/usr/bin/identify"
+        dest: "{{ paths.tenants.mediawiki_skeleton }}/usr/bin/identify"
+      - src: "/usr/bin/diff3"
+        dest: "{{ paths.tenants.mediawiki_skeleton }}/usr/bin/diff3"
+  loop_control:
+      loop_var: mw_hardlink
+
+# https://www.mediawiki.org/wiki/Download
+- name: Download & unarchive Mediawiki
+  ansible.builtin.unarchive:
+      remote_src: true
+      src: "https://releases.wikimedia.org/mediawiki/{{ mediawiki_release_path | default('1.44/mediawiki-1.44.0.zip') }}"
+      dest: "{{ paths.tenants.mediawiki_skeleton }}/app/"
+      mode: "775"
+
+# https://www.mediawiki.org/wiki/Manual:Installing_MediaWiki
+- name: Render mw-config
+  ansible.builtin.template:
+      src: files/srv/skeleton/mediawiki/app/mw-config.php
+      dest: "{{ paths.tenants.mediawiki_skeleton }}/app/mw-config.php"
+      owner: "www-data"
+      group: "www-data"
+      mode: "644"
+
+- name: Create skeleton host instance
+  ansible.builtin.include_tasks: ../tenants/main.yml
+  vars:
+      service_type: "mediawiki"
+      tenant_tag: "mediawiki_skeleton"
+      tenant_db_password: "{{ skeletons.mediawiki_db_password }}"
+      tenant_admin_email: "info@{{ main_domain }}"
+      # bcrypt encrypted:
+      tenant_admin_password: "{{ skeletons.mediawiki_admin_password }}"
+      force: true

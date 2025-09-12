@@ -24,10 +24,10 @@
 - name: Create skeleton host instance
   ansible.builtin.include_tasks: ../tenants/main.yml
   vars:
+      service_type: "flarum"
       tenant_tag: "flarum_skeleton"
       tenant_db_password: "{{ skeletons.flarum_db_password }}"
+      tenant_admin_email: "info@{{ main_domain }}"
       # bcrypt encrypted:
       tenant_admin_password: "{{ skeletons.flarum_admin_password }}"
-      service_type: "flarum"
-      tenant_admin_email: "info@{{ main_domain }}"
       force: true

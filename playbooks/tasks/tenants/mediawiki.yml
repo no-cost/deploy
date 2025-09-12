@@ -1,0 +1,14 @@
+- name: Run MediaWiki installation script
+  ansible.builtin.shell:
+      cmd: |
+          php maintenance/run.php install \
+          --dbname="tenant_mediawiki_skeleton" \
+          --dbserver="localhost" \
+          --dbuser="tenant_mediawiki_skeleton" \
+          --dbpass={{ mediawiki_db_password | quote }} \
+          --server={{ ('https://mediawiki_skeleton.' + main_domain) | quote }} \
+          --scriptpath="/"" \
+          --lang="en" \
+          --pass={{ mediawiki_admin_password | quote }} "{{ (tenant_tag | replace("_", " ") | title) | quote }}" "Admin"
+      chdir: "{{ paths.tenants.mediawiki_skeleton }}/app"
+  changed_when: true

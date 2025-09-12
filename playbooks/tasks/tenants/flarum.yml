@@ -5,4 +5,4 @@
       dest: "{{ paths.tenants.root }}/{{ tenant_tag }}/etc/config.json"
       owner: "tenant_{{ tenant_tag }}"
       group: "tenant_{{ tenant_tag }}"
-      mode: "644"
+      mode: "640"

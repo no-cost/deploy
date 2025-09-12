@@ -24,4 +24,5 @@ paths:
         root: /srv/host
         skeleton_root: /srv/skeleton
         flarum_skeleton: "{{ paths.tenants.skeleton_root }}/flarum"
+        mediawiki_skeleton: "{{ paths.tenants.skeleton_root }}/mediawiki"
         wordpress_skeleton: "{{ paths.tenants.skeleton_root }}/wordpress"
