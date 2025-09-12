@@ -17,52 +17,52 @@
   tasks:
       - name: Packages
         ansible.builtin.include_tasks: tasks/00-base-packages.yml
-        tags: [base, system, packages]
+        tags: [always]
 
       - name: Base system
         ansible.builtin.include_tasks: tasks/01-base-system.yml
-        tags: [base, system]
+        tags: [always]
 
       - name: Security
         ansible.builtin.include_tasks: tasks/02-security.yml
-        tags: [security]
+        tags: [always]
 
       - name: SSL
         ansible.builtin.include_tasks: tasks/03-ssl.yml
-        tags: [ssl, certificates]
+        tags: [always]
 
       - name: Nginx
         ansible.builtin.include_tasks: tasks/04-nginx.yml
-        tags: [nginx, web]
+        tags: [always]
 
       - name: PHP-FPM
         ansible.builtin.include_tasks: tasks/05-php-fpm.yml
-        tags: [php-fpm, php]
+        tags: [always]
 
       - name: MariaDB
         ansible.builtin.include_tasks: tasks/06-mariadb.yml
-        tags: [mariadb, database]
+        tags: [always]
 
       - name: Python
         ansible.builtin.include_tasks: tasks/07-python.yml
-        tags: [python, mainsite]
+        tags: [always]
 
       - name: Postfix
         ansible.builtin.include_tasks: tasks/08-postfix.yml
-        tags: [email, mail, postfix]
+        tags: [always]
 
       - name: Deploy freeflarum-backend
         ansible.builtin.include_tasks: tasks/09-freeflarum-backend.yml
-        tags: [freeflarum, backend, deploy]
+        tags: [always]
 
       - name: Skeletons
         ansible.builtin.include_tasks: tasks/10-skeletons.yml
-        tags: [skeleton, chroot]
+        tags: [always]
 
       - name: Cron
         ansible.builtin.include_tasks: tasks/11-cron.yml
-        tags: [cron]
+        tags: [always]
 
       - name: Monitoring
         ansible.builtin.include_tasks: tasks/12-monitoring.yml
-        tags: [monitoring]
+        tags: [always]

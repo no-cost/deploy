@@ -4,6 +4,7 @@
       src: files/etc/default/ufw
       dest: /etc/default/ufw
       mode: "644"
+  tags: ["security"]
 
 - name: Configure UFW rules
   community.general.ufw:
@@ -13,12 +14,14 @@
   loop: "{{ ufw_allowed_ports }}"
   loop_control:
       loop_var: port
+  tags: ["security"]
 
 - name: Enable UFW
   community.general.ufw:
       state: enabled
       policy: deny
       direction: incoming
+  tags: ["security"]
 
 - name: Configure fail2ban for SSH
   ansible.builtin.copy:
@@ -26,26 +29,31 @@
       dest: /etc/fail2ban/jail.local
       mode: "0644"
   notify: restart fail2ban
+  tags: ["security"]
 
 # https://rkhunter.sourceforge.net/
 - name: Set up rkhunter
   ansible.builtin.apt:
       name: rkhunter
       state: present
+  tags: ["security"]
 
 - name: Configure rkhunter
   ansible.builtin.copy:
       src: files/etc/rkhunter.conf
       dest: /etc/rkhunter.conf
       mode: "644"
+  tags: ["security"]
 
 # https://aide.github.io/
 - name: Set up AIDE (Advanced Intrusion Detection Environment)
   ansible.builtin.apt:
       name: aide
       state: present
+  tags: ["security"]
 
 - name: Initialize AIDE database
   ansible.builtin.command:
       cmd: aideinit
       creates: /var/lib/aide/aide.db
+  tags: ["security"]

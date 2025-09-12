@@ -1,8 +1,9 @@
 ---
 - name: Setup common skeleton app structure
-  ansible.builtin.include_tasks: ./common.yml
+  ansible.builtin.include_tasks: ./helpers/common.yml
   vars:
       skeleton_root_dir: "{{ paths.tenants.mediawiki_skeleton }}"
+  tags: [always]
 
 - name: Install MediaWiki dependencies
   ansible.builtin.apt:
@@ -11,6 +12,7 @@
           - diffutils
       state: present
       update_cache: true
+  tags: ["skeleton", "mediawiki"]
 
 - name: Create hardlinks for MediaWiki binaries
   ansible.builtin.file:
@@ -30,23 +32,43 @@
         dest: "{{ paths.tenants.mediawiki_skeleton }}/usr/bin/diff3"
   loop_control:
       loop_var: mw_hardlink
+  tags: ["skeleton", "chroot", "mediawiki"]
 
 # https://www.mediawiki.org/wiki/Download
 - name: Download & unarchive Mediawiki
   ansible.builtin.unarchive:
       remote_src: true
-      src: "https://releases.wikimedia.org/mediawiki/{{ mediawiki_release_path | default('1.44/mediawiki-1.44.0.zip') }}"
-      dest: "{{ paths.tenants.mediawiki_skeleton }}/app/"
+      src: "https://releases.wikimedia.org/mediawiki/{{ skeletons_pub.mediawiki_major + '/mediawiki-' + skeletons_pub.mediawiki_version + '.zip' }}"
+      dest: /tmp/
       mode: "775"
+  tags: ["skeleton", "mediawiki"]
 
-# https://www.mediawiki.org/wiki/Manual:Installing_MediaWiki
-- name: Render mw-config
-  ansible.builtin.template:
-      src: files/srv/skeleton/mediawiki/app/mw-config.php
-      dest: "{{ paths.tenants.mediawiki_skeleton }}/app/mw-config.php"
+- name: Ensure public dir
+  ansible.builtin.file:
+      path: "{{ paths.tenants.mediawiki_skeleton }}/app/public"
+      state: directory
       owner: "www-data"
       group: "www-data"
-      mode: "644"
+      mode: "775"
+  tags: ["skeleton", "mediawiki"]
+
+- name: Move MediaWiki files to app directory
+  ansible.builtin.shell:
+      cmd: |
+          mv /tmp/mediawiki-{{ skeletons_pub.mediawiki_version }}/* {{ (paths.tenants.mediawiki_skeleton + '/app/public/') | quote }}
+          rm -r /tmp/mediawiki-{{ skeletons_pub.mediawiki_version }}
+      creates: "{{ paths.tenants.mediawiki_skeleton }}/app/public/index.php"
+  tags: ["skeleton", "mediawiki"]
+
+# https://www.mediawiki.org/wiki/Manual:Installing_MediaWiki
+# - name: Render mw-config
+#   ansible.builtin.template:
+#       src: files/srv/skeleton/mediawiki/app/mw-config.php
+#       dest: "{{ paths.tenants.mediawiki_skeleton }}/app/mw-config.php"
+#       owner: "www-data"
+#       group: "www-data"
+#       mode: "644"
+#   tags: ["skeleton", "mediawiki"]
 
 - name: Create skeleton host instance
   ansible.builtin.include_tasks: ../tenants/main.yml
@@ -58,3 +80,4 @@
       # bcrypt encrypted:
       tenant_admin_password: "{{ skeletons.mediawiki_admin_password }}"
       force: true
+  tags: [always]

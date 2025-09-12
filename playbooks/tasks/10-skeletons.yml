@@ -5,6 +5,7 @@
       dest: /usr/local/bin/composer
       mode: "0755"
       force: true
+  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
 
 - name: Ensure tenants root
   ansible.builtin.file:
@@ -13,10 +14,10 @@
       owner: www-data
       group: www-data
       mode: "755"
+  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
 
 - name: Include all skeleton tasks
   ansible.builtin.include_tasks: "{{ item }}"
   with_fileglob:
       - ./skeletons/*.yml
-  # is included by the skeletons themselves:
-  when: item | basename != 'common.yml'
+  tags: [always]

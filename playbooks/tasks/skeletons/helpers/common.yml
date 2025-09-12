@@ -20,6 +20,7 @@
       - "usr/share/zoneinfo"
   loop_control:
       loop_var: "php_dir"
+  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
 
 - name: Create dev files
   ansible.builtin.command:
@@ -69,12 +70,7 @@
         mode: "666"
   loop_control:
       loop_var: "dev_file"
-
-- name: Resolve libtinfo symlink
-  ansible.builtin.stat:
-      path: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libtinfo.so.6"
-      follow: true
-  register: libtinfo_stat
+  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
 
 - name: Create hardlinks for required system files
   ansible.builtin.file:
@@ -95,8 +91,8 @@
         dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libc.so.6"
       - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libnss_dns.so.2"
         dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libnss_dns.so.2"
-      - src: "/usr/lib/ld-linux-aarch64.so.1"
-        dest: "{{ skeleton_root_dir }}/usr/lib/ld-linux-aarch64.so.1"
+      - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/ld-linux-aarch64.so.1"
+        dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/ld-linux-aarch64.so.1"
       - src: "/usr/sbin/sendmail"
         dest: "{{ skeleton_root_dir }}/usr/sbin/sendmail"
       - src: "/usr/bin/bash"
@@ -105,8 +101,16 @@
         dest: "{{ skeleton_root_dir }}/usr/bin/dash"
   loop_control:
       loop_var: php_hardlink
+  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
 
 # for bash
+- name: Resolve libtinfo symlink
+  ansible.builtin.stat:
+      path: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libtinfo.so.6"
+      follow: true
+  register: libtinfo_stat
+  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+
 - name: Create hardlink for libtinfo
   ansible.builtin.file:
       src: "{{ libtinfo_stat.stat.lnk_source | default('/usr/lib/' + ansible_architecture + '-linux-gnu/libtinfo.so.6.4') }}"
@@ -117,6 +121,7 @@
       group: root
       mode: "755"
   when: libtinfo_stat.stat.exists
+  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
 
 - name: Create libtinfo symlink in chroot
   ansible.builtin.file:
@@ -125,11 +130,12 @@
       state: link
       force: true
   when: libtinfo_stat.stat.exists and libtinfo_stat.stat.islnk
+  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
 
 - name: Create symlinks
   ansible.builtin.file:
       src: "{{ php_symlink.src }}"
-      dest: "{{ php_symlink.dest }}"
+      path: "{{ php_symlink.path }}"
       owner: www-data
       group: www-data
       force: true
@@ -138,15 +144,18 @@
   loop:
       # relative paths for chroot
       - src: "app/public"
-        dest: "{{ skeleton_root_dir }}/public"
+        path: "{{ skeleton_root_dir }}/public"
       - src: "usr/bin"
-        dest: "{{ skeleton_root_dir }}/bin"
+        path: "{{ skeleton_root_dir }}/bin"
       - src: "usr/sbin"
-        dest: "{{ skeleton_root_dir }}/sbin"
+        path: "{{ skeleton_root_dir }}/sbin"
       - src: "usr/lib"
-        dest: "{{ skeleton_root_dir }}/lib"
+        path: "{{ skeleton_root_dir }}/lib"
+      - src: "usr/lib/{{ ansible_architecture }}-linux-gnu/ld-linux-aarch64.so.1"
+        path: "{{ skeleton_root_dir }}/usr/lib/ld-linux-aarch64.so.1"
   loop_control:
       loop_var: php_symlink
+  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
 
 - name: Recursively hardlink zoneinfo
   ansible.posix.synchronize:
@@ -155,3 +164,4 @@
       rsync_opts:
           - "--link-dest=/usr/share/zoneinfo"
   delegate_to: "{{ inventory_hostname }}"
+  tags: ["skeleton", "chroot", "flarum", "mediawiki"]

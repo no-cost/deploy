@@ -10,6 +10,7 @@
           - postgrey
           - spamc
       state: present
+  tags: ["email", "mail", "postfix"]
 
 # spamassassin was renamed to spamd in Ubuntu 24.04
 - name: Install SpamAssassin (Ubuntu < 24.04)
@@ -17,26 +18,28 @@
       name: spamassassin
       state: present
   when: ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('24.04', '<')
+  tags: ["email", "mail", "postfix"]
 
 - name: Install SpamAssassin (Ubuntu >= 24.04)
   ansible.builtin.apt:
       name: spamd
       state: present
   when: ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('24.04', '>=')
+  tags: ["email", "mail", "postfix"]
 
 - name: Configure Postfix main.cf
   ansible.builtin.template:
       src: files/etc/postfix/main.cf
       dest: /etc/postfix/main.cf
       mode: "644"
-  notify: restart postfix
+  tags: ["email", "mail", "postfix"]
 
 - name: Configure Postfix master.cf
   ansible.builtin.template:
       src: files/etc/postfix/master.cf
       dest: /etc/postfix/master.cf
       mode: "644"
-  notify: restart postfix
+  tags: ["email", "mail", "postfix"]
 
 - name: Create virtual mailbox domains
   ansible.builtin.template:
@@ -44,6 +47,7 @@
       dest: /etc/postfix/virtual
       mode: "644"
   notify: postmap postfix_virtual
+  tags: ["email", "mail", "postfix"]
 
 - name: Create sender access file
   ansible.builtin.template:
@@ -57,7 +61,7 @@
       src: files/etc/opendkim.conf
       dest: /etc/opendkim.conf
       mode: "644"
-  notify: restart opendkim
+  tags: ["email", "mail", "postfix"]
 
 - name: Create OpenDKIM keys directory
   ansible.builtin.file:
@@ -66,6 +70,7 @@
       owner: opendkim
       group: opendkim
       mode: "700"
+  tags: ["email", "mail", "postfix"]
 
 - name: Create OpenDKIM main domain key directory
   ansible.builtin.file:
@@ -74,6 +79,7 @@
       owner: opendkim
       group: opendkim
       mode: "700"
+  tags: ["email", "mail", "postfix"]
 
 - name: Copy OpenDKIM mail.private for main domain
   ansible.builtin.copy:
@@ -82,6 +88,7 @@
       owner: opendkim
       group: opendkim
       mode: "644"
+  tags: ["email", "mail", "postfix"]
 
 - name: Copy OpenDKIM mail.txt for main domain
   ansible.builtin.copy:
@@ -90,6 +97,7 @@
       owner: opendkim
       group: opendkim
       mode: "644"
+  tags: ["email", "mail", "postfix"]
 
 - name: Render OpenDKIM tables
   ansible.builtin.template:
@@ -105,6 +113,7 @@
   loop_control:
       loop_var: dkim_table
   notify: restart opendkim
+  tags: ["email", "mail", "postfix"]
 
 - name: Configure SpamAssassin
   ansible.builtin.template:

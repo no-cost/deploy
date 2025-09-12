@@ -1,14 +1,23 @@
+---
+# app root in /app/public/
 - name: Run MediaWiki installation script
   ansible.builtin.shell:
       cmd: |
           php maintenance/run.php install \
           --dbname="tenant_mediawiki_skeleton" \
-          --dbserver="localhost" \
+          --dbserver="127.0.0.1" \
           --dbuser="tenant_mediawiki_skeleton" \
-          --dbpass={{ mediawiki_db_password | quote }} \
+          --dbpass={{ skeletons.mediawiki_db_password | quote }} \
           --server={{ ('https://mediawiki_skeleton.' + main_domain) | quote }} \
-          --scriptpath="/"" \
+          --scriptpath="/" \
           --lang="en" \
-          --pass={{ mediawiki_admin_password | quote }} "{{ (tenant_tag | replace("_", " ") | title) | quote }}" "Admin"
-      chdir: "{{ paths.tenants.mediawiki_skeleton }}/app"
+          --pass={{ skeletons.mediawiki_admin_password | quote }} {{ (tenant_tag | replace("_", " ") | title) | quote }} "Admin"
+      chdir: "{{ paths.tenants.root }}/{{ tenant_tag }}/app/public"
   changed_when: true
+  tags: ["skeleton", "mediawiki"]
+
+- name: Mount bind vendor
+  ansible.builtin.include_tasks: ./helpers/mount_vendor.yml
+  vars:
+      vendor_relative_path: "app/public/vendor"
+  tags: [always]

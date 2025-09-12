@@ -95,6 +95,7 @@
       plugin_auth_string: ""
       host: localhost
       login_unix_socket: /var/run/mysqld/mysqld.sock
+      column_case_sensitive: true
       state: present
 # TODO:
 #  cloudflare_token

@@ -1,8 +1,10 @@
+---
 - name: Update & upgrade all packages
   ansible.builtin.apt:
       name: "*"
       state: present
       update_cache: true
+  tags: ["base", "system", "packages"]
 
 - name: Install system packages
   ansible.builtin.apt:
@@ -39,17 +41,20 @@
           - util-linux # flock
           - wget
           - zip
+  tags: ["base", "system", "packages"]
 
 - name: Enable APT automatic upgrades
-# controls update frequency
+  # controls update frequency
   ansible.builtin.copy:
       src: files/etc/apt/apt.conf.d/20auto-upgrades
       dest: /etc/apt/apt.conf.d/20auto-upgrades
       mode: "644"
+  tags: ["base", "system", "packages"]
 
 - name: Enable APT unattended upgrades
-# controls what gets updated and how
+  # controls what gets updated and how
   ansible.builtin.copy:
       src: files/etc/apt/apt.conf.d/50unattended-upgrades
       dest: /etc/apt/apt.conf.d/50unattended-upgrades
       mode: "644"
+  tags: ["base", "system", "packages"]

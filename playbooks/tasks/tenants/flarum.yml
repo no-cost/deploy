@@ -1,4 +1,5 @@
 ---
+# app root in /app/
 - name: Render config.json template with tenant information
   ansible.builtin.template:
       src: files/srv/skeleton/flarum/etc/config.json
@@ -6,3 +7,10 @@
       owner: "tenant_{{ tenant_tag }}"
       group: "tenant_{{ tenant_tag }}"
       mode: "640"
+  tags: ["skeleton", "flarum"]
+
+- name: Mount bind vendor
+  ansible.builtin.include_tasks: ./helpers/mount_vendor.yml
+  vars:
+      vendor_relative_path: "app/vendor"
+  tags: [always]

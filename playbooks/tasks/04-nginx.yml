@@ -3,6 +3,7 @@
   ansible.builtin.apt:
       name: nginx
       state: present
+  tags: ["nginx", "web"]
 
 - name: Remove default Nginx site
   ansible.builtin.file:
@@ -13,6 +14,7 @@
       - /etc/nginx/sites-available
   loop_control:
       loop_var: nginx_path
+  tags: ["nginx", "web"]
 
 - name: Ensure Nginx cache and log directories exist
   ansible.builtin.file:
@@ -26,6 +28,7 @@
       - /var/log/nginx
   loop_control:
       loop_var: nginx_log_path
+  tags: ["nginx", "web"]
 
 - name: Ensure Nginx subdirectories exist
   ansible.builtin.file:
@@ -38,6 +41,7 @@
       - /etc/nginx/snippets
   loop_control:
       loop_var: nginx_subdir
+  tags: ["nginx", "web"]
 
 - name: Process Nginx configuration templates
   ansible.builtin.template:
@@ -55,6 +59,7 @@
   loop_control:
       loop_var: nginx_conf
   notify: reload nginx
+  tags: ["nginx", "web"]
 
 - name: Start Nginx service
   ansible.builtin.systemd:
@@ -62,6 +67,7 @@
       enabled: true
       state: started
       daemon_reload: true
+  tags: ["nginx", "web"]
 
 # https://linux.die.net/man/8/logrotate
 - name: Set up log rotation for Nginx
@@ -69,8 +75,10 @@
       src: files/etc/logrotate.d/nginx
       dest: /etc/logrotate.d/nginx
       mode: "644"
+  tags: ["nginx", "web"]
 
 - name: Restart Nginx
   ansible.builtin.systemd:
       name: nginx
       state: restarted
+  tags: ["nginx", "web"]

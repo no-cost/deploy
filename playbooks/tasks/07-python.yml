@@ -19,12 +19,14 @@
           - python3-openssl
           - git
       state: present
+  tags: ["python", "mainsite"]
 
 - name: Add Python repository
   ansible.builtin.apt_repository:
       repo: "ppa:deadsnakes/ppa"
       state: present
       update_cache: true
+  tags: ["python", "mainsite"]
 
 - name: Install Python {{ python_version }}
   ansible.builtin.apt:
@@ -33,8 +35,10 @@
           - "python{{ python_version }}-venv"
           - "python{{ python_version }}-dev"
       state: present
+  tags: ["python", "mainsite"]
 
 - name: Install pip
   ansible.builtin.apt:
       name: python3-pip
       state: present
+  tags: ["python", "mainsite"]

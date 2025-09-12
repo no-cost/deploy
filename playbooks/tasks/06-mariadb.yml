@@ -4,15 +4,18 @@
       url: https://r.mariadb.com/downloads/mariadb_repo_setup
       dest: /tmp/mariadb_repo_setup
       mode: "0755"
+  tags: ["mariadb", "database"]
 
 - name: Setup MariaDB 11.8 repository
   ansible.builtin.command:
       cmd: "/tmp/mariadb_repo_setup --mariadb-server-version={{ ('mariadb-' + mariadb_version) | quote }}"
       creates: /etc/apt/sources.list.d/mariadb.list
+  tags: ["mariadb", "database"]
 
 - name: Update apt cache after adding MariaDB repository
   ansible.builtin.apt:
       update_cache: true
+  tags: ["mariadb", "database"]
 
 - name: Install MariaDB
   ansible.builtin.apt:
@@ -21,6 +24,7 @@
           - mariadb-client
           - python3-pymysql
       state: present
+  tags: ["mariadb", "database"]
 
 - name: Ensure MySQL log directory exists
   ansible.builtin.file:
@@ -29,6 +33,7 @@
       owner: mysql
       group: adm
       mode: "750"
+  tags: ["mariadb", "database"]
 
 - name: Configure MariaDB for production
   ansible.builtin.template:
@@ -36,18 +41,21 @@
       dest: /etc/mysql/mariadb.conf.d/50-server.cnf
       mode: "644"
   notify: restart mariadb
+  tags: ["mariadb", "database"]
 
 - name: Ensure MariaDB override directory exists
   ansible.builtin.file:
       path: /etc/systemd/system/mariadb.service.d
       state: directory
       mode: "644"
+  tags: ["mariadb", "database"]
 
 - name: Set MariaDB systemd limits
   ansible.builtin.copy:
       src: files/etc/systemd/system/mariadb.service.d/limits.conf
       dest: /etc/systemd/system/mariadb.service.d/limits.conf
       mode: "644"
+  tags: ["mariadb", "database"]
 
 - name: Ensure MariaDB is running
   ansible.builtin.systemd:
@@ -55,6 +63,7 @@
       enabled: true
       state: restarted
       daemon_reload: true
+  tags: ["mariadb", "database"]
 
 - name: Configure root user for socket authentication
   community.mysql.mysql_user:
@@ -63,20 +72,25 @@
       plugin_auth_string: ""
       host: localhost
       login_unix_socket: /var/run/mysqld/mysqld.sock
+      column_case_sensitive: true
       state: present
+  tags: ["mariadb", "database"]
 
 - name: Remove anonymous MySQL users
   community.mysql.mysql_user:
       name: ""
       host_all: true
       login_unix_socket: /var/run/mysqld/mysqld.sock
+      column_case_sensitive: true
       state: absent
+  tags: ["mariadb", "database"]
 
 - name: Remove MySQL test database
   community.mysql.mysql_db:
       name: test
       login_unix_socket: /var/run/mysqld/mysqld.sock
       state: absent
+  tags: ["mariadb", "database"]
 
 - name: Create databases for services
   community.mysql.mysql_db:
@@ -85,6 +99,7 @@
       collation: utf8mb4_unicode_ci
       login_unix_socket: /var/run/mysqld/mysqld.sock
       state: present
+  tags: ["mariadb", "database"]
 
 - name: Create MySQL backup user
   community.mysql.mysql_user:
@@ -94,10 +109,13 @@
       priv: "*.*:SELECT,LOCK TABLES,SHOW VIEW,EVENT,TRIGGER"
       host: localhost
       login_unix_socket: /var/run/mysqld/mysqld.sock
+      column_case_sensitive: true
       state: present
+  tags: ["mariadb", "database"]
 
 - name: Configure log rotation for MariaDB
   ansible.builtin.copy:
       src: files/etc/logrotate.d/mariadb
       dest: /etc/logrotate.d/mariadb
       mode: "644"
+  tags: ["mariadb", "database"]

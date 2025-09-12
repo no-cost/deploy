@@ -1,8 +1,9 @@
 ---
 - name: Setup common skeleton app structure
-  ansible.builtin.include_tasks: ./common.yml
+  ansible.builtin.include_tasks: ./helpers/common.yml
   vars:
       skeleton_root_dir: "{{ paths.tenants.flarum_skeleton }}"
+  tags: [always]
 
 # https://docs.flarum.org/install/
 - name: Install Flarum in app directory
@@ -12,6 +13,7 @@
       creates: "{{ paths.tenants.flarum_skeleton }}/app/composer.json"
   become: true
   become_user: "www-data"
+  tags: ["skeleton", "flarum"]
 
 - name: Overwrite config.php with JSON loader from /etc/config.json
   ansible.builtin.copy:
@@ -20,6 +22,7 @@
       owner: "www-data"
       group: "www-data"
       mode: "644"
+  tags: ["skeleton", "flarum"]
 
 - name: Create skeleton host instance
   ansible.builtin.include_tasks: ../tenants/main.yml
@@ -31,3 +34,4 @@
       # bcrypt encrypted:
       tenant_admin_password: "{{ skeletons.flarum_admin_password }}"
       force: true
+  tags: [always]

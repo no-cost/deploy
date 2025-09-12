@@ -4,6 +4,7 @@
       repo: "ppa:ondrej/php"
       state: present
       update_cache: true
+  tags: ["php-fpm", "php"]
 
 - name: Install PHP-FPM and extensions
   ansible.builtin.apt:
@@ -26,6 +27,7 @@
           - "php{{ php_version }}-ldap"
           - "php{{ php_version }}-exif"
       state: present
+  tags: ["php-fpm", "php"]
 
 - name: Symlink configuration directory
   ansible.builtin.file:
@@ -34,6 +36,7 @@
       state: link
       follow: false
       force: true
+  tags: ["php-fpm", "php"]
 
 - name: Configure PHP-FPM
   ansible.builtin.template:
@@ -47,17 +50,20 @@
   loop_control:
       loop_var: php_conf
   notify: restart php-fpm
+  tags: ["php-fpm", "php"]
 
 - name: Remove default www pool
   ansible.builtin.file:
       path: "/etc/php/fpm/pool.d/www.conf"
       state: absent
+  tags: ["php-fpm", "php"]
 
 - name: Ensure PHP-FPM override directory exists
   ansible.builtin.file:
       path: /etc/systemd/system/php{{ php_version }}-fpm.service.d
       state: directory
       mode: "644"
+  tags: ["php-fpm", "php"]
 
 - name: Configure PHP-FPM systemd override
   ansible.builtin.template:
@@ -67,6 +73,7 @@
   notify:
       - daemon reload
       - restart php-fpm
+  tags: ["php-fpm", "php"]
 
 - name: Create PHP-FPM log directory
   ansible.builtin.file:
@@ -75,12 +82,14 @@
       owner: www-data
       group: www-data
       mode: "755"
+  tags: ["php-fpm", "php"]
 
 - name: Ensure mods-available directory exists
   ansible.builtin.file:
       path: /etc/php/mods-available
       state: directory
       mode: "644"
+  tags: ["php-fpm", "php"]
 
 - name: Configure OPcache for production
   ansible.builtin.copy:
@@ -88,6 +97,7 @@
       dest: /etc/php/mods-available/opcache.ini
       mode: "644"
   notify: restart php-fpm
+  tags: ["php-fpm", "php"]
 
 - name: Start and enable PHP-FPM service
   ansible.builtin.systemd:
@@ -95,3 +105,4 @@
       enabled: true
       state: started
       daemon_reload: true
+  tags: ["php-fpm", "php"]

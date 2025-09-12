@@ -100,6 +100,21 @@ Public variables are stored in the [`public_vars.prod.yml`](./public_vars.prod.y
 
 The development equivalents are [`secret_vars.dev.yml`](./secret_vars.dev.yml) and [`public_vars.dev.yml`](./public_vars.dev.yml). They are used for testing and deployment to a separate development server.
 
+**Warning:** dictionaries are not merged, but overwritten, e. g. if two files specify:
+
+```yaml
+var:
+    foo: "baz"
+    bar: "baz"
+
+# ---
+
+var:
+    some: "thing"
+```
+
+...then the file included later will take precedence and overwrite the dictionary `var`, therefore there will not be `var.foo` and `var.bar`, just `var.some`. Keep this in mind when editing multiple variable files and relying on the hierarchy of their inclusion!
+
 #### Editing secrets
 
 Secrets can be edited by running `ansible-vault edit <secret_vars.prod.yml>`.
