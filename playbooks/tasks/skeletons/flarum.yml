@@ -25,7 +25,7 @@
   tags: ["skeleton", "flarum"]
 
 - name: Create skeleton host instance
-  ansible.builtin.include_tasks: ../tenants/main.yml
+  ansible.builtin.include_tasks: ../tenants/provision-main.yml
   vars:
       service_type: "flarum"
       tenant_tag: "flarum_skeleton"

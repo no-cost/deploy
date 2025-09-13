@@ -21,12 +21,13 @@
       state: present
   tags: ["python", "mainsite"]
 
-- name: Add Python repository
-  ansible.builtin.apt_repository:
-      repo: "ppa:deadsnakes/ppa"
-      state: present
-      update_cache: true
-  tags: ["python", "mainsite"]
+# FIXME: broken?
+# - name: Add Python repository
+#   ansible.builtin.apt_repository:
+#       repo: "ppa:deadsnakes/ppa"
+#       state: present
+#       update_cache: true
+#   tags: ["python", "mainsite"]
 
 - name: Install Python {{ python_version }}
   ansible.builtin.apt:

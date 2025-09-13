@@ -1,4 +1,8 @@
 ---
+# child of: `flarum.yml`, `mediawiki.yml`
+# params:
+#   - skeleton_root_dir: root directory of the skeleton
+
 - name: Create required directories for app skeleton
   ansible.builtin.file:
       state: "directory"

@@ -23,5 +23,5 @@
 
   tasks:
       - name: Include tenant provisioning tasks
-        ansible.builtin.include_tasks: tasks/tenants/main.yml
+        ansible.builtin.include_tasks: ../provision-main.yml
         tags: [always]

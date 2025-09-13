@@ -1,0 +1,91 @@
+---
+# child of: `flarum.yml`, `mediawiki.yml`
+# params:
+#   - mount_paths: array of paths to bind-mount (read-only), empty for none
+#   - exclude_paths: array of paths to exclude from sync (in addition to mount_paths)
+
+# sync skeleton
+- name: Build exclude list for rsync
+  ansible.builtin.set_fact:
+      rsync_excludes: "{{
+          (mount_paths | default([]) | map('regex_replace', '^', '--exclude=/') | list) +
+          (exclude_paths | default([]) | map('regex_replace', '^', '--exclude=/') | list)
+          }}"
+  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+
+- name: Copy skeleton directory structure
+  ansible.posix.synchronize:
+      src: "{{ paths.tenants.skeleton_root }}/{{ service_type }}/"
+      dest: "{{ paths.tenants.root }}/{{ tenant_tag }}/"
+      rsync_opts: "{{ rsync_excludes }}"
+      recursive: true
+      links: true
+  delegate_to: "{{ inventory_hostname }}"
+  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+
+- name: Build find exclude args for ownership
+  ansible.builtin.set_fact:
+      find_excludes: "{{
+          mount_paths | default([]) | map('regex_replace', '^(.*)$', '-path ' +
+          paths.tenants.root + '/' + tenant_tag + '/\\1 -prune -o') | join(' ')
+          }}"
+  when: mount_paths is defined and mount_paths | length > 0
+  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+
+- name: Set ownership for tenant dirs
+  ansible.builtin.shell:
+      cmd: |
+          find {{ (paths.tenants.root + "/" + tenant_tag + "/app") | quote }} \
+          {{ find_excludes | default('') }} \
+          -exec chown {{ ("tenant_" + tenant_tag + ":tenant_" + tenant_tag) | quote }} {} +
+      executable: /bin/bash
+  changed_when: true
+  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+
+- name: Set ownership of root tenant dirs
+  ansible.builtin.file:
+      path: "{{ paths.tenants.root }}/{{ tenant_tag }}/{{ root_tenant_dir }}"
+      owner: "tenant_{{ tenant_tag }}"
+      group: "tenant_{{ tenant_tag }}"
+      mode: "775"
+  loop:
+      - "tmp"
+      - "session"
+  loop_control:
+      loop_var: root_tenant_dir
+  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+
+# bind mounts
+- name: Check if directories to mount exist
+  ansible.builtin.stat:
+      path: "{{ paths.tenants.root }}/{{ tenant_tag }}/{{ mount_dir_raw }}"
+  register: mount_dirs
+  loop: "{{ mount_paths | default([]) }}"
+  loop_control:
+      loop_var: mount_dir_raw
+  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+
+- name: Create mount points for directories if they don't exist
+  ansible.builtin.file:
+      path: "{{ paths.tenants.root }}/{{ tenant_tag }}/{{ mount_dir.mount_dir_raw }}"
+      state: directory
+      owner: "tenant_{{ tenant_tag }}"
+      group: "tenant_{{ tenant_tag }}"
+      mode: "755"
+  when: not mount_dir.stat.exists
+  loop: "{{ mount_dirs.results }}"
+  loop_control:
+      loop_var: mount_dir
+  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+
+- name: Mount directories as read-only bind mounts
+  ansible.posix.mount:
+      src: "{{ paths.tenants.skeleton_root }}/{{ service_type }}/{{ mount_dir_rel }}"
+      path: "{{ paths.tenants.root }}/{{ tenant_tag }}/{{ mount_dir_rel }}"
+      opts: ro,bind
+      state: mounted
+      fstype: none
+  loop: "{{ mount_paths | default([]) }}"
+  loop_control:
+      loop_var: mount_dir_rel
+  tags: ["skeleton", "chroot", "flarum", "mediawiki"]

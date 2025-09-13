@@ -1,5 +1,21 @@
 ---
 # app root in /app/public/
+- name: Copy skeleton structure and mount MediaWiki core directories
+  ansible.builtin.include_tasks: ./helpers/copy_structure.yml
+  vars:
+      mount_paths:
+          - "app/public/vendor"
+          - "app/public/includes"
+          - "app/public/skins"
+          - "app/public/extensions"
+          - "app/public/languages"
+      exclude_paths:
+          - "app/public/sql"
+          - "app/public/tests"
+          - "app/public/README.md"
+      service_type: "mediawiki"
+  tags: [always]
+
 - name: Run MediaWiki installation script
   ansible.builtin.shell:
       cmd: |
@@ -15,9 +31,3 @@
       chdir: "{{ paths.tenants.root }}/{{ tenant_tag }}/app/public"
   changed_when: true
   tags: ["skeleton", "mediawiki"]
-
-- name: Mount bind vendor
-  ansible.builtin.include_tasks: ./helpers/mount_vendor.yml
-  vars:
-      vendor_relative_path: "app/public/vendor"
-  tags: [always]

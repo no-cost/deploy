@@ -2,7 +2,7 @@ main_domain: "freeflarum.com"
 public_services:
     - flarum
 
-python_version: "3.13"
+python_version: "3.12"
 php_version: "8.4"
 mariadb_version: "11.8"
 

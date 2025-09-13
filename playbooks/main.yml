@@ -51,8 +51,8 @@
         ansible.builtin.include_tasks: tasks/08-postfix.yml
         tags: [always]
 
-      - name: Deploy freeflarum-backend
-        ansible.builtin.include_tasks: tasks/09-freeflarum-backend.yml
+      - name: Deploy FreeFlarum code
+        ansible.builtin.include_tasks: tasks/09-freeflarum.yml
         tags: [always]
 
       - name: Skeletons

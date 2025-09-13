@@ -21,14 +21,14 @@
 
 - name: Create virtual environment for main site
   ansible.builtin.command:
-      cmd: "python{{ python_version }} -m venv {{ (paths.freeflarum_backend_repo + '/.venv') | quote }}"
+      cmd: "python3 -m venv {{ (paths.freeflarum_backend_repo + '/.venv') | quote }}"
       creates: "{{ paths.freeflarum_backend_repo }}/.venv/bin/python"
 
 - name: Install Python packages for main site
   ansible.builtin.pip:
       requirements: "{{ paths.freeflarum_backend_repo }}/requirements.txt"
       virtualenv: "{{ paths.freeflarum_backend_repo }}/.venv"
-      virtualenv_python: "python{{ python_version }}"
+      virtualenv_python: "python3"
 
 - name: Ensure FreeFlarum log directory
   ansible.builtin.file:

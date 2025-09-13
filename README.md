@@ -30,6 +30,10 @@ The [`freeflarum-backend`](https://github.com/FreeFlarum/freeflarum-backend) rep
 ├── freeflarum/  # freeflarum-backend repo
 ├── host/  # tenant chroots
 │   ├── site1/
+│   │   ├── app/
+│   │   │   ├── index.php
+│   │   │   ├── ...
+│   │   │   └── vendor/  # hard-linked from /srv/skeleton/.../vendor
 │   │   ├── etc/
 │   │   │   └── config.json
 │   │   ├── lib/  # hard-links from /srv/skeleton/...
@@ -38,13 +42,14 @@ The [`freeflarum-backend`](https://github.com/FreeFlarum/freeflarum-backend) rep
 │   │   │   └── flarum/
 │   │   ├── tmp/
 │   │   ├── usr/
-│   │   ├── public/
-│   │   │   ├── index.php
-│   │   │   ├── ...
-│   │   │   └── vendor/  # hard-linked from /srv/skeleton/flarum/vendor
+│   │   ├── public/  # symlink to app/public
 │   └── site2/
 ├── skeleton/
 │   ├── flarum/
+│   │   ├── app/
+│   │   │   ├── index.php
+│   │   │   ├── ...
+│   │   │   └── vendor/
 │   │   ├── etc/
 │   │   │   └── config.json
 │   │   ├── lib/ # hard-links from system
@@ -53,14 +58,11 @@ The [`freeflarum-backend`](https://github.com/FreeFlarum/freeflarum-backend) rep
 │   │   │   └── flarum/
 │   │   ├── tmp/
 │   │   ├── usr/
-│   │   ├── public/
-│   │   │   ├── config.php
-│   │   │   ├── index.php
-│   │   │   ├── ...
-│   │   │   ├── storage/
-│   │   │   │   └── logs/  # Flarum logs, symlink to ../../../../logs/flarum
-│   │   │   └── vendor/
+│   │   ├── public/  # symlink to app/public
 │   └── wordpress/
+│   │   ├── app/
+│   │   │   ├── index.php
+│   │   │   └── ...
 │   │   ├── etc/
 │   │   │   └── config.json
 │   │   ├── lib/
@@ -72,7 +74,7 @@ The [`freeflarum-backend`](https://github.com/FreeFlarum/freeflarum-backend) rep
 ├── host/  # active hosts
 │   ├── forum1/
 │   │   ├── 2025-01-01/
-│   │   │   ├── files.tar.xz
+│   │   │   ├── files.tar.xz  # contains only media files, no vendor etc.
 │   │   │   ├── files.tar.xz.sha256
 │   │   │   ├── database.sql.xz
 │   │   │   └── database.sql.xz.sha256
@@ -83,13 +85,16 @@ The [`freeflarum-backend`](https://github.com/FreeFlarum/freeflarum-backend) rep
 │   │   │   └── database.sql.xz.sha256
 │   └── forum2/
 ├── attic/  # archived/inactive hosts
-│   ├── flarum/
-│   │   ├── forum1/
-│   │   │   ├── files.tar.xz
-│   │   │   ├── files.tar.xz.sha256
-│   │   │   ├── database.sql.xz
-│   │   │   └── database.sql.xz.sha256
-│   └── wordpress/
+│   ├── forum1/
+│   │   ├── files.tar.xz
+│   │   ├── files.tar.xz.sha256
+│   │   ├── database.sql.xz
+│   │   └── database.sql.xz.sha256
+│   ├── forum2/
+│   │   ├── files.tar.xz
+│   │   ├── files.tar.xz.sha256
+│   │   ├── database.sql.xz
+│   │   └── database.sql.xz.sha256
 ```
 
 ### Variables & Secrets
