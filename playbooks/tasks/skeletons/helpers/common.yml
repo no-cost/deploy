@@ -1,9 +1,9 @@
 ---
-# child of: `flarum.yml`, `mediawiki.yml`
+# child of: `flarum.yml`, `mediawiki.yml`, `wordpress.yml`
 # params:
 #   - skeleton_root_dir: root directory of the skeleton
 
-- name: Create required directories for app skeleton
+- name: Create required directories for {{ skeleton_root_dir }}
   ansible.builtin.file:
       state: "directory"
       path: "{{ skeleton_root_dir }}/{{ php_dir }}"
@@ -24,7 +24,7 @@
       - "usr/share/zoneinfo"
   loop_control:
       loop_var: "php_dir"
-  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+  tags: [always]
 
 - name: Create dev files
   ansible.builtin.command:
@@ -74,7 +74,7 @@
         mode: "666"
   loop_control:
       loop_var: "dev_file"
-  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+  tags: [always]
 
 - name: Create hardlinks for required system files
   ansible.builtin.file:
@@ -105,7 +105,7 @@
         dest: "{{ skeleton_root_dir }}/usr/bin/dash"
   loop_control:
       loop_var: php_hardlink
-  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+  tags: [always]
 
 # for bash
 - name: Resolve libtinfo symlink
@@ -113,7 +113,7 @@
       path: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libtinfo.so.6"
       follow: true
   register: libtinfo_stat
-  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+  tags: [always]
 
 - name: Create hardlink for libtinfo
   ansible.builtin.file:
@@ -125,7 +125,7 @@
       group: root
       mode: "755"
   when: libtinfo_stat.stat.exists
-  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+  tags: [always]
 
 - name: Create libtinfo symlink in chroot
   ansible.builtin.file:
@@ -134,7 +134,7 @@
       state: link
       force: true
   when: libtinfo_stat.stat.exists and libtinfo_stat.stat.islnk
-  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+  tags: [always]
 
 - name: Create symlinks
   ansible.builtin.file:
@@ -159,7 +159,7 @@
         path: "{{ skeleton_root_dir }}/usr/lib/ld-linux-aarch64.so.1"
   loop_control:
       loop_var: php_symlink
-  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+  tags: [always]
 
 - name: Recursively hardlink zoneinfo
   ansible.posix.synchronize:
@@ -168,4 +168,4 @@
       rsync_opts:
           - "--link-dest=/usr/share/zoneinfo"
   delegate_to: "{{ inventory_hostname }}"
-  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+  tags: [always]

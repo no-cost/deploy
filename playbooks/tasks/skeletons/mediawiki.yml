@@ -3,7 +3,7 @@
   ansible.builtin.include_tasks: ./helpers/common.yml
   vars:
       skeleton_root_dir: "{{ paths.tenants.mediawiki_skeleton }}"
-  tags: [always]
+  tags: ["skeleton", "mediawiki"]
 
 - name: Install MediaWiki dependencies
   ansible.builtin.apt:
@@ -77,7 +77,6 @@
       tenant_tag: "mediawiki_skeleton"
       tenant_db_password: "{{ skeletons.mediawiki_db_password }}"
       tenant_admin_email: "info@{{ main_domain }}"
-      # bcrypt encrypted:
       tenant_admin_password: "{{ skeletons.mediawiki_admin_password }}"
       force: true
-  tags: [always]
+  tags: ["skeleton", "mediawiki"]

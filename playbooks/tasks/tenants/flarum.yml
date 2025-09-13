@@ -6,7 +6,7 @@
       mount_paths: ["app/vendor"]
       exclude_paths: ["etc/config.json"]
       service_type: "flarum"
-  tags: [always]
+  tags: ["skeleton", "flarum"]
 
 - name: Render config.json template with tenant information
   ansible.builtin.template:

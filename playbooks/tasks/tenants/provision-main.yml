@@ -3,56 +3,20 @@
   ansible.builtin.stat:
       path: "{{ paths.tenants.root }}/{{ tenant_tag }}"
   register: tenant_exists
-  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+  tags: [always]
 
 - name: Fail if tenant already exists
   ansible.builtin.fail:
       msg: "Tenant directory `{{ paths.tenants.root }}/{{ tenant_tag }}` already exists!"
   when: not force and tenant_exists.stat.exists
-  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+  tags: [always]
 
 - name: Create tenant Linux user
   ansible.builtin.user:
       name: "tenant_{{ tenant_tag }}"
       shell: /sbin/nologin
       create_home: false
-  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
-
-- name: Copy skeleton directory structure
-  ansible.posix.synchronize:
-      src: "{{ paths.tenants.skeleton_root }}/{{ service_type }}/"
-      dest: "{{ paths.tenants.root }}/{{ tenant_tag }}/"
-      rsync_opts:
-          - "--exclude=/etc/config.json"
-          - "--exclude=/**/*/vendor"
-      recursive: true
-      links: true
-  delegate_to: "{{ inventory_hostname }}"
-  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
-
-- name: Set ownership for tenant dirs
-  ansible.builtin.shell:
-      # must chown /app only, or else it will set perms on hardlinked libs
-      cmd: |
-          find {{ (paths.tenants.root + "/" + tenant_tag + "/app") | quote }} \
-          -path {{ (paths.tenants.root + "/" + tenant_tag + "/app/vendor") | quote }} -prune -o \
-          -exec chown {{ ("tenant_" + tenant_tag + ":tenant_" + tenant_tag) | quote }} {} +
-      executable: /bin/bash
-  changed_when: true
-  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
-
-- name: Set ownership of root tenant dirs
-  ansible.builtin.file:
-      path: "{{ paths.tenants.root }}/{{ tenant_tag }}/{{ root_tenant_dir }}"
-      owner: "tenant_{{ tenant_tag }}"
-      group: "tenant_{{ tenant_tag }}"
-      mode: "775"
-  loop:
-      - "tmp"
-      - "session"
-  loop_control:
-      loop_var: root_tenant_dir
-  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+  tags: [always]
 
 - name: Create tenant database
   community.mysql.mysql_db:
@@ -61,7 +25,7 @@
       collation: utf8mb4_unicode_ci
       login_unix_socket: /var/run/mysqld/mysqld.sock
       state: present
-  tags: ["skeleton", "flarum", "mediawiki"]
+  tags: [always]
 
 - name: Create database user for tenant
   community.mysql.mysql_user:
@@ -72,14 +36,14 @@
       login_unix_socket: /var/run/mysqld/mysqld.sock
       column_case_sensitive: true
       state: present
-  tags: ["skeleton", "flarum", "mediawiki"]
+  tags: [always]
 
 - name: Check database template availability
   ansible.builtin.stat:
       path: "files/srv/skeleton/{{ service_type }}/database.sql"
   delegate_to: localhost
   register: database_template
-  tags: ["skeleton", "flarum", "mediawiki"]
+  tags: [always]
 
 - name: Render db template
   ansible.builtin.template:
@@ -87,7 +51,7 @@
       dest: "/tmp/tenant_{{ tenant_tag }}_database.sql"
       mode: "600"
   when: database_template.stat.exists
-  tags: ["skeleton", "flarum", "mediawiki"]
+  tags: [always]
 
 - name: Import rendered db template
   community.mysql.mysql_db:
@@ -96,21 +60,21 @@
       target: "/tmp/tenant_{{ tenant_tag }}_database.sql"
       login_unix_socket: /var/run/mysqld/mysqld.sock
   when: database_template.stat.exists
-  tags: ["skeleton", "flarum", "mediawiki"]
+  tags: [always]
 
 - name: Cleanup rendered temp db template
   ansible.builtin.file:
       path: "/tmp/tenant_{{ tenant_tag }}_database.sql"
       state: absent
   when: database_template.stat.exists
-  tags: ["skeleton", "flarum", "mediawiki"]
+  tags: [always]
 
 - name: Create PHP-FPM pool for tenant
   ansible.builtin.template:
       src: files/etc/php/fpm/pool-template.conf
       dest: /etc/php/fpm/pool.d/{{ tenant_tag }}.conf
       mode: "644"
-  tags: ["skeleton", "flarum", "mediawiki"]
+  tags: [always]
 
 - name: "Deploy {{ service_type }}"
   ansible.builtin.include_tasks: "./{{ service_type }}.yml"
@@ -130,7 +94,7 @@
           If you have any questions, please let us know by replying to this e-mail.
       from: "noreply@{{ main_domain }}"
   failed_when: false
-  tags: ["skeleton", "flarum", "mediawiki"]
+  tags: [always]
 
 - name: Reload services
   ansible.builtin.systemd:
@@ -141,4 +105,4 @@
       - nginx
   loop_control:
       loop_var: web_service
-  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+  tags: [always]

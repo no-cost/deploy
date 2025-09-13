@@ -3,7 +3,7 @@
   ansible.builtin.include_tasks: ./helpers/common.yml
   vars:
       skeleton_root_dir: "{{ paths.tenants.flarum_skeleton }}"
-  tags: [always]
+  tags: ["skeleton", "flarum"]
 
 # https://docs.flarum.org/install/
 - name: Install Flarum in app directory
@@ -34,4 +34,4 @@
       # bcrypt encrypted:
       tenant_admin_password: "{{ skeletons.flarum_admin_password }}"
       force: true
-  tags: [always]
+  tags: ["skeleton", "flarum"]

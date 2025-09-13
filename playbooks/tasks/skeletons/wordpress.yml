@@ -1,0 +1,45 @@
+---
+- name: Setup common skeleton app structure
+  ansible.builtin.include_tasks: ./helpers/common.yml
+  vars:
+      skeleton_root_dir: "{{ paths.tenants.wordpress_skeleton }}"
+  tags: ["skeleton", "wordpress"]
+
+- name: Install WP-CLI system-wide
+  ansible.builtin.get_url:
+      url: "https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar"
+      dest: "/usr/bin/wp"
+      owner: root
+      group: root
+      mode: "755"
+  tags: ["skeleton", "wordpress"]
+
+- name: Ensure public dir
+  ansible.builtin.file:
+      path: "{{ paths.tenants.wordpress_skeleton }}/app/public"
+      state: directory
+      owner: "www-data"
+      group: "www-data"
+      mode: "775"
+  tags: ["skeleton", "wordpress"]
+
+# https://developer.wordpress.org/cli/commands/core/download/
+- name: Download WordPress core using WP-CLI
+  ansible.builtin.command:
+      cmd: "wp core download"
+      chdir: "{{ paths.tenants.wordpress_skeleton }}/app/public"
+      creates: "{{ paths.tenants.wordpress_skeleton }}/app/public/wp-config-sample.php"
+  become: true
+  become_user: "www-data"
+  tags: ["skeleton", "wordpress"]
+
+- name: Create skeleton host instance
+  ansible.builtin.include_tasks: ../tenants/provision-main.yml
+  vars:
+      service_type: "wordpress"
+      tenant_tag: "wordpress_skeleton"
+      tenant_db_password: "{{ skeletons.wordpress_db_password }}"
+      tenant_admin_email: "info@{{ main_domain }}"
+      tenant_admin_password: "{{ skeletons.wordpress_admin_password }}"
+      force: true
+  tags: ["skeleton", "wordpress"]

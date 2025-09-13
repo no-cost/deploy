@@ -5,7 +5,7 @@
       dest: /usr/local/bin/composer
       mode: "0755"
       force: true
-  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+  tags: ["skeleton", "chroot", "flarum", "mediawiki", "wordpress"]
 
 - name: Ensure tenants root
   ansible.builtin.file:
@@ -14,7 +14,7 @@
       owner: www-data
       group: www-data
       mode: "755"
-  tags: ["skeleton", "chroot", "flarum", "mediawiki"]
+  tags: ["skeleton", "chroot", "flarum", "mediawiki", "wordpress"]
 
 - name: Include all skeleton tasks
   ansible.builtin.include_tasks: "{{ item }}"
