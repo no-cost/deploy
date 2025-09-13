@@ -31,3 +31,14 @@
       chdir: "{{ paths.tenants.root }}/{{ tenant_tag }}/app/public"
   changed_when: true
   tags: ["skeleton", "mediawiki"]
+
+- name: Adjust MediaWiki config
+  ansible.builtin.blockinfile:
+      path: "{{ paths.tenants.root }}/{{ tenant_tag }}/app/public/LocalSettings.php"
+      block: |
+          $wgArticlePath = "/$1";
+          $wgUsePathInfo = true;
+          $wgScriptExtension = ".php";
+      marker: "# {mark} FF - CONFIG TWEAKS"
+      insertafter: EOF
+  tags: ["skeleton", "mediawiki"]
