@@ -25,7 +25,7 @@
           --dbuser="tenant_mediawiki_skeleton" \
           --dbpass={{ skeletons.mediawiki_db_password | quote }} \
           --server={{ ('https://mediawiki_skeleton.' + main_domain) | quote }} \
-          --scriptpath="/" \
+          --scriptpath="" \
           --lang="en" \
           --pass={{ skeletons.mediawiki_admin_password | quote }} {{ (tenant_tag | replace("_", " ") | title) | quote }} "Admin"
       chdir: "{{ paths.tenants.root }}/{{ tenant_tag }}/app/public"

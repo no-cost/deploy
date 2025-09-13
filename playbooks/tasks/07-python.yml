@@ -2,22 +2,17 @@
 - name: Install Python build dependencies
   ansible.builtin.apt:
       name:
-          - build-essential
           - libssl-dev
           - zlib1g-dev
           - libbz2-dev
           - libreadline-dev
           - libsqlite3-dev
-          - wget
-          - curl
           - llvm
           - libncurses5-dev
           - libncursesw5-dev
           - xz-utils
           - libffi-dev
           - liblzma-dev
-          - python3-openssl
-          - git
       state: present
   tags: ["python", "mainsite"]
 
@@ -35,11 +30,7 @@
           - "python{{ python_version }}"
           - "python{{ python_version }}-venv"
           - "python{{ python_version }}-dev"
-      state: present
-  tags: ["python", "mainsite"]
-
-- name: Install pip
-  ansible.builtin.apt:
-      name: python3-pip
+          - python3-pip
+          - python3-openssl
       state: present
   tags: ["python", "mainsite"]
