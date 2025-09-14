@@ -1,4 +1,5 @@
 ---
+# entrypoint for tenant provision scripts
 - name: Check if tenant already exists
   ansible.builtin.stat:
       path: "{{ paths.tenants.root }}/{{ tenant_tag }}"

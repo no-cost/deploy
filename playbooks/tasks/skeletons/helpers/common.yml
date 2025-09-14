@@ -1,4 +1,5 @@
 ---
+# common tasks for skeletons
 # child of: `flarum.yml`, `mediawiki.yml`, `wordpress.yml`
 # params:
 #   - skeleton_root_dir: root directory of the skeleton
@@ -21,6 +22,7 @@
       - "usr/bin"
       - "usr/sbin"
       - "usr/lib/{{ ansible_architecture }}-linux-gnu"
+      - "usr/lib/postfix" # for sendmail postfix libraries
       - "usr/share/zoneinfo"
   loop_control:
       loop_var: "php_dir"
@@ -81,10 +83,6 @@
       src: "{{ php_hardlink.src }}"
       dest: "{{ php_hardlink.dest }}"
       state: hard
-      force: true
-      # must be root:root 775, because chmod/chown hardlink (inode) changes the file across all hardlinks
-      owner: root
-      group: root
       mode: "755"
   loop:
       - src: "/etc/ssl/certs/ca-certificates.crt"
@@ -97,6 +95,7 @@
         dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libnss_dns.so.2"
       - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/ld-linux-aarch64.so.1"
         dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/ld-linux-aarch64.so.1"
+
       - src: "/usr/sbin/sendmail"
         dest: "{{ skeleton_root_dir }}/usr/sbin/sendmail"
       - src: "/usr/bin/bash"
@@ -107,34 +106,12 @@
       loop_var: php_hardlink
   tags: [always]
 
-# for bash
-- name: Resolve libtinfo symlink
-  ansible.builtin.stat:
-      path: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libtinfo.so.6"
-      follow: true
-  register: libtinfo_stat
-  tags: [always]
-
-- name: Create hardlink for libtinfo
-  ansible.builtin.file:
-      src: "{{ libtinfo_stat.stat.lnk_source | default('/usr/lib/' + ansible_architecture + '-linux-gnu/libtinfo.so.6.4') }}"
-      dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/{{ libtinfo_stat.stat.lnk_source | basename | default('libtinfo.so.6') }}"
-      state: hard
-      force: true
-      owner: root
-      group: root
-      mode: "755"
-  when: libtinfo_stat.stat.exists
-  tags: [always]
-
-- name: Create libtinfo symlink in chroot
-  ansible.builtin.file:
-      src: "{{ libtinfo_stat.stat.lnk_source | basename | default('libtinfo.so.6') }}"
-      dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libtinfo.so.6"
-      state: link
-      force: true
-  when: libtinfo_stat.stat.exists and libtinfo_stat.stat.islnk
-  tags: [always]
+- name: Create canonical hardlink for
+  ansible.builtin.include_tasks: canonical_hardlink.yml
+  vars:
+      hardlink_src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libtinfo.so.6"
+      hardlink_dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libtinfo.so.6"
+      hardlink_root_dir: "{{ skeleton_root_dir }}"
 
 - name: Create symlinks
   ansible.builtin.file:

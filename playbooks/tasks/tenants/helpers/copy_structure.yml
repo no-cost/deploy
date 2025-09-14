@@ -1,4 +1,5 @@
 ---
+# helper to sync/mirror the directory structure of a skeleton
 # child of: `flarum.yml`, `mediawiki.yml`, `wordpress.yml`
 # params:
 #   - mount_paths: array of paths to bind-mount (read-only), empty for none

@@ -1,0 +1,65 @@
+---
+# helper that hardlinks files using their canonical path
+# problem: lib symlinking to `./<another_file>`, e. g.:
+#
+#  lrwxrwxrwx 1
+#  root root 15 Mar 31  2024
+#  /usr/lib/aarch64-linux-gnu/libnsl.so.2 -> libnsl.so.2.0.1
+#
+# reports `libnsl.so.2.0.1` not found
+# solution: resolve symlink and hardlink that path, then create symlink in chroot too
+#
+# params:
+#   - hardlink_src: "/path/to/source"
+#   - hardlink_dest: "/path/to/destination"
+#   - hardlink_root_dir: "{{ skeleton_root_dir }}"
+
+- name: "Stat {{ hardlink_src }}"
+  ansible.builtin.stat:
+      path: "{{ hardlink_src }}"
+      follow: false
+  register: hardlink_src_stat
+
+- name: "Resolve symlink for {{ hardlink_src }}"
+  ansible.builtin.stat:
+      path: "{{ hardlink_src }}"
+      follow: true
+  register: hardlink_resolved_stat
+  when: hardlink_src_stat.stat.exists and hardlink_src_stat.stat.islnk
+
+- name: "Set resolved source path"
+  ansible.builtin.set_fact:
+      hardlink_resolved_src: "{{
+          (hardlink_src | dirname) + '/' + hardlink_src_stat.stat.lnk_target
+          if (hardlink_src_stat.stat.islnk and hardlink_src_stat.stat.lnk_target is defined and not (hardlink_src_stat.stat.lnk_target | regex_search('^/')))
+          else hardlink_resolved_stat.stat.path
+          if (hardlink_src_stat.stat.islnk and hardlink_resolved_stat.stat.exists)
+          else hardlink_src
+          }}"
+
+- name: "Ensure parent directory for {{ hardlink_dest }}"
+  ansible.builtin.file:
+      path: "{{ hardlink_dest | dirname }}"
+      state: directory
+      mode: "755"
+      owner: root
+      group: root
+
+- name: "Create hardlink for {{ hardlink_resolved_src }}"
+  ansible.builtin.file:
+      src: "{{ hardlink_resolved_src }}"
+      dest: "{{ hardlink_dest if not hardlink_src_stat.stat.islnk else hardlink_root_dir + hardlink_resolved_src }}"
+      state: hard
+      force: true
+      owner: root
+      group: root
+      mode: "755"
+  when: hardlink_src_stat.stat.exists
+
+- name: "Create symlink in chroot if source was a symlink"
+  ansible.builtin.file:
+      src: "{{ hardlink_resolved_src | basename }}"
+      dest: "{{ hardlink_dest }}"
+      state: link
+      force: true
+  when: hardlink_src_stat.stat.exists and hardlink_src_stat.stat.islnk

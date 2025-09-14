@@ -4,13 +4,13 @@
   ansible.builtin.include_tasks: ./helpers/copy_structure.yml
   vars:
       mount_paths:
-          - "app/public/vendor"
-          - "app/public/includes"
-          - "app/public/skins"
           - "app/public/extensions"
+          - "app/public/includes"
           - "app/public/languages"
+          - "app/public/skins"
+          - "app/public/sql" # for db migrations
+          - "app/public/vendor"
       exclude_paths:
-          - "app/public/sql"
           - "app/public/tests"
           - "app/public/README.md"
       service_type: "mediawiki"
