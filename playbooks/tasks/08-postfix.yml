@@ -56,11 +56,29 @@
       mode: "644"
   notify: postmap postfix_sender_access
 
-- name: Configure OpenDKIM
+- name: Ensure OpenDKIM and OpenDMARC sock dirs
+  ansible.builtin.file:
+      path: "/var/spool/postfix/{{ milter }}"
+      owner: "{{ milter }}"
+      group: "{{ milter }}"
+      mode: "660"
+      state: directory
+  loop:
+      - opendkim
+      - opendmarc
+  loop_control:
+      loop_var: milter
+
+- name: Configure OpenDKIM and OpenDMARC
   ansible.builtin.template:
-      src: files/etc/opendkim.conf
-      dest: /etc/opendkim.conf
+      src: "files/etc/{{ milter_conf }}.conf"
+      dest: "/etc/{{ milter_conf }}.conf"
       mode: "644"
+  loop:
+      - opendkim
+      - opendmarc
+  loop_control:
+      loop_var: milter_conf
   tags: ["email", "mail", "postfix"]
 
 - name: Create OpenDKIM keys directory
@@ -135,7 +153,7 @@
       dest: /etc/logrotate.d/postfix
       mode: "644"
 
-- name: Enable and start mail services (except SpamAssassin)
+- name: Enable and start mail services
   ansible.builtin.systemd:
       name: "{{ mail_service }}"
       enabled: true
@@ -148,14 +166,14 @@
   loop_control:
       loop_var: mail_service
 
-- name: Enable and start SpamAssassin service (Ubuntu < 24.04)
+- name: Enable and start SpamAssassin (Ubuntu < 24.04)
   ansible.builtin.systemd:
       name: spamassassin
       enabled: true
       state: started
   when: ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('24.04', '<')
 
-- name: Enable and start SpamAssassin service (Ubuntu >= 24.04)
+- name: Enable and start SpamAssassin (Ubuntu >= 24.04)
   ansible.builtin.systemd:
       name: spamd
       enabled: true

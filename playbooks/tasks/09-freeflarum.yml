@@ -51,12 +51,6 @@
   notify:
       - daemon reload
 
-- name: Enable FreeFlarum service
-  ansible.builtin.systemd:
-      name: freeflarum.service
-      enabled: true
-      state: started
-
 - name: Create environment configuration for freeflarum backend
   ansible.builtin.copy:
       dest: "{{ paths.freeflarum_backend_repo }}/.env"
@@ -97,8 +91,9 @@
       login_unix_socket: /var/run/mysqld/mysqld.sock
       column_case_sensitive: true
       state: present
-# TODO:
-#  cloudflare_token
-#  turnstile_key
-#  maxmind_license_key
-#  skeleton_database_password(s)
+
+- name: Start FreeFlarum service
+  ansible.builtin.systemd:
+      name: freeflarum.service
+      enabled: true
+      state: started
