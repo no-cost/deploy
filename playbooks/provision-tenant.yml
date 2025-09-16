@@ -1,9 +1,6 @@
 ---
 - name: Provision new tenant
-  hosts: localhost
-  connection: local
-  gather_facts: false
-
+  hosts: all
   vars_files:
       - "../public_vars.prod.yml"
       - "../public_vars.{{ env | default('dev') }}.yml"
@@ -21,7 +18,15 @@
         prompt: "Enter tenant admin's e-mail (used to send password reset e-mail)"
         private: false
 
+      - name: tenant_admin_password
+        prompt: "Enter tenant admin password"
+        private: true
+
+      - name: tenant_db_password
+        prompt: "Enter tenant DB password"
+        private: true
+
   tasks:
       - name: Include tenant provisioning tasks
-        ansible.builtin.include_tasks: ../provision-main.yml
+        ansible.builtin.include_tasks: ./tasks/tenants/provision-main.yml
         tags: [always]

@@ -1,5 +1,6 @@
 # To-do
 
+- [ ] fix postfix mail sending from Ansible: `{"changed": false, "msg": "Failed to send mail to 'xxx@gmail.com': {'xxx@gmail.com': (451, b'4.3.5 <noreply@freeflarum.dev>: Sender address rejected: Server configuration error')}", "rc": 1}`
 - [ ] Custom Nginx access log format
 - [ ] Make working backend, deploy (with .env)
 - [ ] Frontend deploy

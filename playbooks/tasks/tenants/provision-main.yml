@@ -9,7 +9,7 @@
 - name: Fail if tenant already exists
   ansible.builtin.fail:
       msg: "Tenant directory `{{ paths.tenants.root }}/{{ tenant_tag }}` already exists!"
-  when: not force and tenant_exists.stat.exists
+  when: not force | default(false) and tenant_exists.stat.exists
   tags: [always]
 
 - name: Create tenant Linux user
@@ -83,6 +83,7 @@
 
 - name: Send welcome email
   community.general.mail:
+      host: "127.0.0.1"
       to: "{{ tenant_admin_email | default('info@freeflarum.dev') }}"
       subject: "Welcome to FreeFlarum!"
       body: |
@@ -93,7 +94,7 @@
 
           If you have any questions, please let us know by replying to this e-mail.
       from: "noreply@{{ main_domain }}"
-  failed_when: false
+  delegate_to: "{{ inventory_hostname }}"
   tags: [always]
 
 - name: Reload services
