@@ -6,7 +6,7 @@
           - certbot
           - python3-certbot-nginx
       state: present
-  tags: ["ssl", "certificates"]
+  tags: ["ssl", "certificates", "certbot"]
 
 - name: Create SSL directories
   ansible.builtin.file:
@@ -20,9 +20,10 @@
       - /etc/letsencrypt
       - /var/lib/letsencrypt
       - /var/log/letsencrypt
+      - /srv/certbot
   loop_control:
       loop_var: le_path
-  tags: ["ssl", "certificates"]
+  tags: ["ssl", "certificates", "certbot"]
 
 - name: Set up Certbot renewal cron job
   ansible.builtin.cron:
@@ -39,7 +40,7 @@
       src: files/etc/letsencrypt/cli.ini
       dest: /etc/letsencrypt/cli.ini
       mode: "644"
-  tags: ["ssl", "certificates"]
+  tags: ["ssl", "certificates", "certbot"]
 
 - name: Configure SSL certificates
   ansible.builtin.copy:

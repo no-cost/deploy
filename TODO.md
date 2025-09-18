@@ -9,4 +9,3 @@
 - [ ] GeoIP
 - [ ] Investigate broken APT Python deadsnakes repo?
 - [ ] cloudflare_token, turnstile_key, maxmind_license_key, etc.
-- [ ] /var/www/certbot doesn't exist
