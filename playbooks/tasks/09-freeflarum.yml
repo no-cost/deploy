@@ -5,6 +5,7 @@
       dest: "{{ paths.freeflarum_backend_repo }}"
       version: "master"
       force: true
+  tags: ["freeflarum"]
 
 - name: Create required directories for freeflarum
   ansible.builtin.file:
@@ -18,17 +19,20 @@
       - "{{ paths.tenants.wordpress_skeleton }}"
   loop_control:
       loop_var: tenant_dir
+  tags: ["freeflarum"]
 
 - name: Create virtual environment for main site
   ansible.builtin.command:
       cmd: "python3 -m venv {{ (paths.freeflarum_backend_repo + '/.venv') | quote }}"
       creates: "{{ paths.freeflarum_backend_repo }}/.venv/bin/python"
+  tags: ["freeflarum"]
 
 - name: Install Python packages for main site
   ansible.builtin.pip:
       requirements: "{{ paths.freeflarum_backend_repo }}/requirements.txt"
       virtualenv: "{{ paths.freeflarum_backend_repo }}/.venv"
       virtualenv_python: "python3"
+  tags: ["freeflarum"]
 
 - name: Ensure FreeFlarum log directory
   ansible.builtin.file:
@@ -37,6 +41,7 @@
       owner: www-data
       group: www-data
       mode: "755"
+  tags: ["freeflarum"]
 
 - name: Create systemd service files for FreeFlarum
   ansible.builtin.template:
@@ -50,6 +55,7 @@
       loop_var: freeflarum_service
   notify:
       - daemon reload
+  tags: ["freeflarum"]
 
 - name: Create environment configuration for freeflarum backend
   ansible.builtin.copy:
@@ -72,6 +78,7 @@
       owner: www-data
       group: www-data
       mode: "0640"
+  tags: ["freeflarum"]
 
 - name: Create database for freeflarum backend
   community.mysql.mysql_db:
@@ -80,6 +87,7 @@
       collation: utf8mb4_unicode_ci
       login_unix_socket: /var/run/mysqld/mysqld.sock
       state: present
+  tags: ["freeflarum"]
 
 - name: Create database user for freeflarum backend
   community.mysql.mysql_user:
@@ -91,9 +99,31 @@
       login_unix_socket: /var/run/mysqld/mysqld.sock
       column_case_sensitive: true
       state: present
+  tags: ["freeflarum"]
+
+- name: Add Maxmind PPA repo
+  ansible.builtin.apt_repository:
+      repo: "ppa:maxmind/ppa"
+      state: present
+      update_cache: true
+  tags: ["freeflarum", "geoip"]
+
+- name: Install geoipupdate
+  ansible.builtin.apt:
+      package: geoipupdate
+      state: present
+  tags: ["freeflarum", "geoip"]
+
+- name: Render GeoIP.conf
+  ansible.builtin.template:
+      src: files/etc/GeoIP.conf
+      dest: /etc/GeoIP.conf
+      mode: "644"
+  tags: ["freeflarum", "geoip"]
 
 - name: Start FreeFlarum service
   ansible.builtin.systemd:
       name: freeflarum.service
       enabled: true
       state: started
+  tags: ["freeflarum"]
