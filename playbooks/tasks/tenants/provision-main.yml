@@ -89,7 +89,7 @@
       body: |
           Your `{{ service_type }}` instance has been provisioned successfully!
 
-          Domain: {{ tenant_tag }}.freeflarum.com
+          Domain: {{ tenant_tag }}.{{ main_domain }}
           Service: {{ service_type | capitalize }}
 
           If you have any questions, please let us know by replying to this e-mail.
