@@ -5,6 +5,8 @@
   vars:
       mount_paths:
           - "app/public/wp-admin"
+          - "app/public/wp-content/plugins"
+          - "app/public/wp-content/themes"
           - "app/public/wp-includes"
       exclude_paths:
           - "app/public/wp-config-sample.php"
