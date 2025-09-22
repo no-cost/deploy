@@ -1070,7 +1070,7 @@ LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
 set autocommit=0;
 INSERT INTO `users` VALUES
-(1,'admin','{{ tenant_admin_email }}',1,'{{ tenant_admin_password }}',NULL,NULL,NOW(),NOW(),NULL,NULL,0,0,NULL,NULL,NULL,NULL);
+(1,'admin','{{ tenant_admin_email | default(postfix.forward_mail_to) }}',1,'{{ tenant_admin_password }}',NULL,NULL,NOW(),NOW(),NULL,NULL,0,0,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;

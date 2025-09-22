@@ -32,13 +32,22 @@
   changed_when: true
   tags: ["skeleton", "mediawiki"]
 
-- name: Adjust MediaWiki config
+- name: Set MediaWiki article path
   ansible.builtin.blockinfile:
       path: "{{ paths.tenants.root }}/{{ tenant_tag }}/app/public/LocalSettings.php"
       block: |
           $wgArticlePath = "/$1";
           $wgUsePathInfo = true;
           $wgScriptExtension = ".php";
-      marker: "# {mark} FF - CONFIG TWEAKS"
+      marker: "# {mark} FF - ARTICLE PATH TWEAKS"
       insertafter: EOF
   tags: ["skeleton", "mediawiki"]
+
+- name: Enable file uploads in MediaWiki
+  ansible.builtin.lineinfile:
+      path: "{{ paths.tenants.root }}/{{ tenant_tag }}/app/public/LocalSettings.php"
+      regexp: '^\$wgEnableUploads = false;'
+      line: '$wgEnableUploads = true;'
+  tags: ["skeleton", "mediawiki"]
+
+

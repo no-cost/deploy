@@ -24,15 +24,59 @@
       group: root
       mode: "755"
   loop:
-      - src: "/usr/bin/convert"
-        dest: "{{ paths.tenants.mediawiki_skeleton }}/usr/bin/convert"
-      - src: "/usr/bin/identify"
-        dest: "{{ paths.tenants.mediawiki_skeleton }}/usr/bin/identify"
       - src: "/usr/bin/diff3"
         dest: "{{ paths.tenants.mediawiki_skeleton }}/usr/bin/diff3"
   loop_control:
       loop_var: mw_hardlink
   tags: ["skeleton", "chroot", "mediawiki"]
+
+- name: Create canonical hardlinks for ImageMagick
+  ansible.builtin.include_tasks: ./helpers/canonical_hardlink.yml
+  vars:
+      hardlink_src: "/usr/bin/convert"
+      hardlink_dest: "{{ paths.tenants.mediawiki_skeleton }}/usr/bin/convert"
+      hardlink_root_dir: "{{ paths.tenants.mediawiki_skeleton }}"
+  tags: ["skeleton", "mediawiki"]
+
+# - name: Create canonical hardlinks for ImageMagick dependencies
+#  ansible.builtin.include_tasks: ./helpers/canonical_hardlink.yml
+#  vars:
+#      hardlink_src: "/lib/{{ ansible_architecture }}-linux-gnu/{{ imagemagick_lib }}"
+#      hardlink_dest: "{{ skeleton_root_dir }}/lib/{{ ansible_architecture }}-linux-gnu/{{ imagemagick_lib }}"
+#      hardlink_root_dir: "{{ skeleton_root_dir }}"
+#  loop:
+#      - "libMagickCore-6.Q16.so.7"
+#      - "libMagickWand-6.Q16.so.7"
+#      - "liblcms2.so.2"
+#      - "liblqr-1.so.0"
+#      - "libfftw3.so.3"
+#      - "libxml2.so.2"
+#      - "libfontconfig.so.1"
+#      - "libfreetype.so.6"
+#      - "libXext.so.6"
+#      - "libX11.so.6"
+#      - "libbz2.so.1.0"
+#      - "libz.so.1"
+#      - "libltdl.so.7"
+#      - "libgomp.so.1"
+#      - "libglib-2.0.so.0"
+#      - "libicuuc.so.74"
+#      - "liblzma.so.5"
+#      - "libexpat.so.1"
+#      - "libpng16.so.16"
+#      - "libbrotlidec.so.1"
+#      - "libxcb.so.1"
+#      - "libpcre2-8.so.0"
+#      - "libicudata.so.74"
+#      - "libstdc++.so.6"
+#      - "libbrotlicommon.so.1"
+#      - "libXau.so.6"
+#      - "libXdmcp.so.6"
+#      - "libbsd.so.0"
+#      - "libmd.so.0"
+#  loop_control:
+#      loop_var: imagemagick_lib
+#  tags: ["skeleton", "mediawiki"]
 
 # https://www.mediawiki.org/wiki/Download
 - name: Download & unarchive Mediawiki
@@ -76,7 +120,6 @@
       service_type: "mediawiki"
       tenant_tag: "mediawiki_skeleton"
       tenant_db_password: "{{ skeletons.mediawiki_db_password }}"
-      tenant_admin_email: "info@{{ main_domain }}"
       tenant_admin_password: "{{ skeletons.mediawiki_admin_password }}"
       force: true
   tags: ["skeleton", "mediawiki"]

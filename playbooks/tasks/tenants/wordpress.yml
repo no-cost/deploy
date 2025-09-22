@@ -36,7 +36,7 @@
           --title='{{ tenant_tag | replace("_", " ") | title }}'
           --admin_user='admin'
           --admin_password='{{ tenant_admin_password }}'
-          --admin_email='{{ tenant_admin_email }}'
+          --admin_email='{{ tenant_admin_email | default(postfix.forward_mail_to) }}'
           --skip-email
       chdir: "{{ paths.tenants.root }}/{{ tenant_tag }}/app/public"
   become: true
@@ -59,6 +59,8 @@
       block: |
           define( 'AUTOMATIC_UPDATER_DISABLED', true );
           define( 'WP_AUTO_UPDATE_CORE', false );
+          define( 'DISALLOW_FILE_EDIT', true );
+          define( 'DISALLOW_FILE_MODS', true );
       marker: "/* {mark} FF - AUTO UPDATE CONFIG */"
       insertbefore: "/* That's all, stop editing!"
   tags: ["skeleton", "wordpress"]

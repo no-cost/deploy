@@ -39,7 +39,6 @@
       service_type: "wordpress"
       tenant_tag: "wordpress_skeleton"
       tenant_db_password: "{{ skeletons.wordpress_db_password }}"
-      tenant_admin_email: "info@{{ main_domain }}"
       tenant_admin_password: "{{ skeletons.wordpress_admin_password }}"
       force: true
   tags: ["skeleton", "wordpress"]

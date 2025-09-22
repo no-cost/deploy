@@ -30,7 +30,6 @@
       service_type: "flarum"
       tenant_tag: "flarum_skeleton"
       tenant_db_password: "{{ skeletons.flarum_db_password }}"
-      tenant_admin_email: "info@{{ main_domain }}"
       # bcrypt encrypted:
       tenant_admin_password: "{{ skeletons.flarum_admin_password }}"
       force: true

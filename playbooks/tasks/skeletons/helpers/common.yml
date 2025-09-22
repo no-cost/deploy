@@ -106,7 +106,7 @@
       loop_var: php_hardlink
   tags: [always]
 
-- name: Create canonical hardlink for
+- name: Create canonical hardlink for libtinfo
   ansible.builtin.include_tasks: canonical_hardlink.yml
   vars:
       hardlink_src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libtinfo.so.6"
