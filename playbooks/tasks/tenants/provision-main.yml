@@ -87,7 +87,7 @@
       to: "{{ tenant_admin_email | default(postfix.forward_mail_to) }}"
       subject: "Welcome to FreeFlarum!"
       body: |
-          Your `{{ service_type }}` instance has been provisioned successfully!
+          Your site instance has been provisioned successfully!
 
           Domain: {{ tenant_tag }}.{{ main_domain }}
           Service: {{ service_type | capitalize }}
