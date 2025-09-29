@@ -1,5 +1,5 @@
 postmaster		root
-sysadmin        root
+system          root
 root			info@{{ main_domain }}
 
 info@{{ main_domain }}	{{ postfix.forward_mail_to }}

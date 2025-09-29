@@ -1,0 +1,2 @@
+# Logwatch weekly report
+30 6 * * 6 root /usr/sbin/logwatch

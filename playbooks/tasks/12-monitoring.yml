@@ -57,3 +57,24 @@
       name: monit
       enabled: true
       state: started
+
+- name: Configure logwatch
+  ansible.builtin.template:
+      src: files/etc/logwatch/conf/logwatch.conf
+      dest: /etc/logwatch/conf/logwatch.conf
+      owner: root
+      group: root
+      mode: "644"
+
+- name: Disable daily logwatch cron
+  ansible.builtin.file:
+      path: /etc/cron.daily/00logwatch
+      state: absent
+
+- name: Configure weekly logwatch cron
+  ansible.builtin.template:
+      src: files/etc/cron.d/logwatch
+      dest: /etc/cron.d/logwatch
+      owner: root
+      group: root
+      mode: "644"
