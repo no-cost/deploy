@@ -56,16 +56,29 @@
       mode: "644"
   notify: postmap postfix_sender_access
 
-- name: Ensure OpenDKIM and OpenDMARC sock dirs
+- name: Add postfix user to milter groups
+  ansible.builtin.user:
+      name: postfix
+      groups: "{{ milter_group }}"
+      append: true
+  loop:
+      - opendkim
+      - opendmarc
+      - postgrey
+  loop_control:
+      loop_var: milter_group
+
+- name: Ensure milter socket directories
   ansible.builtin.file:
       path: "/var/spool/postfix/{{ milter }}"
       owner: "{{ milter }}"
       group: "{{ milter }}"
-      mode: "660"
+      mode: "750"
       state: directory
   loop:
       - opendkim
       - opendmarc
+      - postgrey
   loop_control:
       loop_var: milter
 
