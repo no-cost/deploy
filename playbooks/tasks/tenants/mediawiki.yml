@@ -49,5 +49,3 @@
       regexp: '^\$wgEnableUploads = false;'
       line: '$wgEnableUploads = true;'
   tags: ["skeleton", "mediawiki"]
-
-
