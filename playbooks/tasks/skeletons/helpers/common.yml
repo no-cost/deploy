@@ -84,6 +84,7 @@
       dest: "{{ php_hardlink.dest }}"
       state: hard
       mode: "755"
+      force: true
   loop:
       - src: "/etc/ssl/certs/ca-certificates.crt"
         dest: "{{ skeleton_root_dir }}/etc/ssl/certs/ca-certificates.crt"
