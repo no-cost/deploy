@@ -67,6 +67,7 @@
   loop: "{{ mount_paths | default([]) }}"
   loop_control:
       loop_var: mount_dir_raw
+  failed_when: false # supress readonly FS
   tags: [always]
 
 - name: Mount directories as read-only bind mounts
