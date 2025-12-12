@@ -85,7 +85,7 @@
   community.general.mail:
       host: "127.0.0.1"
       to: "{{ tenant_admin_email | default(postfix.forward_mail_to) }}"
-      subject: "Welcome to FreeFlarum!"
+      subject: "Welcome to no-cost.site!"
       body: |
           Your site instance has been provisioned successfully!
 

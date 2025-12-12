@@ -1,13 +1,13 @@
 ---
-- name: Clone or update freeflarum backend repository
+- name: Clone or update no-cost backend repository
   ansible.builtin.git:
-      repo: "git@github.com:FreeFlarum/freeflarum-backend.git"
-      dest: "{{ paths.freeflarum_backend_repo }}"
+      repo: "git@github.com:no-cost/backend.git"
+      dest: "{{ paths.backend_repo }}"
       version: "master"
       force: true
-  tags: ["freeflarum"]
+  tags: ["nocost"]
 
-- name: Create required directories for freeflarum
+- name: Create required directories for nocost
   ansible.builtin.file:
       path: "{{ tenant_dir }}"
       state: directory
@@ -19,53 +19,53 @@
       - "{{ paths.tenants.wordpress_skeleton }}"
   loop_control:
       loop_var: tenant_dir
-  tags: ["freeflarum"]
+  tags: ["nocost"]
 
 - name: Create virtual environment for main site
   ansible.builtin.command:
-      cmd: "python3 -m venv {{ (paths.freeflarum_backend_repo + '/.venv') | quote }}"
-      creates: "{{ paths.freeflarum_backend_repo }}/.venv/bin/python"
-  tags: ["freeflarum"]
+      cmd: "python3 -m venv {{ (paths.backend_repo + '/.venv') | quote }}"
+      creates: "{{ paths.backend_repo }}/.venv/bin/python"
+  tags: ["nocost"]
 
 - name: Install Python packages for main site
   ansible.builtin.pip:
-      requirements: "{{ paths.freeflarum_backend_repo }}/requirements.txt"
-      virtualenv: "{{ paths.freeflarum_backend_repo }}/.venv"
+      requirements: "{{ paths.backend_repo }}/requirements.txt"
+      virtualenv: "{{ paths.backend_repo }}/.venv"
       virtualenv_python: "python3"
-  tags: ["freeflarum"]
+  tags: ["nocost"]
 
-- name: Ensure FreeFlarum log directory
+- name: Ensure no-cost log directory
   ansible.builtin.file:
-      path: /var/log/freeflarum/api/
+      path: /var/log/nocost/api/
       state: directory
       owner: www-data
       group: www-data
       mode: "755"
-  tags: ["freeflarum"]
+  tags: ["nocost"]
 
-- name: Create systemd service files for FreeFlarum
+- name: Create systemd service files for no-cost
   ansible.builtin.template:
-      src: "files/etc/systemd/system/{{ freeflarum_service }}"
-      dest: "/etc/systemd/system/{{ freeflarum_service }}"
+      src: "files/etc/systemd/system/{{ nocost_service }}"
+      dest: "/etc/systemd/system/{{ nocost_service }}"
       mode: "644"
   loop:
-      - freeflarum.service
-      - freeflarum.socket
+      - nocost.service
+      - nocost.socket
   loop_control:
-      loop_var: freeflarum_service
+      loop_var: nocost_service
   notify:
       - daemon reload
-  tags: ["freeflarum"]
+  tags: ["nocost"]
 
-- name: Create environment configuration for freeflarum backend
+- name: Create environment configuration for no-cost backend
   ansible.builtin.copy:
-      dest: "{{ paths.freeflarum_backend_repo }}/.env"
+      dest: "{{ paths.backend_repo }}/.env"
       # TODO
       content: |
-          # FreeFlarum Backend Configuration
+          # no-cost Backend Configuration
           DATABASE_HOST=localhost
-          DATABASE_NAME=freeflarum
-          DATABASE_USER=freeflarum
+          DATABASE_NAME=nocost
+          DATABASE_USER=nocost
 
           # Paths
           TENANT_ROOT={{ paths.tenants.root }}
@@ -74,56 +74,56 @@
           BACKUP_ROOT={{ paths.backup_root }}
 
           # Domains
-          PRIMARY_DOMAINS=freeflarum.com,flarum.cloud
+          PRIMARY_DOMAINS=...
       owner: www-data
       group: www-data
       mode: "0640"
-  tags: ["freeflarum"]
+  tags: ["nocost"]
 
-- name: Create database for freeflarum backend
+- name: Create database for nocost backend
   community.mysql.mysql_db:
-      name: freeflarum
+      name: nocost
       encoding: utf8mb4
       collation: utf8mb4_unicode_ci
       login_unix_socket: /var/run/mysqld/mysqld.sock
       state: present
-  tags: ["freeflarum"]
+  tags: ["nocost"]
 
-- name: Create database user for freeflarum backend
+- name: Create database user for nocost backend
   community.mysql.mysql_user:
-      name: freeflarum
-      priv: "freeflarum.*:ALL"
+      name: nocost
+      priv: "nocost.*:ALL"
       plugin: unix_socket
       plugin_auth_string: ""
       host: localhost
       login_unix_socket: /var/run/mysqld/mysqld.sock
       column_case_sensitive: true
       state: present
-  tags: ["freeflarum"]
+  tags: ["nocost"]
 
 - name: Add Maxmind PPA repo
   ansible.builtin.apt_repository:
       repo: "ppa:maxmind/ppa"
       state: present
       update_cache: true
-  tags: ["freeflarum", "geoip"]
+  tags: ["nocost", "geoip"]
 
 - name: Install geoipupdate
   ansible.builtin.apt:
       package: geoipupdate
       state: present
-  tags: ["freeflarum", "geoip"]
+  tags: ["nocost", "geoip"]
 
 - name: Render GeoIP.conf
   ansible.builtin.template:
       src: files/etc/GeoIP.conf
       dest: /etc/GeoIP.conf
       mode: "644"
-  tags: ["freeflarum", "geoip"]
+  tags: ["nocost", "geoip"]
 
-- name: Start FreeFlarum service
+- name: Start nocost service
   ansible.builtin.systemd:
-      name: freeflarum.service
+      name: nocost.service
       enabled: true
       state: started
-  tags: ["freeflarum"]
+  tags: ["nocost"]

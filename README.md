@@ -1,6 +1,6 @@
 # Deploy
 
-Contains Ansible playbooks for deploying a production FreeFlarum server.
+Contains Ansible playbooks for deploying a production no-cost.site server.
 
 ## Prerequisites
 
@@ -10,13 +10,13 @@ Contains Ansible playbooks for deploying a production FreeFlarum server.
 - Root access (or sudo)
 - Domains configured with Cloudflare
 - Install required Ansible modules on local machine: `ansible-galaxy install -r requirements.yml`
-- Define `freeflarum` and `freeflarum.dev` hosts in your `~/.ssh/config`
+- Define `nocost` and `nocost-dev` hosts in your `~/.ssh/config`
 
 ## Basic Info
 
 A "(site) tag" is an unique identifier for a site. It's used to identify a tenant (site) in the filesystem and the database (database prefix: `site_`).
 
-The [`freeflarum-backend`](https://github.com/FreeFlarum/freeflarum-backend) repository is cloned into `/srv/freeflarum`. The `/srv/freeflarum/bin` directory contains FreeFlarum management commands (as Python files). The basic management commands are:
+The [`backend`](https://github.com/no-cost/backend) repository is cloned into `/srv/nocost/backend`. The `/srv/nocost/backend/bin` directory contains management (Python) scripts. The basic management commands are:
 
 - `backup [tag]` – backup all sites, or a specific site;
 - `create <tag> <service> <admin e-mail>` – create a new site with given tag, service type (`flarum`/`wordpress`/`mediawiki`, etc.), and admin e-mail. There can only be 1 site per e-mail, multiple sites per account aren't supported (1 account = 1 site);
@@ -27,7 +27,7 @@ The [`freeflarum-backend`](https://github.com/FreeFlarum/freeflarum-backend) rep
 
 ```plaintext
 /srv/
-├── freeflarum/  # freeflarum-backend repo
+├── nocost/  # frontend + backend
 ├── host/  # tenant chroots
 │   ├── site1/
 │   │   ├── app/
@@ -153,7 +153,7 @@ NB you must connect on the server at least one (to add its key to the `~/.ssh/kn
 # base system only
 ./prod --tags base,system
 
-# security
+# security hardening and packages
 ./prod --tags security
 
 # web services (Nginx + PHP)

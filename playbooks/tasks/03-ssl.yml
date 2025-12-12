@@ -1,5 +1,12 @@
 ---
-# https://github.com/FreeFlarum/freeflarum/blob/b1627f5e7ca1462272781e3b5a233d1226f89dfa/deploy/playbooks/main.yml#L41C1-L44C37
+- name: Install lexicon system configuration for dehydrated wildcard SSL validation
+  ansible.builtin.template:
+      src: "files/default/lexicon"
+      dest: "/etc/default/lexicon"
+      owner: root
+      group: root
+      mode: "644"
+
 - name: Install Certbot
   ansible.builtin.apt:
       name:
@@ -24,6 +31,15 @@
   loop_control:
       loop_var: le_path
   tags: ["ssl", "certificates", "certbot"]
+
+- name: Install dhparam for better SSL grade
+  ansible.builtin.copy:
+      content: "{{ dh_param }}"
+      dest: "/etc/ssl/certs/dhparam.pem"
+      owner: root
+      group: root
+      mode: "644"
+  notify: reload-nginx
 
 - name: Set up Certbot renewal cron job
   ansible.builtin.cron:

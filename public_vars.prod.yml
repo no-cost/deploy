@@ -1,10 +1,12 @@
-main_domain: "freeflarum.com"
+main_domain: "nocost.site"
 public_services:
     - flarum
+    - mediawiki
+    - wordpress
 
-python_version: "3.12"
+python_version: "3.14"
 php_version: "8.4"
-mariadb_version: "11.8"
+mariadb_version: "12.1"
 
 ufw_allowed_ports:
     - 22
@@ -18,8 +20,8 @@ skeletons_pub:
     mediawiki_version: "1.44.0"
 
 paths:
-    freeflarum_backend_repo: /srv/freeflarum/freeflarum-backend
-    freeflarum_frontend_repo: /srv/freeflarum/freeflarum-frontend
+    backend_repo: /srv/nocost/backend
+    frontend_repo: /srv/nocost/frontend
     backup_root: /backup
     backup_host_root: /backup/host
     backup_attic_root: /backup/attic

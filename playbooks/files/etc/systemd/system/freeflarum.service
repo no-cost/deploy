@@ -1,8 +1,8 @@
 [Unit]
 Description=API daemon
-Requires=freeflarum.socket
+Requires=nocost.socket
 After=network.target
-PartOf=freeflarum-web.service
+PartOf=nocost-frontend.service
 
 [Service]
 Type=notify
@@ -10,9 +10,9 @@ Type=notify
 User=www-data
 Group=www-data
 
-WorkingDirectory={{ paths.freeflarum_backend_repo }}
+WorkingDirectory={{ paths.backend_repo }}
 
-ExecStart={{ paths.freeflarum_backend_repo }}/.venv/bin/gunicorn main:FF_API --bind=unix:{{ paths.freeflarum_backend_repo }}/api.sock -k uvicorn.workers.UvicornWorker -m 007 -w 4 --capture-output --access-logfile /var/log/freeflarum/api/access.log --log-file /var/log/freeflarum/api/error.log --access-logformat '{"ts": "%(t)s", "remote_ip":"%(h)s","response_code":"%(s)s","request_method":"%(m)s","request_path":"%(U)s","request_querystring":"%(q)s","request_timetaken":"%(D)s","response_length":"%(B)s"}'
+ExecStart={{ paths.backend_repo }}/.venv/bin/gunicorn main:FF_API --bind=unix:{{ paths.backend_repo }}/api.sock -k uvicorn.workers.UvicornWorker -m 007 -w 4 --capture-output --access-logfile /var/log/nocost/api/access.log --log-file /var/log/nocost/api/error.log --access-logformat '{"ts": "%(t)s", "remote_ip":"%(h)s","response_code":"%(s)s","request_method":"%(m)s","request_path":"%(U)s","request_querystring":"%(q)s","request_timetaken":"%(D)s","response_length":"%(B)s"}'
 ExecReload=/bin/kill -s HUP $MAINPID
 
 KillMode=mixed

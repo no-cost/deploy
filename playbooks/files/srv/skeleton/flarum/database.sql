@@ -929,7 +929,7 @@ INSERT INTO `settings` VALUES
 ('flarum-tags.max_secondary_tags','3'),
 ('flarum-tags.min_primary_tags','1'),
 ('flarum-tags.min_secondary_tags','0'),
-('forum_description','A FreeFlarum forum'),
+('forum_description','A no-cost forum'),
 ('forum_title','{{ tenant_tag | replace("_", " ") | title }}'),
 ('mail_driver','mail'),
 ('mail_from','noreply@{{ main_domain }}'),
@@ -940,7 +940,7 @@ INSERT INTO `settings` VALUES
 ('theme_primary_color','#4D698E'),
 ('theme_secondary_color','#4D698E'),
 ('version','1.8.10'),
-('welcome_message','Enjoy your new forum! See the <a href=\"https://support.freeflarum.com\">support.freeflarum.com</a> forum for FreeFlarum related questions, or hop over to <a href=\"https://discuss.flarum.org\">discuss.flarum.org</a> if you have any questions about the Flarum software.'),
+('welcome_message','Enjoy your new forum! See the <a href=\"https://support.{{ main_domain }}\">support.{{ main_domain }}</a> forum for questions related to our hosting service, or hop over to <a href=\"https://discuss.flarum.org\">discuss.flarum.org</a> if you have any questions about the Flarum software.'),
 ('welcome_title','Welcome to {{ tenant_tag | replace("_", " ") | title }}');
 /*!40000 ALTER TABLE `settings` ENABLE KEYS */;
 UNLOCK TABLES;

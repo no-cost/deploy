@@ -1,5 +1,5 @@
 ---
-- name: Deploy FreeFlarum
+- name: Deploy no-cost.site
   hosts: all
 
   vars_files:
@@ -51,8 +51,8 @@
         ansible.builtin.include_tasks: tasks/08-postfix.yml
         tags: [always]
 
-      - name: Deploy FreeFlarum code
-        ansible.builtin.include_tasks: tasks/09-freeflarum.yml
+      - name: Deploy no-cost.site code
+        ansible.builtin.include_tasks: tasks/09-nocost.yml
         tags: [always]
 
       - name: Skeletons

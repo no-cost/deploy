@@ -94,15 +94,15 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
 
-export PYTHONPATH=/data/freeflarum
-export PATH=/data/freeflarum/bin:$PATH
+export PYTHONPATH={{ paths.backend_root }}
+export PATH={{ paths.backend_bin }}:$PATH
 
 # Need to overwrite this value (as statically set in .profile despite /etc/default/locale), otherwise
 # python cannot print utf-8 chars to the terminal.
 export LANG="C.UTF-8"
 
 
-export GIT_AUTHOR_NAME='FreeFlarum'
+export GIT_AUTHOR_NAME='no-cost'
 export GIT_AUTHOR_EMAIL='info@{{ main_domain }}'
 export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
 export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"

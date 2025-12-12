@@ -72,9 +72,9 @@
       name: sysstat
       state: restarted
 
-- name: restart freeflarum
+- name: restart nocost-backend
   ansible.builtin.systemd:
-      name: freeflarum
+      name: nocost-backend
       state: restarted
       daemon_reload: true
 

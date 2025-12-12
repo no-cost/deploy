@@ -1,17 +1,16 @@
 from pathlib import Path
-
+# TODO: adjust structurer
 
 MAINTENANCE_MODE = Path('/tmp/maintenance').exists()
-"""If `True`, then FreeFlarum will operate in restricted mode. Useful during upgrades."""
-PHP_VERSION = '8.2'
-"""The PHP version that FreeFlarum uses. This needs to be manually increased after major PHP upgrades."""
+"""If `True`, then no-cost will operate in restricted mode. Useful during extension/module updates, etc."""
+PHP_VERSION = '8.4'
+"""The PHP version that no-cost uses. This needs to be incremented after major PHP upgrades."""
 
+"""The root path of the cloned backend repository."""
 ROOT_PATH = Path(__file__).parent.parent
-"""The root path of the cloned repository."""
-CODE_PATH = ROOT_PATH / 'freeflarum'
-"""The path to FreeFlarum's source code."""
+"""The path to no-cost's source code."""
 TEMPLATES_ROOT = CODE_PATH / 'backend' / 'templates'
-"""The path to FreeFlarum's templates."""
+"""The path to no-cost's templates."""
 
 BACKUPS_ROOT = Path('{{ backups_root }}')
 """The root path of all backups."""
@@ -31,28 +30,28 @@ GEOIP_DATABASE_PATH = Path('/etc/geoip/GeoLite2-City.mmdb')
 """Path to Maxmind's `GeoLite2-City.mmdb`."""
 
 {% if available_hostnames %}
-FREEFLARUM_DOMAINS = {{ [main_domain] + available_hostnames }}
+NOCOST_DOMAINS = {{ [main_domain] + available_hostnames }}
 {% else %}
-FREEFLARUM_DOMAINS = ['{{ main_domain }}']
+NOCOST_DOMAINS = ['{{ main_domain }}']
 {% endif %}
-"""List of all domains that belong to FreeFlarum. The first one is the default one for new forums."""
+"""List of all domains that belong to no-cost. The first one is the default one for new forums."""
 
 CSV_EXPORTABLE_TABLES = ['users', 'discussions', 'posts', 'settings']
 """Tables that can be exported to CSV by user."""
 
 
-WEB_DOMAIN = FREEFLARUM_DOMAINS[0]
+WEB_DOMAIN = NOCOST_DOMAINS[0]
 """The domain that is used for the webapp."""
 FLASK_SECRET = "{{ flask_secret }}"
 """The secret key for Flask."""
 API_DOMAIN = f"api.{WEB_DOMAIN}"
 """The domain that is used for the API."""
-FREEFLARUM_EMAIL = f"info@{WEB_DOMAIN}"
-"""The email address that is used for FreeFlarum."""
+NOCOST_EMAIL = f"info@{WEB_DOMAIN}"
+"""The email address that is used for no-cost communications and support."""
 
 
 MANDATORY_TAGS: list[str] = ['skeleton']
-"""Forums that are required in order for FreeFlarum to function properly. They can't be archived or removed."""
+"""Forums that are required in order for no-cost to function properly. They can't be archived or removed."""
 RESERVED_TAGS: list[str] = MANDATORY_TAGS + ['www', 'docs', 'api', 'cname', 'mail']
 """Forum names that are banned during signup."""
 
