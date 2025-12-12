@@ -2,7 +2,7 @@
 - name: Clone or update no-cost backend repository
   ansible.builtin.git:
       repo: "git@github.com:no-cost/backend.git"
-      dest: "{{ paths.backend_repo }}"
+      dest: "{{ paths.backend_root }}"
       version: "master"
       force: true
   tags: ["nocost"]
@@ -23,14 +23,14 @@
 
 - name: Create virtual environment for main site
   ansible.builtin.command:
-      cmd: "python3 -m venv {{ (paths.backend_repo + '/.venv') | quote }}"
-      creates: "{{ paths.backend_repo }}/.venv/bin/python"
+      cmd: "python3 -m venv {{ (paths.backend_root + '/.venv') | quote }}"
+      creates: "{{ paths.backend_root }}/.venv/bin/python"
   tags: ["nocost"]
 
 - name: Install Python packages for main site
   ansible.builtin.pip:
-      requirements: "{{ paths.backend_repo }}/requirements.txt"
-      virtualenv: "{{ paths.backend_repo }}/.venv"
+      requirements: "{{ paths.backend_root }}/requirements.txt"
+      virtualenv: "{{ paths.backend_root }}/.venv"
       virtualenv_python: "python3"
   tags: ["nocost"]
 
@@ -59,7 +59,7 @@
 
 - name: Create environment configuration for no-cost backend
   ansible.builtin.copy:
-      dest: "{{ paths.backend_repo }}/.env"
+      dest: "{{ paths.backend_root }}/.env"
       # TODO
       content: |
           # no-cost Backend Configuration

@@ -10,9 +10,9 @@ Type=notify
 User=www-data
 Group=www-data
 
-WorkingDirectory={{ paths.backend_repo }}
+WorkingDirectory={{ paths.backend_root }}
 
-ExecStart={{ paths.backend_repo }}/.venv/bin/gunicorn main:FF_API --bind=unix:{{ paths.backend_repo }}/api.sock -k uvicorn.workers.UvicornWorker -m 007 -w 4 --capture-output --access-logfile /var/log/nocost/api/access.log --log-file /var/log/nocost/api/error.log --access-logformat '{"ts": "%(t)s", "remote_ip":"%(h)s","response_code":"%(s)s","request_method":"%(m)s","request_path":"%(U)s","request_querystring":"%(q)s","request_timetaken":"%(D)s","response_length":"%(B)s"}'
+ExecStart={{ paths.backend_root }}/.venv/bin/gunicorn main:FF_API --bind=unix:{{ paths.backend_root }}/api.sock -k uvicorn.workers.UvicornWorker -m 007 -w 4 --capture-output --access-logfile /var/log/nocost/api/access.log --log-file /var/log/nocost/api/error.log --access-logformat '{"ts": "%(t)s", "remote_ip":"%(h)s","response_code":"%(s)s","request_method":"%(m)s","request_path":"%(U)s","request_querystring":"%(q)s","request_timetaken":"%(D)s","response_length":"%(B)s"}'
 ExecReload=/bin/kill -s HUP $MAINPID
 
 KillMode=mixed

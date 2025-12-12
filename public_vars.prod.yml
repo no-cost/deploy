@@ -20,8 +20,9 @@ skeletons_pub:
     mediawiki_version: "1.44.0"
 
 paths:
-    backend_repo: /srv/nocost/backend
-    frontend_repo: /srv/nocost/frontend
+    backend_root: /srv/nocost/backend
+    backend_bin_root: /srv/nocost/backend/bin
+    frontend_root: /srv/nocost/frontend
     backup_root: /backup
     backup_host_root: /backup/host
     backup_attic_root: /backup/attic

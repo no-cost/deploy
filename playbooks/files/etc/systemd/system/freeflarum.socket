@@ -3,7 +3,7 @@ Description=API socket
 
 [Socket]
 Accept=no
-ListenStream={{ paths.backend_repo }}/api.sock
+ListenStream={{ paths.backend_root }}/api.sock
 SocketUser=www-data
 SocketGroup=www-data
 SocketMode=0660

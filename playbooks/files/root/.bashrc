@@ -95,7 +95,7 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
 fi
 
 export PYTHONPATH={{ paths.backend_root }}
-export PATH={{ paths.backend_bin }}:$PATH
+export PATH={{ paths.backend_bin_root }}:$PATH
 
 # Need to overwrite this value (as statically set in .profile despite /etc/default/locale), otherwise
 # python cannot print utf-8 chars to the terminal.
