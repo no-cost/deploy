@@ -1,5 +1,6 @@
 # To-do
 
+- [ ] update mail section in secret vars to new domain name
 - [ ] fix postfix mail sending from Ansible: `{"changed": false, "msg": "Failed to send mail to 'xxx@gmail.com': {'xxx@gmail.com': (451, b'4.3.5 <noreply@no-cost.site>: Sender address rejected: Server configuration error')}", "rc": 1}`
 - [ ] Make disabled functions more lenient so that Flarum can load icons(?)
 - [ ] Check if tenant hardlinks are correct (if it actually saves disk space or if we redundantly copy some files)

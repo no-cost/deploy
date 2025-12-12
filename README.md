@@ -122,7 +122,7 @@ var:
 
 #### Editing secrets
 
-Secrets can be edited by running `ansible-vault edit <secret_vars.prod.yml>`.
+Secrets can be edited by running `ansible-vault edit secret_vars.prod.yml`.
 
 You can set the `EDITOR` environment variable to control which editor is used for the vault.
 For example, on MacOS: `export EDITOR="open -Wn -a TextEdit"` to edit via the TextEdit app (to save, press Ctrl + S and then right-click on TextEdit in the dock and quit it entirely, Ctrl + C in the CLI will interrupt the editor without saving).
