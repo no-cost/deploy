@@ -63,6 +63,6 @@
           define( 'WP_AUTO_UPDATE_CORE', false );
           define( 'DISALLOW_FILE_EDIT', true );
           define( 'DISALLOW_FILE_MODS', true );
-      marker: "/* {mark} FF - AUTO UPDATE CONFIG */"
+      marker: "/* {mark} NC - AUTO UPDATE CONFIG */"
       insertbefore: "/* That's all, stop editing!"
   tags: ["skeleton", "wordpress"]

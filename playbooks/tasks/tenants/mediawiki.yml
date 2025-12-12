@@ -39,7 +39,7 @@
           $wgArticlePath = "/$1";
           $wgUsePathInfo = true;
           $wgScriptExtension = ".php";
-      marker: "# {mark} FF - ARTICLE PATH TWEAKS"
+      marker: "# {mark} NC - ARTICLE PATH TWEAKS"
       insertafter: EOF
   tags: ["skeleton", "mediawiki"]
 

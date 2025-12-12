@@ -133,7 +133,7 @@ For example, on MacOS: `export EDITOR="open -Wn -a TextEdit"` to edit via the Te
 
 The configuration file contains common configuration settings for deployment to all environments.
 
-Ensure that the password to decrypt `secret_vars.yml` is present in the `~/.ssh/ff_vault_password` file.
+Ensure that the password to decrypt `secret_vars.yml` is present in the `~/.ssh/nocost_vault_password` file.
 
 ### Commands
 
