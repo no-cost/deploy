@@ -1,12 +1,4 @@
 ---
-- name: Install lexicon system configuration for dehydrated wildcard SSL validation
-  ansible.builtin.template:
-      src: "files/default/lexicon"
-      dest: "/etc/default/lexicon"
-      owner: root
-      group: root
-      mode: "644"
-
 - name: Install Certbot
   ansible.builtin.apt:
       name:
