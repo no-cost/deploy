@@ -12,21 +12,21 @@
           - monit
       state: present
       update_cache: true
-  tags: [monitoring]
+  tags: ["monitoring"]
 
 - name: Enable and start sysstat
   ansible.builtin.systemd:
       name: sysstat
       enabled: true
       state: started
-  tags: [monitoring]
+  tags: ["monitoring"]
 
 - name: Enable and start vnstat
   ansible.builtin.systemd:
       name: vnstat
       enabled: true
       state: started
-  tags: [monitoring]
+  tags: ["monitoring"]
 
 - name: Configure Monit
   ansible.builtin.template:
@@ -36,7 +36,7 @@
       group: root
       mode: "600"
   notify: restart monit
-  tags: [monitoring]
+  tags: ["monitoring"]
 
 - name: Create Monit service configurations
   ansible.builtin.template:
@@ -55,14 +55,14 @@
   loop_control:
       loop_var: monit_service
   notify: restart monit
-  tags: [monitoring]
+  tags: ["monitoring"]
 
 - name: Start and enable monit
   ansible.builtin.systemd:
       name: monit
       enabled: true
       state: started
-  tags: [monitoring]
+  tags: ["monitoring"]
 
 - name: Configure logwatch
   ansible.builtin.template:
@@ -71,13 +71,13 @@
       owner: root
       group: root
       mode: "644"
-  tags: [monitoring]
+  tags: ["monitoring"]
 
 - name: Disable daily logwatch cron
   ansible.builtin.file:
       path: /etc/cron.daily/00logwatch
       state: absent
-  tags: [monitoring]
+  tags: ["monitoring"]
 
 - name: Configure weekly logwatch cron
   ansible.builtin.template:
@@ -86,4 +86,4 @@
       owner: root
       group: root
       mode: "644"
-  tags: [monitoring]
+  tags: ["monitoring"]

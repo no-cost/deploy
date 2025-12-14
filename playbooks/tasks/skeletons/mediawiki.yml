@@ -123,12 +123,3 @@
       tenant_admin_password: "{{ skeletons.mediawiki_admin_password }}"
       force: true
   tags: ["skeleton", "mediawiki"]
-
-- name: Symlink wp-config of skeleton tenant to skeleton template, so wp-cli doesn't complain
-  ansible.builtin.file:
-      src: "{{ paths.tenants.base }}/mediawiki_skeleton/app/wp-config.php"
-      dest: "{{ paths.tenants.mediawiki_skeleton }}/wp-config.php"
-      state: link
-      owner: "www-data"
-      group: "www-data"
-  tags: ["skeleton", "mediawiki"]

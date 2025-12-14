@@ -42,3 +42,14 @@
       tenant_admin_password: "{{ skeletons.wordpress_admin_password }}"
       force: true
   tags: ["skeleton", "wordpress"]
+
+# HACK: is there a better way?
+- name: Symlink wp-config of skeleton tenant to skeleton template, so wp-cli doesn't complain
+  ansible.builtin.file:
+      src: "{{ paths.tenants.root }}/wordpress_skeleton/app/wp-config.php"
+      dest: "{{ paths.tenants.wordpress_skeleton }}/wp-config.php"
+      state: link
+      owner: "www-data"
+      group: "www-data"
+      force: yes
+  tags: ["skeleton", "wordpress"]

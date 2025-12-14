@@ -23,18 +23,18 @@
         job: "/bin/systemctl restart php{{ php_version }}-fpm"
   loop_control:
       loop_var: job
-  tags: [cron]
+  tags: ["cron"]
 
 - name: Create cron log directory
   ansible.builtin.file:
       path: /var/log/cron
       state: directory
       mode: "755"
-  tags: [cron]
+  tags: ["cron"]
 
 - name: Configure cron log rotation
   ansible.builtin.copy:
       dest: /etc/logrotate.d/cron-scripts
       src: files/etc/logrotate.d/cron-scripts
       mode: "644"
-  tags: [cron]
+  tags: ["cron"]
