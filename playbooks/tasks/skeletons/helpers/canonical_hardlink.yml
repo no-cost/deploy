@@ -19,6 +19,7 @@
       path: "{{ hardlink_src }}"
       follow: false
   register: hardlink_src_stat
+  tags: [always]
 
 - name: "Resolve symlink for {{ hardlink_src }}"
   ansible.builtin.stat:
@@ -26,6 +27,7 @@
       follow: true
   register: hardlink_resolved_stat
   when: hardlink_src_stat.stat.exists and hardlink_src_stat.stat.islnk
+  tags: [always]
 
 - name: "Set resolved source path"
   ansible.builtin.set_fact:
@@ -36,6 +38,7 @@
           if (hardlink_src_stat.stat.islnk and hardlink_resolved_stat.stat.exists)
           else hardlink_src
           }}"
+  tags: [always]
 
 - name: "Ensure parent directory for {{ hardlink_dest }}"
   ansible.builtin.file:
@@ -44,6 +47,7 @@
       mode: "755"
       owner: root
       group: root
+  tags: [always]
 
 - name: "Create hardlink for {{ hardlink_resolved_src }}"
   ansible.builtin.file:
@@ -55,6 +59,7 @@
       group: root
       mode: "755"
   when: hardlink_src_stat.stat.exists
+  tags: [always]
 
 - name: "Create symlink in chroot if source was a symlink"
   ansible.builtin.file:
@@ -63,3 +68,4 @@
       state: link
       force: true
   when: hardlink_src_stat.stat.exists and hardlink_src_stat.stat.islnk
+  tags: [always]

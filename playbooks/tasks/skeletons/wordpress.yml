@@ -33,6 +33,24 @@
   become_user: "www-data"
   tags: ["skeleton", "wordpress"]
 
+- name: Create mu-plugins directory in skeleton
+  ansible.builtin.file:
+      path: "{{ paths.tenants.wordpress_skeleton }}/app/public/wp-content/mu-plugins"
+      state: directory
+      owner: "www-data"
+      group: "www-data"
+      mode: "775"
+  tags: ["skeleton", "wordpress"]
+
+- name: Deploy SMTP mu-plugin to skeleton
+  ansible.builtin.template:
+      src: files/srv/skeleton/wordpress/mu-plugins/smtp.php
+      dest: "{{ paths.tenants.wordpress_skeleton }}/app/public/wp-content/mu-plugins/smtp.php"
+      owner: "www-data"
+      group: "www-data"
+      mode: "644"
+  tags: ["skeleton", "wordpress"]
+
 - name: Create skeleton host instance
   ansible.builtin.include_tasks: ../tenants/provision-main.yml
   vars:
@@ -51,5 +69,5 @@
       state: link
       owner: "www-data"
       group: "www-data"
-      force: yes
+      force: true
   tags: ["skeleton", "wordpress"]

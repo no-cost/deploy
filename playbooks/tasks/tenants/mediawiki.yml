@@ -49,3 +49,20 @@
       regexp: '^\$wgEnableUploads = false;'
       line: '$wgEnableUploads = true;'
   tags: ["skeleton", "mediawiki"]
+
+- name: Configure MediaWiki email settings
+  ansible.builtin.blockinfile:
+      path: "{{ paths.tenants.root }}/{{ tenant_tag }}/app/public/LocalSettings.php"
+      block: |
+          $wgEmergencyContact = 'info@{{ main_domain }}';
+          $wgNoReplyAddress = "noreply+" . $wgServerName . "@{{ main_domain }}";
+          $wgPasswordSender = $wgNoReplyAddress;
+          $wgSMTP = [
+              'host'     => '127.0.0.1',
+              'IDHost'   => '{{ main_domain }}',
+              'port'     => 25,
+              'auth'     => false,
+          ];
+      marker: "# {mark} NC - EMAIL CONFIG"
+      insertafter: EOF
+  tags: ["skeleton", "mediawiki"]

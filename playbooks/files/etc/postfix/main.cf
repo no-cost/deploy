@@ -36,5 +36,5 @@ virtual_alias_maps = hash:/etc/postfix/virtual
 milter_default_action = accept
 milter_protocol = 6
 
-smtpd_milters = unix:/opendkim/opendkim.sock, unix:/opendmarc/opendmarc.sock
+smtpd_milters = unix:opendkim/opendkim.sock, unix:opendmarc/opendmarc.sock
 non_smtpd_milters = $smtpd_milters
