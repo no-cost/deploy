@@ -3,7 +3,7 @@ from pathlib import Path
 
 MAINTENANCE_MODE = Path('/tmp/maintenance').exists()
 """If `True`, then no-cost will operate in restricted mode. Useful during extension/module updates, etc."""
-PHP_VERSION = '8.4'
+PHP_VERSION = '{{ php_version }}'
 """The PHP version that no-cost uses. This needs to be incremented after major PHP upgrades."""
 
 """The root path of the cloned backend repository."""

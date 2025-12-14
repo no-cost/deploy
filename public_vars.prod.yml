@@ -5,8 +5,8 @@ public_services:
     - wordpress
 
 python_version: "3.14"
-php_version: "8.4"
-mariadb_version: "12.1"
+php_version: "8.5"
+mariadb_version: "11.8" # MW is not compat with 12.x: https://phabricator.wikimedia.org/T401570
 
 ufw_allowed_ports:
     - 22
