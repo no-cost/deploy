@@ -12,19 +12,10 @@
       state: present
   tags: ["email", "mail", "postfix"]
 
-# spamassassin was renamed to spamd in Ubuntu 24.04
-- name: Install SpamAssassin (Ubuntu < 24.04)
-  ansible.builtin.apt:
-      name: spamassassin
-      state: present
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('24.04', '<')
-  tags: ["email", "mail", "postfix"]
-
-- name: Install SpamAssassin (Ubuntu >= 24.04)
+- name: Install SpamAssassin
   ansible.builtin.apt:
       name: spamd
       state: present
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('24.04', '>=')
   tags: ["email", "mail", "postfix"]
 
 - name: Configure Postfix main.cf
@@ -46,7 +37,12 @@
       src: files/etc/postfix/virtual
       dest: /etc/postfix/virtual
       mode: "644"
-  notify: postmap postfix_virtual
+  tags: ["email", "mail", "postfix"]
+
+- name: Generate virtual.db
+  ansible.builtin.command:
+      cmd: postmap /etc/postfix/virtual
+      creates: /etc/postfix/virtual.db
   tags: ["email", "mail", "postfix"]
 
 - name: Create sender access file
@@ -54,7 +50,13 @@
       src: files/etc/postfix/sender_access
       dest: /etc/postfix/sender_access
       mode: "644"
-  notify: postmap postfix_sender_access
+  tags: ["email", "mail", "postfix"]
+
+- name: Generate sender_access.db
+  ansible.builtin.command:
+      cmd: postmap /etc/postfix/sender_access
+      creates: /etc/postfix/sender_access.db
+  tags: ["email", "mail", "postfix"]
 
 - name: Add postfix user to milter groups
   ansible.builtin.user:
@@ -166,29 +168,26 @@
       dest: /etc/logrotate.d/postfix
       mode: "644"
 
-- name: Enable and start mail services
+- name: Enable and start milter services
   ansible.builtin.systemd:
-      name: "{{ mail_service }}"
+      name: "{{ milter_service }}"
       enabled: true
       state: started
   loop:
-      - postfix
       - opendkim
       - opendmarc
       - postgrey
   loop_control:
-      loop_var: mail_service
+      loop_var: milter_service
 
-- name: Enable and start SpamAssassin (Ubuntu < 24.04)
-  ansible.builtin.systemd:
-      name: spamassassin
-      enabled: true
-      state: started
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('24.04', '<')
-
-- name: Enable and start SpamAssassin (Ubuntu >= 24.04)
+- name: Enable and start SpamAssassin
   ansible.builtin.systemd:
       name: spamd
       enabled: true
       state: started
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('24.04', '>=')
+
+- name: Enable and start postfix
+  ansible.builtin.systemd:
+      name: postfix
+      enabled: true
+      state: started
