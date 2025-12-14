@@ -14,7 +14,7 @@ Contains Ansible playbooks for deploying a production no-cost.site server.
 
 ## Basic Info
 
-A "(site) tag" is an unique identifier for a site. It's used to identify a tenant (site) in the filesystem and the database (database prefix: `site_`).
+A "(site) tag" is an unique identifier for a site. It's used to identify a tenant (site) in the filesystem and the database (database prefix: `tenant_`).
 
 The [`backend`](https://github.com/no-cost/backend) repository is cloned into `/srv/nocost/backend`. The `/srv/nocost/backend/bin` directory contains management (Python) scripts. The basic management commands are:
 
