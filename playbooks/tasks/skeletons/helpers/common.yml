@@ -17,6 +17,7 @@
       - "bin"
       - "dev"
       - "etc/ssl/certs"
+      - "logs"
       - "session"
       - "tmp"
       - "usr/bin"

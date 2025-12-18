@@ -1,4 +1,5 @@
-/var/log/nginx/*.log {
+/var/log/nginx/*.log
+{{ paths.tenants.root }}/*/logs/access.log {
     daily
     missingok
     rotate 90
