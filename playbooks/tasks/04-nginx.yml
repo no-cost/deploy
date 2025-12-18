@@ -53,6 +53,7 @@
       - /etc/nginx/sites-enabled/dynamic.conf
       - /etc/nginx/sites-enabled/main-site.conf
       - /etc/nginx/snippets/gzip.conf
+      - /etc/nginx/snippets/log-format.conf
       - /etc/nginx/snippets/rate-limits.conf
       - /etc/nginx/snippets/security-headers.conf
       - /etc/nginx/snippets/ssl-params.conf
