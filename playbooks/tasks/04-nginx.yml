@@ -43,6 +43,34 @@
       loop_var: nginx_subdir
   tags: ["nginx", "web"]
 
+- name: Fetch Cloudflare IPv4 ranges
+  ansible.builtin.uri:
+      url: https://www.cloudflare.com/ips-v4
+      return_content: true
+  register: cloudflare_ipv4_response
+  tags: ["nginx", "web"]
+
+- name: Fetch Cloudflare IPv6 ranges
+  ansible.builtin.uri:
+      url: https://www.cloudflare.com/ips-v6
+      return_content: true
+  register: cloudflare_ipv6_response
+  tags: ["nginx", "web"]
+
+- name: Set Cloudflare IP facts
+  ansible.builtin.set_fact:
+      cloudflare_ips_v4: "{{ cloudflare_ipv4_response.content.split('\n') | select }}"
+      cloudflare_ips_v6: "{{ cloudflare_ipv6_response.content.split('\n') | select }}"
+  tags: ["nginx", "web"]
+
+- name: Template Cloudflare realip config
+  ansible.builtin.template:
+      src: files/etc/nginx/snippets/cloudflare-realip.conf
+      dest: /etc/nginx/snippets/cloudflare-realip.conf
+      mode: "0644"
+  notify: reload nginx
+  tags: ["nginx", "web"]
+
 - name: Process Nginx configuration templates
   ansible.builtin.template:
       src: "files{{ nginx_conf }}"
