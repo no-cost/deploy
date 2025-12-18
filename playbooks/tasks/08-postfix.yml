@@ -18,6 +18,24 @@
       state: present
   tags: ["email", "mail", "postfix"]
 
+- name: Configure Postfix SSL certificate
+  ansible.builtin.copy:
+      content: "{{ postfix.mail_pem }}"
+      dest: "/etc/ssl/cloudflare/{{ postfix.host }}.pem"
+      mode: "644"
+      owner: www-data
+      group: www-data
+  tags: ["email", "mail", "postfix", "ssl"]
+
+- name: Configure Postfix SSL certificate key
+  ansible.builtin.copy:
+      content: "{{ postfix.mail_key }}"
+      dest: "/etc/ssl/cloudflare/{{ postfix.host }}.key"
+      mode: "600"
+      owner: www-data
+      group: www-data
+  tags: ["email", "mail", "postfix", "ssl"]
+
 - name: Configure Postfix main.cf
   ansible.builtin.template:
       src: files/etc/postfix/main.cf
