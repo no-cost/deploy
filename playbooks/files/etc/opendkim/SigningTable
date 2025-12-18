@@ -1,1 +1,1 @@
-*@{{ main_domain }} mail._domainkey.{{ main_domain }}
+.*@{{ main_domain | regex_escape }} mail._domainkey.{{ main_domain }}
