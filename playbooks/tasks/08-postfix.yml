@@ -138,7 +138,7 @@
       content: "{{ postfix.opendkim_domain_key }}"
       owner: opendkim
       group: opendkim
-      mode: "644"
+      mode: "600"
   tags: ["email", "mail", "postfix"]
 
 - name: Copy OpenDKIM mail.txt for main domain
