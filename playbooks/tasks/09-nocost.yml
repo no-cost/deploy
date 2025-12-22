@@ -58,23 +58,9 @@
   tags: ["nocost"]
 
 - name: Create environment configuration for no-cost backend
-  ansible.builtin.copy:
-      dest: "{{ paths.backend_root }}/.env"
-      # TODO
-      content: |
-          # no-cost Backend Configuration
-          DATABASE_HOST=localhost
-          DATABASE_NAME=nocost
-          DATABASE_USER=nocost
-
-          # Paths
-          TENANT_ROOT={{ paths.tenants.root }}
-          FLARUM_SKELETON={{ paths.tenants.flarum_skeleton }}
-          WORDPRESS_SKELETON={{ paths.tenants.wordpress_skeleton }}
-          BACKUP_ROOT={{ paths.backup_root }}
-
-          # Domains
-          PRIMARY_DOMAINS=...
+  ansible.builtin.template:
+      src: "files/srv/backend/.envrc.template"
+      dest: "{{ paths.backend_root }}/.envrc"
       owner: www-data
       group: www-data
       mode: "0640"
@@ -121,9 +107,40 @@
       mode: "644"
   tags: ["nocost", "geoip"]
 
-- name: Start nocost service
-  ansible.builtin.systemd:
-      name: nocost.service
-      enabled: true
-      state: started
-  tags: ["nocost"]
+- name: Install requirements
+  ansible.builtin.pip:
+      requirements: "{{ paths.backend_root }}/requirements.txt"
+      virtualenv: "{{ paths.backend_root }}/.venv"
+      virtualenv_python: "python3"
+  tags: ["nocost", "test"]
+
+- name: Run backend tests
+  ansible.builtin.command:
+      cmd: "{{ paths.backend_root }}/.venv/bin/pytest -v"
+      chdir: "{{ paths.backend_root }}"
+  register: test_result
+  failed_when: test_result.rc != 0
+  changed_when: false
+  tags: ["nocost", "test"]
+  notify: restart nocost-backend
+
+- name: Provision skeleton instances
+  ansible.builtin.command:
+      cmd: >
+          {{ paths.backend_root }}/.venv/bin/python
+          {{ paths.backend_root }}/bin/create_site
+          {{ item.item.tag }}
+          {{ item.item.type }}
+          {{ item.item.email }}
+          --password={{ skeletons[item.item.type + '_admin_password'] }}
+      chdir: "{{ paths.backend_root }}"
+      creates: "{{ paths.tenants.root }}/{{ instance.tag }}"
+  environment:
+      ENVIRONMENT: "{{ env }}"
+  loop:
+      - { tag: "flarum_skeleton", type: "flarum", email: "admin@{{ main_domain }}" }
+      - { tag: "wordpress_skeleton", type: "wordpress", email: "admin@{{ main_domain }}" }
+      - { tag: "mediawiki_skeleton", type: "mediawiki", email: "admin@{{ main_domain }}" }
+  loop_control:
+      loop_var: "instance"
+  tags: ["nocost", "skeleton"]
