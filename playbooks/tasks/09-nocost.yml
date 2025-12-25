@@ -7,20 +7,6 @@
       force: true
   tags: ["nocost"]
 
-- name: Create required directories for nocost
-  ansible.builtin.file:
-      path: "{{ tenant_dir }}"
-      state: directory
-      owner: www-data
-      group: www-data
-      mode: "0755"
-  loop:
-      - "{{ paths.tenants.flarum_skeleton }}"
-      - "{{ paths.tenants.wordpress_skeleton }}"
-  loop_control:
-      loop_var: tenant_dir
-  tags: ["nocost"]
-
 - name: Create virtual environment for main site
   ansible.builtin.command:
       cmd: "python3 -m venv {{ (paths.backend_root + '/.venv') | quote }}"
@@ -36,7 +22,7 @@
 
 - name: Ensure no-cost log directory
   ansible.builtin.file:
-      path: /var/log/nocost/api/
+      path: /var/log/nocost
       state: directory
       owner: www-data
       group: www-data

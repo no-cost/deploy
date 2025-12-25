@@ -39,6 +39,8 @@
       - /etc/nginx/sites-available
       - /etc/nginx/sites-enabled
       - /etc/nginx/snippets
+      - /etc/nginx/maps
+      - /etc/nginx/service-rules
   loop_control:
       loop_var: nginx_subdir
   tags: ["nginx", "web"]
@@ -78,6 +80,7 @@
       mode: "0644"
   loop:
       - /etc/nginx/nginx.conf
+      - /etc/nginx/maps/sites.conf
       - /etc/nginx/sites-enabled/dynamic.conf
       - /etc/nginx/sites-enabled/main-site.conf
       - /etc/nginx/snippets/gzip.conf
@@ -87,6 +90,14 @@
       - /etc/nginx/snippets/ssl-params.conf
   loop_control:
       loop_var: nginx_conf
+  notify: reload nginx
+  tags: ["nginx", "web"]
+
+- name: Copy all service-specific Nginx rules
+  ansible.builtin.copy:
+      src: "files/etc/nginx/service-rules/"
+      dest: /etc/nginx/service-rules/
+      mode: "0644"
   notify: reload nginx
   tags: ["nginx", "web"]
 
