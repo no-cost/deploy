@@ -42,6 +42,11 @@
       name: opendkim
       state: restarted
 
+- name: restart opendmarc
+  ansible.builtin.systemd:
+      name: opendmarc
+      state: restarted
+
 - name: restart spamassassin
   ansible.builtin.systemd:
       name: "{{ 'spamassassin' if ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('24.04', '<') else 'spamd' }}"

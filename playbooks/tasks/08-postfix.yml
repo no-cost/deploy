@@ -114,6 +114,22 @@
       loop_var: milter_conf
   tags: ["email", "mail", "postfix"]
 
+- name: Set OpenDKIM socket directory to Postfix chroot
+  ansible.builtin.lineinfile:
+      path: /etc/default/opendkim
+      regexp: "^RUNDIR="
+      line: "RUNDIR=/var/spool/postfix/opendkim"
+  notify: restart opendkim
+  tags: ["email", "mail", "postfix"]
+
+- name: Set OpenDMARC socket directory to Postfix chroot
+  ansible.builtin.lineinfile:
+      path: /etc/default/opendmarc
+      regexp: "^RUNDIR="
+      line: "RUNDIR=/var/spool/postfix/opendmarc"
+  notify: restart opendmarc
+  tags: ["email", "mail", "postfix"]
+
 - name: Create OpenDKIM keys directory
   ansible.builtin.file:
       path: /etc/opendkim/keys
