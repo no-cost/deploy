@@ -933,7 +933,7 @@ INSERT INTO `settings` VALUES
 ('forum_title','{{ tenant_tag | replace("_", " ") | title }}'),
 ('mail_driver','smtp'),
 ('mail_from','noreply@{{ main_domain }}'),
-('mail_host','localhost'),
+('mail_host','127.0.0.1'),
 ('mail_port','25'),
 ('slug_driver_Flarum\\Discussion\\Discussion','default'),
 ('slug_driver_Flarum\\User\\User','default'),
