@@ -124,9 +124,15 @@
   environment:
       ENVIRONMENT: "{{ env }}"
   loop:
-      - { tag: "flarum_skeleton", type: "flarum", email: "admin@{{ main_domain }}" }
-      - { tag: "wordpress_skeleton", type: "wordpress", email: "admin@{{ main_domain }}" }
-      - { tag: "mediawiki_skeleton", type: "mediawiki", email: "admin@{{ main_domain }}" }
+      - tag: flarum_skeleton
+        type: flarum
+        email: "admin@{{ main_domain }}"
+      - tag: wordpress_skeleton
+        type: wordpress
+        email: "admin@{{ main_domain }}"
+      - tag: mediawiki_skeleton
+        type: mediawiki
+        email: "admin@{{ main_domain }}"
   loop_control:
       loop_var: "instance"
   tags: ["nocost", "skeleton"]

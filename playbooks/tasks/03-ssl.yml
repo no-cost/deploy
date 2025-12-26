@@ -15,7 +15,7 @@
       owner: root
       group: root
   loop:
-      - /etc/ssl/cloudflare
+      - /etc/ssl/wildcard
       - /etc/letsencrypt
       - /var/lib/letsencrypt
       - /var/log/letsencrypt
@@ -50,11 +50,11 @@
       mode: "644"
   tags: ["ssl", "certificates", "certbot"]
 
-- name: Configure SSL certificates
-  ansible.builtin.copy:
-      content: "{{ domains[domain].ssl_certificate_pem }}"
-      dest: "/etc/ssl/cloudflare/{{ domain }}.pem"
-      mode: "644"
+- name: Create wildcard SSL certificate directories
+  ansible.builtin.file:
+      path: "/etc/ssl/wildcard/{{ domain }}"
+      state: directory
+      mode: "755"
       owner: www-data
       group: www-data
   loop: "{{ domains.keys() | list }}"
@@ -63,10 +63,24 @@
   when: domains is defined
   tags: ["ssl", "certificates"]
 
-- name: Configure SSL certificate keys
+- name: Configure wildcard SSL certificates
+  ansible.builtin.copy:
+      content: "{{ domains[domain].ssl_certificate_pem }}"
+      dest: "/etc/ssl/wildcard/{{ domain }}/fullchain.pem"
+      mode: "644"
+      owner: www-data
+      group: www-data
+  loop: "{{ domains.keys() | list }}"
+  loop_control:
+      loop_var: domain
+  when: domains is defined
+  notify: reload nginx
+  tags: ["ssl", "certificates"]
+
+- name: Configure wildcard SSL certificate keys
   ansible.builtin.copy:
       content: "{{ domains[domain_key].ssl_certificate_key }}"
-      dest: "/etc/ssl/cloudflare/{{ domain_key }}.key"
+      dest: "/etc/ssl/wildcard/{{ domain_key }}/privkey.pem"
       mode: "600"
       owner: www-data
       group: www-data
@@ -74,4 +88,5 @@
   loop_control:
       loop_var: domain_key
   when: domains is defined
+  notify: reload nginx
   tags: ["ssl", "certificates"]
