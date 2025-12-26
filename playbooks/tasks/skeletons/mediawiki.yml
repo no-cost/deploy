@@ -113,13 +113,3 @@
 #       group: "www-data"
 #       mode: "644"
 #   tags: ["skeleton", "mediawiki"]
-
-- name: Create skeleton host instance
-  ansible.builtin.include_tasks: ../tenants/provision-main.yml
-  vars:
-      service_type: "mediawiki"
-      tenant_tag: "mediawiki_skeleton"
-      tenant_db_password: "{{ skeletons.mediawiki_db_password }}"
-      tenant_admin_password: "{{ skeletons.mediawiki_admin_password }}"
-      force: true
-  tags: ["skeleton", "mediawiki"]

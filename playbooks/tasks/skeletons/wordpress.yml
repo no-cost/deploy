@@ -50,24 +50,13 @@
       group: "www-data"
       mode: "644"
   tags: ["skeleton", "wordpress"]
-
-- name: Create skeleton host instance
-  ansible.builtin.include_tasks: ../tenants/provision-main.yml
-  vars:
-      service_type: "wordpress"
-      tenant_tag: "wordpress_skeleton"
-      tenant_db_password: "{{ skeletons.wordpress_db_password }}"
-      tenant_admin_password: "{{ skeletons.wordpress_admin_password }}"
-      force: true
-  tags: ["skeleton", "wordpress"]
-
 # HACK: is there a better way?
-- name: Symlink wp-config of skeleton tenant to skeleton template, so wp-cli doesn't complain
-  ansible.builtin.file:
-      src: "{{ paths.tenants.root }}/wordpress_skeleton/app/wp-config.php"
-      dest: "{{ paths.tenants.wordpress_skeleton }}/wp-config.php"
-      state: link
-      owner: "www-data"
-      group: "www-data"
-      force: true
-  tags: ["skeleton", "wordpress"]
+#- name: Symlink wp-config of skeleton tenant to skeleton template, so wp-cli doesn't complain
+#  ansible.builtin.file:
+#      src: "{{ paths.tenants.root }}/wordpress_skeleton/app/wp-config.php"
+#      dest: "{{ paths.tenants.wordpress_skeleton }}/wp-config.php"
+#      state: link
+#      owner: "www-data"
+#      group: "www-data"
+#      force: true
+#  tags: ["skeleton", "wordpress"]
