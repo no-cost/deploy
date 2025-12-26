@@ -12,4 +12,6 @@ Holds configuration for the nginx web server:
 - [`snippets/`](./snippets/) - contains useful snippets and common nginx configuration rules that are included in other configs via `include`, for readability.
 - [`nginx.conf`](./nginx.conf) - the main entry point for all configs
 
-See <https://nginx.org/en/docs/> for more information.
+To manually renew certificates for user domains: `certbot certonly --webroot -d mysite.userdomain.tld` (automated via backend).
+
+See <https://nginx.org/en/docs/> and [`04-nginx.yml`](../../../tasks/04-nginx.yml) for more information.
