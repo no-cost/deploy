@@ -1,6 +1,6 @@
 # To-do
 
-- [x] Maintain a Nginx map to redirect each URL to correct canonical URL and Nginx config for each service
+- [ ] fix mediawiki file uploads <https://mediawiki_skeleton.no-cost.wiki/index.php?title=File:Snehuliak.jpeg>
 - [ ] Make working backend
   - [ ] deploy (with .envrc, load via dotenv?)
   - [ ] deploy only playbooks needed for managing the instances (skeletons will still be deployed via `deploy` repo, but concrete tenants will be created through playbooks in `backend`)
