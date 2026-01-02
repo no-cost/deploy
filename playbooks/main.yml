@@ -51,18 +51,22 @@
         ansible.builtin.include_tasks: tasks/08-postfix.yml
         tags: [always]
 
-      - name: Deploy no-cost.site code
-        ansible.builtin.include_tasks: tasks/09-nocost.yml
+      - name: Deploy backend
+        ansible.builtin.include_tasks: tasks/09-backend.yml
+        tags: [always]
+      
+      - name: Deploy frontend
+        ansible.builtin.include_tasks: tasks/10-frontend.yml
         tags: [always]
 
       - name: Skeletons
-        ansible.builtin.include_tasks: tasks/10-skeletons.yml
+        ansible.builtin.include_tasks: tasks/11-skeletons.yml
         tags: [always]
 
       - name: Cron
-        ansible.builtin.include_tasks: tasks/11-cron.yml
+        ansible.builtin.include_tasks: tasks/12-cron.yml
         tags: [always]
 
       - name: Monitoring
-        ansible.builtin.include_tasks: tasks/12-monitoring.yml
+        ansible.builtin.include_tasks: tasks/13-monitoring.yml
         tags: [always]
