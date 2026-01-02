@@ -54,7 +54,7 @@
       - name: Deploy backend
         ansible.builtin.include_tasks: tasks/09-backend.yml
         tags: [always]
-      
+
       - name: Deploy frontend
         ansible.builtin.include_tasks: tasks/10-frontend.yml
         tags: [always]

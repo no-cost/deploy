@@ -5,20 +5,20 @@
       dest: "{{ paths.backend_root }}"
       version: "master"
       force: true
-  tags: ["nocost"]
+  tags: ["nocost", "backend"]
 
 - name: Create virtual environment for main site
   ansible.builtin.command:
       cmd: "python3 -m venv {{ (paths.backend_root + '/.venv') | quote }}"
       creates: "{{ paths.backend_root }}/.venv/bin/python"
-  tags: ["nocost"]
+  tags: ["nocost", "backend"]
 
 - name: Install Python packages for main site
   ansible.builtin.pip:
       requirements: "{{ paths.backend_root }}/requirements.txt"
       virtualenv: "{{ paths.backend_root }}/.venv"
       virtualenv_python: "python3"
-  tags: ["nocost"]
+  tags: ["nocost", "backend"]
 
 - name: Ensure no-cost log directory
   ansible.builtin.file:
@@ -27,7 +27,7 @@
       owner: www-data
       group: www-data
       mode: "755"
-  tags: ["nocost"]
+  tags: ["nocost", "backend"]
 
 - name: Ensure no-cost run directory
   ansible.builtin.file:
@@ -36,7 +36,7 @@
       owner: www-data
       group: www-data
       mode: "755"
-  tags: ["nocost"]
+  tags: ["nocost", "backend"]
 
 - name: Create systemd service files for no-cost
   ansible.builtin.template:
@@ -50,7 +50,7 @@
       loop_var: nocost_service
   notify:
       - daemon reload
-  tags: ["nocost"]
+  tags: ["nocost", "backend"]
 
 - name: Create environment configuration for no-cost backend
   ansible.builtin.template:
@@ -59,7 +59,7 @@
       owner: www-data
       group: www-data
       mode: "0640"
-  tags: ["nocost"]
+  tags: ["nocost", "backend"]
 
 - name: Create database for nocost backend
   community.mysql.mysql_db:
@@ -68,7 +68,7 @@
       collation: utf8mb4_unicode_ci
       login_unix_socket: /var/run/mysqld/mysqld.sock
       state: present
-  tags: ["nocost"]
+  tags: ["nocost", "backend"]
 
 - name: Create database user for nocost backend
   community.mysql.mysql_user:
@@ -80,38 +80,38 @@
       login_unix_socket: /var/run/mysqld/mysqld.sock
       column_case_sensitive: true
       state: present
-  tags: ["nocost"]
+  tags: ["nocost", "backend"]
 
 - name: Add Maxmind PPA repo
   ansible.builtin.apt_repository:
       repo: "ppa:maxmind/ppa"
       state: present
       update_cache: true
-  tags: ["nocost", "geoip"]
+  tags: ["nocost", "geoip", "backend"]
 
 - name: Install geoipupdate
   ansible.builtin.apt:
       package: geoipupdate
       state: present
-  tags: ["nocost", "geoip"]
+  tags: ["nocost", "geoip", "backend"]
 
 - name: Render GeoIP.conf
   ansible.builtin.template:
       src: files/etc/GeoIP.conf
       dest: /etc/GeoIP.conf
       mode: "644"
-  tags: ["nocost", "geoip"]
+  tags: ["nocost", "geoip", "backend"]
 
 - name: Install requirements
   ansible.builtin.pip:
       requirements: "{{ paths.backend_root }}/requirements.txt"
       virtualenv: "{{ paths.backend_root }}/.venv"
       virtualenv_python: "python3"
-  tags: ["nocost", "test"]
+  tags: ["nocost", "test", "backend"]
 
 - name: Start and enable no-cost backend
   ansible.builtin.systemd:
       name: nocost.service
       enabled: true
       state: started
-  tags: ["nocost"]
+  tags: ["nocost", "backend"]

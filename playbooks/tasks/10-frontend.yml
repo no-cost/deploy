@@ -4,7 +4,7 @@
       url: "https://github.com/no-cost/frontend/releases/latest/download/dist.zip"
       dest: "/tmp/nocost-frontend.zip"
       mode: "0644"
-  tags: ["frontend"]
+  tags: ["nocost", "frontend"]
 
 - name: Extract frontend dist release
   ansible.builtin.unarchive:
@@ -13,4 +13,4 @@
       owner: www-data
       group: www-data
       mode: "0755"
-  tags: ["frontend"]
+  tags: ["nocost", "frontend"]
