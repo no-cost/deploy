@@ -54,8 +54,8 @@
 
 - name: Create environment configuration for no-cost backend
   ansible.builtin.template:
-      src: "files/srv/backend/.envrc.template"
-      dest: "{{ paths.backend_root }}/.envrc"
+      src: "files/srv/backend/.env.template"
+      dest: "{{ paths.backend_root }}/.env"
       owner: www-data
       group: www-data
       mode: "0640"
