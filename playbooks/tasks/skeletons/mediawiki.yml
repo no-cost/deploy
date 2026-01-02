@@ -103,13 +103,3 @@
           rm -r /tmp/mediawiki-{{ skeletons_pub.mediawiki_version }}
       creates: "{{ paths.tenants.mediawiki_skeleton }}/app/public/index.php"
   tags: ["skeleton", "mediawiki"]
-
-# https://www.mediawiki.org/wiki/Manual:Installing_MediaWiki
-# - name: Render mw-config
-#   ansible.builtin.template:
-#       src: files/srv/skeleton/mediawiki/app/mw-config.php
-#       dest: "{{ paths.tenants.mediawiki_skeleton }}/app/mw-config.php"
-#       owner: "www-data"
-#       group: "www-data"
-#       mode: "644"
-#   tags: ["skeleton", "mediawiki"]

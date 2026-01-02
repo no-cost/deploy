@@ -1,6 +1,7 @@
 # To-do
 
 - [ ] fix mediawiki file uploads <https://mediawiki_skeleton.no-cost.wiki/index.php?title=File:Snehuliak.jpeg>
+- [ ] run alembic on backend deployment?
 - [ ] Make working backend
   - [ ] deploy (with .envrc, load via dotenv?)
   - [ ] deploy only playbooks needed for managing the instances (skeletons will still be deployed via `deploy` repo, but concrete tenants will be created through playbooks in `backend`)

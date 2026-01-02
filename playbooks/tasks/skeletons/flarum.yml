@@ -6,20 +6,11 @@
   tags: ["skeleton", "flarum"]
 
 # https://docs.flarum.org/install/
-- name: Install Flarum in app directory
+- name: Download Flarum core in app directory
   ansible.builtin.command:
       cmd: "composer create-project flarum/flarum:^1.8.1 app"
       chdir: "{{ paths.tenants.flarum_skeleton }}"
       creates: "{{ paths.tenants.flarum_skeleton }}/app/composer.json"
   become: true
   become_user: "www-data"
-  tags: ["skeleton", "flarum"]
-
-- name: Overwrite config.php with JSON loader from /etc/config.json
-  ansible.builtin.copy:
-      src: files/srv/skeleton/flarum/app/config.php
-      dest: "{{ paths.tenants.flarum_skeleton }}/app/config.php"
-      owner: "www-data"
-      group: "www-data"
-      mode: "644"
   tags: ["skeleton", "flarum"]

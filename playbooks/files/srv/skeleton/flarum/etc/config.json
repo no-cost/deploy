@@ -1,9 +1,0 @@
-{
-  "debug": false,
-  "database": {
-    "database": "tenant_{{ tenant_tag }}",
-    "username": "tenant_{{ tenant_tag }}",
-    "password": "{{ tenant_db_password }}"
-  },
-  "url": "https://{{ tenant_tag }}.{{ main_domain }}"
-}
