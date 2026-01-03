@@ -109,6 +109,13 @@
       virtualenv_python: "python3"
   tags: ["nocost", "test", "backend"]
 
+- name: Run alembic migrations
+  ansible.builtin.shell:
+      cmd: "source .venv/bin/activate && source .env && alembic upgrade head"
+      chdir: "{{ paths.backend_root }}"
+  changed_when: false
+  tags: ["nocost", "backend"]
+
 - name: Start and enable no-cost backend
   ansible.builtin.systemd:
       name: nocost.service
