@@ -22,7 +22,6 @@
       - "tmp"
       - "usr/bin"
       - "usr/sbin"
-      - "usr/lib/{{ ansible_architecture }}-linux-gnu"
       - "usr/share/zoneinfo"
   loop_control:
       loop_var: "php_dir"
@@ -91,31 +90,12 @@
   loop:
       - src: "/etc/ssl/certs/ca-certificates.crt"
         dest: "{{ skeleton_root_dir }}/etc/ssl/certs/ca-certificates.crt"
-      - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/ld-linux-{{ ansible_architecture }}.so.1"
-        dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/ld-linux-{{ ansible_architecture }}.so.1"
-      - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libc.so.6"
-        dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libc.so.6"
-      - src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/libnss_dns.so.2"
-        dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/libnss_dns.so.2"
-
       - src: "/usr/bin/bash"
         dest: "{{ skeleton_root_dir }}/usr/bin/bash"
       - src: "/usr/bin/dash"
         dest: "{{ skeleton_root_dir }}/usr/bin/dash"
   loop_control:
       loop_var: php_hardlink
-  tags: [always]
-
-- name: Create canonical hardlinks (resolve symlinks)
-  ansible.builtin.include_tasks: canonical_hardlink.yml
-  vars:
-      hardlink_src: "/usr/lib/{{ ansible_architecture }}-linux-gnu/{{ lib_name }}"
-      hardlink_dest: "{{ skeleton_root_dir }}/usr/lib/{{ ansible_architecture }}-linux-gnu/{{ lib_name }}"
-      hardlink_root_dir: "{{ skeleton_root_dir }}"
-  loop:
-      - libtinfo.so.6
-  loop_control:
-      loop_var: lib_name
   tags: [always]
 
 - name: Create symlinks
