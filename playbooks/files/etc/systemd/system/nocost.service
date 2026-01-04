@@ -11,7 +11,7 @@ Group=nocost
 
 WorkingDirectory={{ paths.backend_root }}
 EnvironmentFile={{ paths.backend_root }}/.env
-ExecStart={{ paths.backend_root }}/.venv/bin/gunicorn main:FF_API --bind=unix:/var/run/nocost/api.sock -k uvicorn.workers.UvicornWorker -m 007 -w 4 --capture-output --log-file /var/log/nocost/api.error.log
+ExecStart={{ paths.backend_root }}/.venv/bin/gunicorn main:API --bind=unix:/var/run/nocost/api.sock -k uvicorn.workers.UvicornWorker -m 007 -w 4 --capture-output --log-file /var/log/nocost/api.error.log
 ExecReload=/bin/kill -s HUP $MAINPID
 
 KillMode=mixed
