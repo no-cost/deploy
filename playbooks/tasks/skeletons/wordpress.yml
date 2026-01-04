@@ -51,7 +51,7 @@
       mode: "644"
   tags: ["skeleton", "wordpress"]
 # HACK: is there a better way?
-#- name: Symlink wp-config of skeleton tenant to skeleton template, so wp-cli doesn't complain
+# - name: Symlink wp-config of skeleton tenant to skeleton template, so wp-cli doesn't complain
 #  ansible.builtin.file:
 #      src: "{{ paths.tenants.root }}/wordpress_skeleton/app/wp-config.php"
 #      dest: "{{ paths.tenants.wordpress_skeleton }}/wp-config.php"

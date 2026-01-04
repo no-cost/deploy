@@ -111,7 +111,7 @@
 
 - name: Run alembic migrations
   ansible.builtin.shell:
-      cmd: "source .venv/bin/activate && source .env && alembic upgrade head"
+      cmd: ". .env && .venv/bin/alembic upgrade head"
       chdir: "{{ paths.backend_root }}"
   changed_when: false
   tags: ["nocost", "backend"]
