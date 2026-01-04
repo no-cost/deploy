@@ -55,7 +55,7 @@
 # also note: this is for core only, it has no bundled exts
 - name: Unarchive Mediawiki
   ansible.builtin.unarchive:
-      src: "v"
+      src: "https://github.com/wikimedia/mediawiki/archive/refs/tags/{{ skeletons_pub.mediawiki_version }}.tar.gz"
       dest: "{{ paths.tenants.mediawiki_skeleton }}/app/public"
       remote_src: true
       owner: www-data
