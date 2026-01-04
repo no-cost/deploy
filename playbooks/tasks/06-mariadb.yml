@@ -12,6 +12,12 @@
       creates: /etc/apt/sources.list.d/mariadb.list
   tags: ["mariadb", "database"]
 
+- name: Remove mariadb_repo_setup tmp file
+  ansible.builtin.file:
+      path: /tmp/mariadb_repo_setup
+      state: absent
+  tags: ["mariadb", "database"]
+
 - name: Update apt cache after adding MariaDB repository
   ansible.builtin.apt:
       update_cache: true

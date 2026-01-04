@@ -19,5 +19,5 @@
 - name: Include all skeleton tasks
   ansible.builtin.include_tasks: "{{ item }}"
   with_fileglob:
-      - ./skeletons/*.yml
+      - ./skeletons/[!_]*.yml
   tags: [always]

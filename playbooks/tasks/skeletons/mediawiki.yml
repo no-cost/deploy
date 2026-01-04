@@ -1,6 +1,6 @@
 ---
 - name: Setup common skeleton app structure
-  ansible.builtin.include_tasks: ./helpers/common.yml
+  ansible.builtin.include_tasks: ./_common.yml
   vars:
       skeleton_root_dir: "{{ paths.tenants.mediawiki_skeleton }}"
   tags: ["skeleton", "mediawiki"]
@@ -40,15 +40,6 @@
       group: root
   tags: ["skeleton", "mediawiki"]
 
-# https://www.mediawiki.org/wiki/Download
-- name: Download & unarchive Mediawiki
-  ansible.builtin.unarchive:
-      remote_src: true
-      src: "https://releases.wikimedia.org/mediawiki/{{ skeletons_pub.mediawiki_major + '/mediawiki-' + skeletons_pub.mediawiki_version + '.tar.gz' }}"
-      dest: /tmp/
-      mode: "0775"
-  tags: ["skeleton", "mediawiki"]
-
 - name: Ensure public dir
   ansible.builtin.file:
       path: "{{ paths.tenants.mediawiki_skeleton }}/app/public"
@@ -58,13 +49,33 @@
       mode: "0775"
   tags: ["skeleton", "mediawiki"]
 
-- name: Move MediaWiki files to app directory
-  ansible.builtin.shell:
-      cmd: |
-          mv /tmp/mediawiki-{{ skeletons_pub.mediawiki_version }}/* {{ (paths.tenants.mediawiki_skeleton + '/app/public/') | quote }}
-          rm -r /tmp/mediawiki-{{ skeletons_pub.mediawiki_version }}
+# note: we have observed that fetching releases from Wikimedia can fail with a connection timeout
+# with no apparent reason, likely an issue with their servers (https://releases.wikimedia.org/mediawiki/)
+# hence we use github releases instead
+# also note: this is for core only, it has no bundled exts
+- name: Unarchive Mediawiki
+  ansible.builtin.unarchive:
+      src: "v"
+      dest: "{{ paths.tenants.mediawiki_skeleton }}/app/public"
+      remote_src: true
+      owner: www-data
+      group: www-data
+      mode: "0775"
       creates: "{{ paths.tenants.mediawiki_skeleton }}/app/public/index.php"
+      extra_opts: ["--strip-components=1"] # strip root version folder
   tags: ["skeleton", "mediawiki"]
+
+# before:
+# - name: Unarchive Mediawiki
+#   ansible.builtin.unarchive:
+#       src: "https://releases.wikimedia.org/mediawiki/{{ skeletons_pub.mediawiki_major }}/mediawiki-{{ skeletons_pub.mediawiki_version }}.zip"
+#       dest: "{{ paths.tenants.mediawiki_skeleton }}/app/public"
+#       remote_src: true
+#       owner: www-data
+#       group: www-data
+#       mode: "0775"
+#       creates: "{{ paths.tenants.mediawiki_skeleton }}/app/public/index.php"
+#   tags: ["skeleton", "mediawiki"]
 
 - name: Write modules.php file
   ansible.builtin.template:

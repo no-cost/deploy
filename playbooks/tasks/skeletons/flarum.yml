@@ -1,6 +1,6 @@
 ---
 - name: Setup common skeleton app structure
-  ansible.builtin.include_tasks: ./helpers/common.yml
+  ansible.builtin.include_tasks: ./_common.yml
   vars:
       skeleton_root_dir: "{{ paths.tenants.flarum_skeleton }}"
   tags: ["skeleton", "flarum"]
