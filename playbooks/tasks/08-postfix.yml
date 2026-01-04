@@ -206,7 +206,7 @@
   ansible.builtin.systemd:
       name: "{{ milter_service }}"
       enabled: true
-      state: started
+      state: restarted
   loop:
       - opendkim
       - opendmarc
@@ -218,10 +218,10 @@
   ansible.builtin.systemd:
       name: spamd
       enabled: true
-      state: started
+      state: restarted
 
 - name: Enable and start postfix
   ansible.builtin.systemd:
       name: postfix
       enabled: true
-      state: started
+      state: restarted

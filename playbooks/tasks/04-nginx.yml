@@ -116,14 +116,6 @@
   notify: reload nginx
   tags: ["nginx", "web"]
 
-- name: Start Nginx service
-  ansible.builtin.systemd:
-      name: nginx
-      enabled: true
-      state: started
-      daemon_reload: true
-  tags: ["nginx", "web"]
-
 # https://linux.die.net/man/8/logrotate
 - name: Set up log rotation for Nginx
   ansible.builtin.copy:
@@ -135,5 +127,6 @@
 - name: Restart Nginx
   ansible.builtin.systemd:
       name: nginx
+      enabled: true
       state: restarted
   tags: ["nginx", "web"]

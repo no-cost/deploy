@@ -140,7 +140,7 @@
 
 - name: Enable and start no-cost backend service
   ansible.builtin.systemd:
-      name: nocost.service
+      name: nocost
       enabled: true
-      state: started
+      state: restarted
   tags: ["nocost", "backend"]

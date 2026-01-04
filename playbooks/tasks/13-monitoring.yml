@@ -18,14 +18,14 @@
   ansible.builtin.systemd:
       name: sysstat
       enabled: true
-      state: started
+      state: restarted
   tags: ["monitoring"]
 
 - name: Enable and start vnstat
   ansible.builtin.systemd:
       name: vnstat
       enabled: true
-      state: started
+      state: restarted
   tags: ["monitoring"]
 
 - name: Configure Monit
@@ -61,7 +61,7 @@
   ansible.builtin.systemd:
       name: monit
       enabled: true
-      state: started
+      state: restarted
   tags: ["monitoring"]
 
 - name: Configure logwatch
