@@ -77,12 +77,6 @@
       name: sysstat
       state: restarted
 
-- name: restart nocost-backend
-  ansible.builtin.systemd:
-      name: nocost-backend
-      state: restarted
-      daemon_reload: true
-
 - name: daemon reload
   ansible.builtin.systemd:
       daemon_reload: true
