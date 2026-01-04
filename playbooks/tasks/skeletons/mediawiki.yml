@@ -65,17 +65,14 @@
       extra_opts: ["--strip-components=1"] # strip root version folder
   tags: ["skeleton", "mediawiki"]
 
-# before:
-# - name: Unarchive Mediawiki
-#   ansible.builtin.unarchive:
-#       src: "https://releases.wikimedia.org/mediawiki/{{ skeletons_pub.mediawiki_major }}/mediawiki-{{ skeletons_pub.mediawiki_version }}.zip"
-#       dest: "{{ paths.tenants.mediawiki_skeleton }}/app/public"
-#       remote_src: true
-#       owner: www-data
-#       group: www-data
-#       mode: "0775"
-#       creates: "{{ paths.tenants.mediawiki_skeleton }}/app/public/index.php"
-#   tags: ["skeleton", "mediawiki"]
+- name: Update Mediawiki dependencies
+  ansible.builtin.command:
+      cmd: "composer update --no-dev"
+      chdir: "{{ paths.tenants.mediawiki_skeleton }}/app/public"
+      creates: "{{ paths.tenants.mediawiki_skeleton }}/app/public/composer.lock"
+  become: true
+  become_user: "www-data"
+  tags: ["skeleton", "mediawiki"]
 
 - name: Write modules.php file
   ansible.builtin.template:
