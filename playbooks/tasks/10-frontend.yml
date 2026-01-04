@@ -1,11 +1,4 @@
 ---
-- name: Get latest frontend dist release
-  ansible.builtin.get_url:
-      url: "https://github.com/no-cost/frontend/releases/latest/download/dist.zip"
-      dest: "/tmp/nocost-frontend.zip"
-      mode: "0644"
-  tags: ["nocost", "frontend"]
-
 - name: Ensure frontend root directory exists
   ansible.builtin.file:
       path: "{{ paths.frontend_root }}"
@@ -17,7 +10,7 @@
 
 - name: Extract frontend dist release
   ansible.builtin.unarchive:
-      src: "/tmp/nocost-frontend.zip"
+      src: "https://github.com/no-cost/frontend/releases/latest/download/dist.zip"
       remote_src: true
       dest: "{{ paths.frontend_root }}"
       owner: www-data

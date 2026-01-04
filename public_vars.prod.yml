@@ -17,7 +17,7 @@ ufw_allowed_ports:
 
 skeletons_pub:
     mediawiki_major: "1.44"
-    mediawiki_version: "1.44.0"
+    mediawiki_version: "1.44.3"
 
 paths:
     backend_root: /srv/nocost/backend

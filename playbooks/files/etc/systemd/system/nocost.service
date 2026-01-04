@@ -6,8 +6,8 @@ After=network.target
 [Service]
 Type=notify
 
-User=www-data
-Group=www-data
+User=nocost
+Group=nocost
 
 WorkingDirectory={{ paths.backend_root }}
 EnvironmentFile={{ paths.backend_root }}/.env

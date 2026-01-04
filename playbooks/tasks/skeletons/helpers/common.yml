@@ -21,6 +21,7 @@
       - "session"
       - "tmp"
       - "usr/bin"
+      - "usr/lib"
       - "usr/sbin"
       - "usr/share/zoneinfo"
   loop_control:

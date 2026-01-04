@@ -44,7 +44,7 @@
 - name: Download & unarchive Mediawiki
   ansible.builtin.unarchive:
       remote_src: true
-      src: "https://releases.wikimedia.org/mediawiki/{{ skeletons_pub.mediawiki_major + '/mediawiki-' + skeletons_pub.mediawiki_version + '.zip' }}"
+      src: "https://releases.wikimedia.org/mediawiki/{{ skeletons_pub.mediawiki_major + '/mediawiki-' + skeletons_pub.mediawiki_version + '.tar.gz' }}"
       dest: /tmp/
       mode: "0775"
   tags: ["skeleton", "mediawiki"]
