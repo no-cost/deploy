@@ -8,6 +8,14 @@
       create_home: true
   tags: ["nocost", "backend"]
 
+- name: Add nocost user to sudoers
+  ansible.builtin.copy:
+      content: "nocost ALL=(ALL) NOPASSWD: ALL\n"
+      dest: /etc/sudoers.d/nocost
+      mode: "0440"
+      validate: "visudo -cf %s"
+  tags: ["nocost", "backend"]
+
 - name: Add backend repo to git safe.directory to bypass perm checks
   ansible.builtin.command:
       cmd: "git config --global --add safe.directory {{ paths.backend_root }}"
