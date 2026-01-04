@@ -5,7 +5,7 @@ Description=API socket
 Accept=no
 ListenStream=/var/run/nocost/api.sock
 SocketUser=nocost
-SocketGroup=nocost
+SocketGroup=www-data
 SocketMode=0660
 
 [Install]

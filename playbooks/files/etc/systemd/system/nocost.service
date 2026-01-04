@@ -7,7 +7,7 @@ After=network.target
 Type=notify
 
 User=nocost
-Group=nocost
+Group=www-data
 
 WorkingDirectory={{ paths.backend_root }}
 EnvironmentFile={{ paths.backend_root }}/.env
