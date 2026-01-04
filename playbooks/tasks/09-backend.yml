@@ -3,8 +3,9 @@
   ansible.builtin.user:
       name: nocost
       system: true
+      home: /var/lib/nocost
       shell: /usr/sbin/nologin
-      create_home: false
+      create_home: true
   tags: ["nocost", "backend"]
 
 - name: Add backend repo to git safe.directory to bypass perm checks
