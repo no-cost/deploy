@@ -94,6 +94,7 @@
   loop:
       - /etc/nginx/nginx.conf
       - /etc/nginx/maps/ssl.conf
+      - /etc/nginx/maps/needs_redirect.conf
       - /etc/nginx/sites-enabled/dynamic.conf
       - /etc/nginx/sites-enabled/main-site.conf
       - /etc/nginx/snippets/gzip.conf
