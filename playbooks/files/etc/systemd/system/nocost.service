@@ -16,7 +16,16 @@ ExecReload=/bin/kill -s HUP $MAINPID
 
 KillMode=mixed
 TimeoutStopSec=5
-PrivateTmp=true
+
+# https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html
+# "The file system namespace related options (PrivateTmp=, PrivateDevices=, ProtectSystem=, ProtectHome=, ...) require
+# that mount and unmount propagation from the unit's file system namespace is disabled, and hence downgrade shared to slave."
+# in a nutshell: we isolate, we lose mounts propag from ansible_runner, which runs in gunicorn which runs in systemd
+# so we can't let systemd isolate any part of the fs namespace at all
+# this is why we can't have nice things...
+ProtectSystem=false
+PrivateTmp=false
+MountFlags=shared
 
 [Install]
 WantedBy=multi-user.target
