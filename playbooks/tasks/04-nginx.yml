@@ -108,6 +108,15 @@
   notify: reload nginx
   tags: ["nginx", "web"]
 
+- name: Create nocost system user
+  ansible.builtin.user:
+      name: nocost
+      system: true
+      home: /var/lib/nocost
+      shell: /usr/sbin/nologin
+      create_home: true
+  tags: ["nocost", "backend"]
+
 - name: Copy sites.conf
   ansible.builtin.copy:
       src: files/etc/nginx/maps/sites.conf

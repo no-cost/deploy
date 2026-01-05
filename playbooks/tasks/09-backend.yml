@@ -1,13 +1,4 @@
 ---
-- name: Create nocost system user
-  ansible.builtin.user:
-      name: nocost
-      system: true
-      home: /var/lib/nocost
-      shell: /usr/sbin/nologin
-      create_home: true
-  tags: ["nocost", "backend"]
-
 - name: Add nocost user to sudoers
   ansible.builtin.copy:
       content: "nocost ALL=(ALL) NOPASSWD: ALL\n"
