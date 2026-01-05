@@ -93,7 +93,6 @@
       mode: "0644"
   loop:
       - /etc/nginx/nginx.conf
-      - /etc/nginx/maps/sites.conf
       - /etc/nginx/maps/ssl.conf
       - /etc/nginx/sites-enabled/dynamic.conf
       - /etc/nginx/sites-enabled/main-site.conf
@@ -105,6 +104,16 @@
       - /etc/nginx/snippets/tenant-common.conf
   loop_control:
       loop_var: nginx_conf
+  notify: reload nginx
+  tags: ["nginx", "web"]
+
+- name: Copy sites.conf
+  ansible.builtin.copy:
+      src: files/etc/nginx/maps/sites.conf
+      dest: /etc/nginx/maps/sites.conf
+      owner: nocost
+      group: www-data
+      mode: "0640"
   notify: reload nginx
   tags: ["nginx", "web"]
 

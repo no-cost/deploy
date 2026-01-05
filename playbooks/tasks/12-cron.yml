@@ -15,12 +15,6 @@
         hour: "3"
         weekday: "0"
         job: "/bin/rm {{ paths.tenants.root }}/app/storage/logs/flarum*.log >> /var/log/cron/flarum-log-cleanup.log 2>&1"
-
-      - name: "Restart PHP-FPM (to prevent memory leaks)"
-        minute: "0"
-        hour: "6"
-        weekday: "0"
-        job: "/bin/systemctl restart php{{ php_version }}-fpm"
   loop_control:
       loop_var: job
   tags: ["cron"]
