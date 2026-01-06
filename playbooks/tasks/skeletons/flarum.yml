@@ -9,7 +9,7 @@
 - name: Unarchive Flarum
   ansible.builtin.unarchive:
       src: "https://github.com/no-cost/flarum-multitenant/archive/refs/heads/main.tar.gz"
-      dest: "{{ paths.tenants.flarum_skeleton }}/app/public"
+      dest: "{{ paths.tenants.flarum_skeleton }}/app"
       remote_src: true
       owner: www-data
       group: www-data
