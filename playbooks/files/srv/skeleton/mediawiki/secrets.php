@@ -1,3 +1,3 @@
 <?php
 $mainDomain = "{{ main_domain }}";
-$wgSecretKey = "{{ mediawiki_secret_key }}";
+$wgSecretKey = "{{ lookup('password', '/dev/null chars=hexdigits length=32') }}";
