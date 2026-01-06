@@ -6,11 +6,14 @@
   tags: ["skeleton", "flarum"]
 
 # https://docs.flarum.org/install/
-- name: Download Flarum core in app directory
-  ansible.builtin.command:
-      cmd: "composer create-project flarum/flarum:^1.8.1 app"
-      chdir: "{{ paths.tenants.flarum_skeleton }}"
-      creates: "{{ paths.tenants.flarum_skeleton }}/app/composer.json"
-  become: true
-  become_user: "www-data"
+- name: Unarchive Flarum
+  ansible.builtin.unarchive:
+      src: "https://github.com/no-cost/flarum-multitenant/archive/refs/heads/main.tar.gz"
+      dest: "{{ paths.tenants.flarum_skeleton }}/app/public"
+      remote_src: true
+      owner: www-data
+      group: www-data
+      mode: "0775"
+      creates: "{{ paths.tenants.flarum_skeleton }}/app/public/index.php"
+      extra_opts: ["--strip-components=1"] # strip root version folder
   tags: ["skeleton", "flarum"]

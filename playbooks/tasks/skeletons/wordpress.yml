@@ -24,39 +24,23 @@
   tags: ["skeleton", "wordpress"]
 
 # https://developer.wordpress.org/cli/commands/core/download/
-- name: Download WordPress core using WP-CLI
-  ansible.builtin.command:
-      cmd: "wp core download"
-      chdir: "{{ paths.tenants.wordpress_skeleton }}/app/public"
-      creates: "{{ paths.tenants.wordpress_skeleton }}/app/public/wp-config-sample.php"
-  become: true
-  become_user: "www-data"
+- name: Unarchive WordPress
+  ansible.builtin.unarchive:
+      src: "https://github.com/no-cost/wordpress-multitenant/archive/refs/heads/main.tar.gz"
+      dest: "{{ paths.tenants.wordpress_skeleton }}/app/public"
+      remote_src: true
+      owner: www-data
+      group: www-data
+      mode: "0775"
+      creates: "{{ paths.tenants.wordpress_skeleton }}/app/public/index.php"
+      extra_opts: ["--strip-components=1"] # strip root version folder
   tags: ["skeleton", "wordpress"]
 
-- name: Create mu-plugins directory in skeleton
-  ansible.builtin.file:
-      path: "{{ paths.tenants.wordpress_skeleton }}/app/public/wp-content/mu-plugins"
-      state: directory
-      owner: "www-data"
-      group: "www-data"
-      mode: "775"
-  tags: ["skeleton", "wordpress"]
-
-- name: Deploy SMTP mu-plugin to skeleton
+- name: Write secrets.php file
   ansible.builtin.template:
-      src: files/srv/skeleton/wordpress/mu-plugins/smtp.php
-      dest: "{{ paths.tenants.wordpress_skeleton }}/app/public/wp-content/mu-plugins/smtp.php"
+      src: files/srv/skeleton/wordpress/secrets.php
+      dest: "{{ paths.tenants.wordpress_skeleton }}/app/public/secrets.php"
       owner: "www-data"
       group: "www-data"
-      mode: "644"
+      mode: "0644"
   tags: ["skeleton", "wordpress"]
-# HACK: is there a better way?
-# - name: Symlink wp-config of skeleton tenant to skeleton template, so wp-cli doesn't complain
-#  ansible.builtin.file:
-#      src: "{{ paths.tenants.root }}/wordpress_skeleton/app/wp-config.php"
-#      dest: "{{ paths.tenants.wordpress_skeleton }}/wp-config.php"
-#      state: link
-#      owner: "www-data"
-#      group: "www-data"
-#      force: true
-#  tags: ["skeleton", "wordpress"]

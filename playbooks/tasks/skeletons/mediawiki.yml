@@ -49,13 +49,9 @@
       mode: "0775"
   tags: ["skeleton", "mediawiki"]
 
-# note: we have observed that fetching releases from Wikimedia can fail with a connection timeout
-# with no apparent reason, likely an issue with their servers (https://releases.wikimedia.org/mediawiki/)
-# hence we use github releases instead
-# also note: this is for core only, it has no bundled exts
 - name: Unarchive Mediawiki
   ansible.builtin.unarchive:
-      src: "https://github.com/wikimedia/mediawiki/archive/refs/tags/{{ skeletons_pub.mediawiki_version }}.tar.gz"
+      src: "https://github.com/no-cost/mediawiki-multitenant/archive/refs/heads/main.tar.gz"
       dest: "{{ paths.tenants.mediawiki_skeleton }}/app/public"
       remote_src: true
       owner: www-data
@@ -65,19 +61,10 @@
       extra_opts: ["--strip-components=1"] # strip root version folder
   tags: ["skeleton", "mediawiki"]
 
-- name: Update Mediawiki dependencies
-  ansible.builtin.command:
-      cmd: "composer update --no-dev"
-      chdir: "{{ paths.tenants.mediawiki_skeleton }}/app/public"
-      creates: "{{ paths.tenants.mediawiki_skeleton }}/app/public/composer.lock"
-  become: true
-  become_user: "www-data"
-  tags: ["skeleton", "mediawiki"]
-
-- name: Write modules.php file
+- name: Write secrets.php file
   ansible.builtin.template:
-      src: files/srv/skeleton/mediawiki/modules.php
-      dest: "{{ paths.tenants.mediawiki_skeleton }}/app/public/modules.php"
+      src: files/srv/skeleton/mediawiki/secrets.php
+      dest: "{{ paths.tenants.mediawiki_skeleton }}/app/public/secrets.php"
       owner: "www-data"
       group: "www-data"
       mode: "0644"
