@@ -57,7 +57,6 @@
       owner: www-data
       group: www-data
       mode: "0775"
-      creates: "{{ paths.tenants.mediawiki_skeleton }}/app/public/index.php"
       extra_opts: ["--strip-components=1"] # strip root version folder
   tags: ["skeleton", "mediawiki"]
 
