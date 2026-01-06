@@ -51,7 +51,7 @@
 
 - name: Ensure no-cost run directory
   ansible.builtin.file:
-      path: /var/run/nocost
+      path: /run/nocost
       state: directory
       owner: nocost
       group: nocost
@@ -85,7 +85,7 @@
       name: nocost
       encoding: utf8mb4
       collation: utf8mb4_unicode_ci
-      login_unix_socket: /var/run/mysqld/mysqld.sock
+      login_unix_socket: /run/mysqld/mysqld.sock
       state: present
   tags: ["nocost", "backend"]
 
@@ -96,7 +96,7 @@
       plugin: unix_socket
       plugin_auth_string: ""
       host: localhost
-      login_unix_socket: /var/run/mysqld/mysqld.sock
+      login_unix_socket: /run/mysqld/mysqld.sock
       column_case_sensitive: true
       state: present
   tags: ["nocost", "backend"]

@@ -77,7 +77,7 @@
       plugin: unix_socket
       plugin_auth_string: ""
       host: localhost
-      login_unix_socket: /var/run/mysqld/mysqld.sock
+      login_unix_socket: /run/mysqld/mysqld.sock
       column_case_sensitive: true
       state: present
   tags: ["mariadb", "database"]
@@ -86,7 +86,7 @@
   community.mysql.mysql_user:
       name: ""
       host_all: true
-      login_unix_socket: /var/run/mysqld/mysqld.sock
+      login_unix_socket: /run/mysqld/mysqld.sock
       column_case_sensitive: true
       state: absent
   tags: ["mariadb", "database"]
@@ -94,7 +94,7 @@
 - name: Remove MySQL test database
   community.mysql.mysql_db:
       name: test
-      login_unix_socket: /var/run/mysqld/mysqld.sock
+      login_unix_socket: /run/mysqld/mysqld.sock
       state: absent
   tags: ["mariadb", "database"]
 
@@ -103,7 +103,7 @@
       name: nocost
       encoding: utf8mb4
       collation: utf8mb4_unicode_ci
-      login_unix_socket: /var/run/mysqld/mysqld.sock
+      login_unix_socket: /run/mysqld/mysqld.sock
       state: present
   tags: ["mariadb", "database"]
 
@@ -114,7 +114,7 @@
       plugin_auth_string: ""
       priv: "*.*:SELECT,LOCK TABLES,SHOW VIEW,EVENT,TRIGGER"
       host: localhost
-      login_unix_socket: /var/run/mysqld/mysqld.sock
+      login_unix_socket: /run/mysqld/mysqld.sock
       column_case_sensitive: true
       state: present
   tags: ["mariadb", "database"]
