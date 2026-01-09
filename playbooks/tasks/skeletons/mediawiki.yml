@@ -68,3 +68,12 @@
       group: "www-data"
       mode: "0644"
   tags: ["skeleton", "mediawiki"]
+
+- name: Upgrade all MediaWiki sites
+  ansible.builtin.command:
+      cmd: "{{ paths.backend_bin_root }}/upgrade -s mediawiki"
+      chdir: "{{ paths.backend_root }}"
+  become: true
+  become_user: nocost
+  changed_when: false
+  tags: ["upgrade"]

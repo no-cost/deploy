@@ -16,3 +16,12 @@
       mode: "0775"
       extra_opts: ["--strip-components=1"] # strip root version folder
   tags: ["skeleton", "flarum"]
+
+- name: Upgrade all Flarum forums
+  ansible.builtin.command:
+      cmd: "{{ paths.backend_bin_root }}/upgrade -s flarum"
+      chdir: "{{ paths.backend_root }}"
+  become: true
+  become_user: nocost
+  changed_when: false
+  tags: ["upgrade"]
