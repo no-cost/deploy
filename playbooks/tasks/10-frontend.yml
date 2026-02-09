@@ -7,25 +7,33 @@
   register: _frontend_build_dir
   tags: ["nocost", "frontend"]
 
-- name: Download frontend source
-  ansible.builtin.unarchive:
-      src: "https://github.com/no-cost/frontend/archive/refs/heads/master.zip"
+- name: Remove temp dir so git clone can (re)create it
+  ansible.builtin.file:
+      path: "{{ _frontend_build_dir.path }}"
+      state: absent
+  delegate_to: localhost
+  tags: ["nocost", "frontend"]
+
+- name: Clone frontend repo
+  ansible.builtin.git:
+      repo: "https://github.com/no-cost/frontend.git"
       dest: "{{ _frontend_build_dir.path }}"
-      remote_src: true
+      version: master
+      depth: 1
   delegate_to: localhost
   tags: ["nocost", "frontend"]
 
 - name: Render .env for frontend build
   ansible.builtin.template:
       src: "{{ playbook_dir }}/files/srv/frontend/.env.template"
-      dest: "{{ _frontend_build_dir.path }}/frontend-master/.env"
+      dest: "{{ _frontend_build_dir.path }}/.env"
   delegate_to: localhost
   tags: ["nocost", "frontend"]
 
 - name: Install dependencies
   ansible.builtin.command:
       cmd: bun install
-      chdir: "{{ _frontend_build_dir.path }}/frontend-master"
+      chdir: "{{ _frontend_build_dir.path }}"
   delegate_to: localhost
   changed_when: true
   tags: ["nocost", "frontend"]
@@ -33,7 +41,7 @@
 - name: Build frontend
   ansible.builtin.command:
       cmd: bun run build
-      chdir: "{{ _frontend_build_dir.path }}/frontend-master"
+      chdir: "{{ _frontend_build_dir.path }}"
   delegate_to: localhost
   changed_when: true
   tags: ["nocost", "frontend"]
@@ -49,7 +57,7 @@
 
 - name: Sync built frontend to server
   ansible.posix.synchronize:
-      src: "{{ _frontend_build_dir.path }}/frontend-master/dist/"
+      src: "{{ _frontend_build_dir.path }}/dist/"
       dest: "{{ paths.frontend_root }}/"
       delete: true
       recursive: true
@@ -63,11 +71,4 @@
       group: www-data
       mode: "0755"
       recurse: true
-  tags: ["nocost", "frontend"]
-
-- name: Remove local build directory
-  ansible.builtin.file:
-      path: "{{ _frontend_build_dir.path }}"
-      state: absent
-  delegate_to: localhost
   tags: ["nocost", "frontend"]
