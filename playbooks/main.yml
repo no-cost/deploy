@@ -5,7 +5,7 @@
   vars_files:
       # base vars
       - "../public_vars.prod.yml"
-      - "../public_vars.{{ env | default('dev') }}.yml"
+      - "../public_vars.{{ env | default('dev') }}.yml" # overwrites base prod vars
       # is automatically decrypted, see `ansible.cfg`'s `vault_password_file`:
       - "../secret_vars.prod.yml"
       - "../secret_vars.{{ env | default('dev') }}.yml"
