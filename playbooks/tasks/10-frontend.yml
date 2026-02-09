@@ -1,4 +1,43 @@
 ---
+- name: Create local build directory
+  ansible.builtin.tempfile:
+      state: directory
+      prefix: nocost_frontend_
+  delegate_to: localhost
+  register: _frontend_build_dir
+  tags: ["nocost", "frontend"]
+
+- name: Download frontend source
+  ansible.builtin.unarchive:
+      src: "https://github.com/no-cost/frontend/archive/refs/heads/master.zip"
+      dest: "{{ _frontend_build_dir.path }}"
+      remote_src: true
+  delegate_to: localhost
+  tags: ["nocost", "frontend"]
+
+- name: Render .env for frontend build
+  ansible.builtin.template:
+      src: "{{ playbook_dir }}/files/srv/frontend/.env.template"
+      dest: "{{ _frontend_build_dir.path }}/frontend-master/.env"
+  delegate_to: localhost
+  tags: ["nocost", "frontend"]
+
+- name: Install dependencies
+  ansible.builtin.command:
+      cmd: bun install
+      chdir: "{{ _frontend_build_dir.path }}/frontend-master"
+  delegate_to: localhost
+  changed_when: true
+  tags: ["nocost", "frontend"]
+
+- name: Build frontend
+  ansible.builtin.command:
+      cmd: bun run build
+      chdir: "{{ _frontend_build_dir.path }}/frontend-master"
+  delegate_to: localhost
+  changed_when: true
+  tags: ["nocost", "frontend"]
+
 - name: Ensure frontend root directory exists
   ansible.builtin.file:
       path: "{{ paths.frontend_root }}"
@@ -8,17 +47,12 @@
       mode: "0755"
   tags: ["nocost", "frontend"]
 
-- name: Extract frontend master branch
-  ansible.builtin.unarchive:
-      src: "https://github.com/no-cost/frontend/archive/refs/heads/master.zip"
-      remote_src: true
-      dest: "/tmp"
-  tags: ["nocost", "frontend"]
-
-- name: Sync frontend
-  ansible.builtin.shell:
-      cmd: "rsync -a --delete /tmp/frontend-master/ {{ paths.frontend_root }}/"
-  changed_when: true
+- name: Sync built frontend to server
+  ansible.posix.synchronize:
+      src: "{{ _frontend_build_dir.path }}/frontend-master/dist/"
+      dest: "{{ paths.frontend_root }}/"
+      delete: true
+      recursive: true
   tags: ["nocost", "frontend"]
 
 - name: Set frontend perms
@@ -31,8 +65,9 @@
       recurse: true
   tags: ["nocost", "frontend"]
 
-- name: Remove tmp extracted frontend
+- name: Remove local build directory
   ansible.builtin.file:
-      path: "/tmp/frontend-master"
+      path: "{{ _frontend_build_dir.path }}"
       state: absent
+  delegate_to: localhost
   tags: ["nocost", "frontend"]
