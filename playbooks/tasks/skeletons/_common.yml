@@ -120,12 +120,16 @@
         path: "{{ skeleton_root_dir }}/sbin"
       - src: "usr/lib"
         path: "{{ skeleton_root_dir }}/lib"
-
-      # needed, so `chroot /bin/bash` works
-      - src: "aarch64-linux-gnu/ld-linux-{{ ansible_architecture }}.so.1"
-        path: "{{ skeleton_root_dir }}/usr/lib/ld-linux-{{ ansible_architecture }}.so.1"
   loop_control:
       loop_var: php_symlink
+  tags: [always]
+
+# needed, so `chroot /bin/bash` works
+- name: Hardlink dynamic linker into skeleton
+  ansible.builtin.include_tasks: ./_hardlink_libs.yml
+  vars:
+      lib_paths:
+          - "/lib/ld-linux-aarch64.so.1"
   tags: [always]
 
 - name: Recursively hardlink zoneinfo
