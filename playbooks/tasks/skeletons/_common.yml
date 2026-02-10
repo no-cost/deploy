@@ -130,7 +130,6 @@
       dest: "{{ skeleton_root_dir }}/usr/lib/aarch64-linux-gnu"
       rsync_opts:
           - "--link-dest=/usr/lib/aarch64-linux-gnu"
-          - "--exclude=*.la"
   delegate_to: "{{ inventory_hostname }}"
   tags: [always]
 
