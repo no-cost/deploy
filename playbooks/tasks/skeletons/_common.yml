@@ -95,6 +95,8 @@
         dest: "{{ skeleton_root_dir }}/usr/bin/bash"
       - src: "/usr/bin/dash"
         dest: "{{ skeleton_root_dir }}/usr/bin/dash"
+      - src: "/usr/bin/dash"
+        dest: "{{ skeleton_root_dir }}/usr/bin/sh"
   loop_control:
       loop_var: php_hardlink
   tags: [always]
