@@ -94,7 +94,7 @@
       name: nocost
       password: "{{ main_db_password }}"
       priv: "nocost.*:ALL"
-      host: localhost
+      host: 127.0.0.1
       login_unix_socket: /run/mysqld/mysqld.sock
       column_case_sensitive: true
       state: present
