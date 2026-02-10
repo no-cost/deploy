@@ -92,9 +92,8 @@
 - name: Create database user for nocost backend
   community.mysql.mysql_user:
       name: nocost
+      password: "{{ main_db_password }}"
       priv: "nocost.*:ALL"
-      plugin: unix_socket
-      plugin_auth_string: ""
       host: localhost
       login_unix_socket: /run/mysqld/mysqld.sock
       column_case_sensitive: true
