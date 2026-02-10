@@ -46,7 +46,7 @@
 
 - name: Upgrade all WordPress sites
   ansible.builtin.command:
-      cmd: "{{ paths.backend_bin_root }}/upgrade -s wordpress"
+      cmd: "{{ paths.backend_bin_root }}/upgrade-site -s wordpress"
       chdir: "{{ paths.backend_root }}"
   become: true
   become_user: nocost

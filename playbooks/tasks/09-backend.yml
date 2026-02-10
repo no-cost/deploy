@@ -33,11 +33,11 @@
       creates: "{{ paths.backend_root }}/.venv/bin/python"
   tags: ["nocost", "backend"]
 
-- name: Install Python packages for main site
+- name: Install backend package and generate CLI entry points
   ansible.builtin.pip:
-      requirements: "{{ paths.backend_root }}/requirements.txt"
+      name: "{{ paths.backend_root }}"
+      editable: true
       virtualenv: "{{ paths.backend_root }}/.venv"
-      virtualenv_python: "python3"
   tags: ["nocost", "backend"]
 
 - name: Ensure no-cost log directory
@@ -120,13 +120,6 @@
       dest: /etc/GeoIP.conf
       mode: "644"
   tags: ["nocost", "geoip", "backend"]
-
-- name: Install requirements
-  ansible.builtin.pip:
-      requirements: "{{ paths.backend_root }}/requirements.txt"
-      virtualenv: "{{ paths.backend_root }}/.venv"
-      virtualenv_python: "python3"
-  tags: ["nocost", "test", "backend"]
 
 - name: Run alembic migrations
   ansible.builtin.shell:
