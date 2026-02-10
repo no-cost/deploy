@@ -124,12 +124,23 @@
       loop_var: php_symlink
   tags: [always]
 
-# needed, so `chroot /bin/bash` works
-- name: Hardlink dynamic linker into skeleton
-  ansible.builtin.include_tasks: ./_hardlink_libs.yml
-  vars:
-      lib_paths:
-          - "/lib/ld-linux-aarch64.so.1"
+- name: Recursively hardlink shared libraries into skeleton
+  ansible.posix.synchronize:
+      src: /usr/lib/aarch64-linux-gnu/
+      dest: "{{ skeleton_root_dir }}/usr/lib/aarch64-linux-gnu"
+      rsync_opts:
+          - "--link-dest=/usr/lib/aarch64-linux-gnu"
+          - "--exclude=*.la"
+  delegate_to: "{{ inventory_hostname }}"
+  tags: [always]
+
+- name: Symlink dynamic linker into skeleton
+  ansible.builtin.file:
+      src: aarch64-linux-gnu/ld-linux-aarch64.so.1
+      path: "{{ skeleton_root_dir }}/usr/lib/ld-linux-aarch64.so.1"
+      state: link
+      force: true
+      follow: false
   tags: [always]
 
 - name: Recursively hardlink zoneinfo
