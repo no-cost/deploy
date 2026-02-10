@@ -117,13 +117,19 @@
       create_home: true
   tags: ["nocost", "backend"]
 
-- name: Copy sites.conf
+- name: Copy backend-managed Nginx maps
   ansible.builtin.copy:
-      src: files/etc/nginx/maps/sites.conf
-      dest: /etc/nginx/maps/sites.conf
+      src: "files/etc/nginx/maps/{{ nginx_map }}"
+      dest: "/etc/nginx/maps/{{ nginx_map }}"
       owner: nocost
       group: www-data
       mode: "0640"
+      force: false
+  loop:
+      - sites.conf
+      - custom-server-names.conf
+  loop_control:
+      loop_var: nginx_map
   notify: reload nginx
   tags: ["nginx", "web"]
 
