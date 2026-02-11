@@ -26,6 +26,7 @@
       dest: "{{ sync_dest }}/"
       delete: true
       rsync_opts:
+          - "--inplace"
           - "--chown=www-data:www-data"
           - "--chmod=D0775,F0775"
   delegate_to: "{{ inventory_hostname }}"
