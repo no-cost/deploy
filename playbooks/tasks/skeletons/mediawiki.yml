@@ -49,24 +49,11 @@
   delegate_to: "{{ inventory_hostname }}"
   tags: ["skeleton", "chroot", "mediawiki"]
 
-- name: Ensure public dir
-  ansible.builtin.file:
-      path: "{{ paths.tenants.mediawiki_skeleton }}/app/public"
-      state: directory
-      owner: "www-data"
-      group: "www-data"
-      mode: "0775"
-  tags: ["skeleton", "mediawiki"]
-
-- name: Unarchive Mediawiki
-  ansible.builtin.unarchive:
-      src: "https://github.com/no-cost/mediawiki-multitenant/archive/refs/heads/main.tar.gz"
-      dest: "{{ paths.tenants.mediawiki_skeleton }}/app/public"
-      remote_src: true
-      owner: www-data
-      group: www-data
-      mode: "0775"
-      extra_opts: ["--strip-components=1"] # strip root version folder
+- name: Sync MediaWiki skeleton
+  ansible.builtin.include_tasks: ./_sync_archive.yml
+  vars:
+      archive_url: "https://github.com/no-cost/mediawiki-multitenant/archive/refs/heads/main.tar.gz"
+      sync_dest: "{{ paths.tenants.mediawiki_skeleton }}/app/public"
   tags: ["skeleton", "mediawiki"]
 
 - name: Write secrets.php file

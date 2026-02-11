@@ -1,0 +1,38 @@
+---
+# downloads a tar.gz archive and syncs its contents into a destination
+# directory, removing files that no longer exist in the archive
+# params:
+#   - archive_url: URL of the tar.gz to download
+#   - sync_dest: destination directory to sync to
+
+- name: Create staging directory
+  ansible.builtin.tempfile:
+      state: directory
+      prefix: staging_
+  register: _staging_dir
+  tags: [always]
+
+- name: Download and extract archive
+  ansible.builtin.unarchive:
+      src: "{{ archive_url }}"
+      dest: "{{ _staging_dir.path }}"
+      remote_src: true
+      extra_opts: ["--strip-components=1"]
+  tags: [always]
+
+- name: Sync to destination
+  ansible.posix.synchronize:
+      src: "{{ _staging_dir.path }}/"
+      dest: "{{ sync_dest }}/"
+      delete: true
+      rsync_opts:
+          - "--chown=www-data:www-data"
+          - "--chmod=D0775,F0775"
+  delegate_to: "{{ inventory_hostname }}"
+  tags: [always]
+
+- name: Cleanup staging directory
+  ansible.builtin.file:
+      path: "{{ _staging_dir.path }}"
+      state: absent
+  tags: [always]

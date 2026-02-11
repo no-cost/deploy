@@ -5,16 +5,11 @@
       skeleton_root_dir: "{{ paths.tenants.flarum_skeleton }}"
   tags: ["skeleton", "flarum"]
 
-# https://docs.flarum.org/install/
-- name: Unarchive Flarum
-  ansible.builtin.unarchive:
-      src: "https://github.com/no-cost/flarum-multitenant/archive/refs/heads/main.tar.gz"
-      dest: "{{ paths.tenants.flarum_skeleton }}/app"
-      remote_src: true
-      owner: www-data
-      group: www-data
-      mode: "0775"
-      extra_opts: ["--strip-components=1"] # strip root version folder
+- name: Sync Flarum skeleton
+  ansible.builtin.include_tasks: ./_sync_archive.yml
+  vars:
+      archive_url: "https://github.com/no-cost/flarum-multitenant/archive/refs/heads/main.tar.gz"
+      sync_dest: "{{ paths.tenants.flarum_skeleton }}/app"
   tags: ["skeleton", "flarum"]
 
 - name: Upgrade all Flarum forums
