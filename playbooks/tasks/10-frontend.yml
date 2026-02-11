@@ -1,5 +1,5 @@
 ---
-- name: Create local build directory
+- name: Ensure local build directory
   ansible.builtin.tempfile:
       state: directory
       prefix: nocost_frontend_

@@ -27,7 +27,7 @@
   changed_when: false
   tags: ["nocost", "backend"]
 
-- name: Create virtual environment for main site
+- name: Ensure virtual environment for main site
   ansible.builtin.command:
       cmd: "python3 -m venv {{ (paths.backend_root + '/.venv') | quote }}"
       creates: "{{ paths.backend_root }}/.venv/bin/python"
@@ -58,7 +58,7 @@
       mode: "755"
   tags: ["nocost", "backend"]
 
-- name: Create systemd service files for no-cost
+- name: Ensure systemd service files for no-cost
   ansible.builtin.template:
       src: "files/etc/systemd/system/{{ nocost_service }}"
       dest: "/etc/systemd/system/{{ nocost_service }}"
@@ -71,7 +71,7 @@
       - daemon reload
   tags: ["nocost", "backend"]
 
-- name: Create environment configuration for no-cost backend
+- name: Ensure environment configuration for no-cost backend
   ansible.builtin.template:
       src: "files/srv/backend/.env.template"
       dest: "{{ paths.backend_root }}/.env"
@@ -80,7 +80,7 @@
       mode: "0640"
   tags: ["nocost", "backend"]
 
-- name: Create database for nocost backend
+- name: Ensure database for nocost backend
   community.mysql.mysql_db:
       name: nocost
       encoding: utf8mb4
@@ -89,7 +89,7 @@
       state: present
   tags: ["nocost", "backend"]
 
-- name: Create database user for nocost backend
+- name: Ensure database user for nocost backend
   community.mysql.mysql_user:
       name: nocost
       password: "{{ main_db_password }}"

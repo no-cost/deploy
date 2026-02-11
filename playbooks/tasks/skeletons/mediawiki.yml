@@ -14,7 +14,7 @@
       update_cache: true
   tags: ["skeleton", "mediawiki"]
 
-- name: Create hardlink for MediaWiki diff3 binary
+- name: Ensure hardlink for MediaWiki diff3 binary
   ansible.builtin.file:
       src: "{{ mw_hardlink.src }}"
       dest: "{{ mw_hardlink.dest }}"
@@ -30,7 +30,7 @@
       loop_var: mw_hardlink
   tags: ["skeleton", "chroot", "mediawiki"]
 
-- name: Create hardlink for ImageMagick binary
+- name: Ensure hardlink for ImageMagick binary
   ansible.builtin.file:
       src: "/usr/bin/convert-im6.q16"
       dest: "{{ paths.tenants.mediawiki_skeleton }}/usr/bin/convert"

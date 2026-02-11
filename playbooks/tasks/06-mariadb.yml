@@ -98,7 +98,7 @@
       state: absent
   tags: ["mariadb", "database"]
 
-- name: Create databases for services
+- name: Ensure databases for services
   community.mysql.mysql_db:
       name: nocost
       encoding: utf8mb4
@@ -107,7 +107,7 @@
       state: present
   tags: ["mariadb", "database"]
 
-- name: Create MySQL backup user
+- name: Ensure MySQL backup user
   community.mysql.mysql_user:
       name: backup
       plugin: unix_socket

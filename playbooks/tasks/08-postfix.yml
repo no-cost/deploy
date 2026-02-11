@@ -50,7 +50,7 @@
       mode: "644"
   tags: ["email", "mail", "postfix"]
 
-- name: Create virtual mailbox domains
+- name: Ensure virtual mailbox domains
   ansible.builtin.template:
       src: files/etc/postfix/virtual
       dest: /etc/postfix/virtual
@@ -63,7 +63,7 @@
       creates: /etc/postfix/virtual.db
   tags: ["email", "mail", "postfix"]
 
-- name: Create sender access file
+- name: Ensure sender access file
   ansible.builtin.template:
       src: files/etc/postfix/sender_access
       dest: /etc/postfix/sender_access
@@ -130,7 +130,7 @@
   notify: restart opendmarc
   tags: ["email", "mail", "postfix"]
 
-- name: Create OpenDKIM keys directory
+- name: Ensure OpenDKIM keys directory
   ansible.builtin.file:
       path: /etc/opendkim/keys
       state: directory
@@ -139,7 +139,7 @@
       mode: "700"
   tags: ["email", "mail", "postfix"]
 
-- name: Create OpenDKIM main domain key directory
+- name: Ensure OpenDKIM main domain key directory
   ansible.builtin.file:
       path: "/etc/opendkim/keys/{{ main_domain }}"
       state: directory

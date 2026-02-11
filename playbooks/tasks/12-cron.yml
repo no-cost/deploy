@@ -19,7 +19,7 @@
       loop_var: job
   tags: ["cron"]
 
-- name: Create cron log directory
+- name: Ensure cron log directory
   ansible.builtin.file:
       path: /var/log/cron
       state: directory

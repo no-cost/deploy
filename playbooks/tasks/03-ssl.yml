@@ -7,7 +7,7 @@
       state: present
   tags: ["ssl", "certificates", "certbot"]
 
-- name: Create SSL directories
+- name: Ensure SSL directories
   ansible.builtin.file:
       path: "{{ le_path }}"
       state: directory
@@ -50,7 +50,7 @@
       mode: "644"
   tags: ["ssl", "certificates", "certbot"]
 
-- name: Create wildcard SSL certificate directories
+- name: Ensure wildcard SSL certificate directories
   ansible.builtin.file:
       path: "/etc/ssl/cloudflare/{{ domain }}"
       state: directory

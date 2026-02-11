@@ -108,7 +108,7 @@
   notify: reload nginx
   tags: ["nginx", "web"]
 
-- name: Create nocost system user
+- name: Ensure nocost system user
   ansible.builtin.user:
       name: nocost
       system: true

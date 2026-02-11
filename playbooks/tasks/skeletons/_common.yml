@@ -4,7 +4,7 @@
 # params:
 #   - skeleton_root_dir: root directory of the skeleton
 
-- name: Create required directories for {{ skeleton_root_dir }}
+- name: Ensure required directories for {{ skeleton_root_dir }}
   ansible.builtin.file:
       state: "directory"
       path: "{{ skeleton_root_dir }}/{{ php_dir }}"
@@ -29,7 +29,7 @@
   tags: [always]
 
 # https://tldp.org/LDP/Linux-Filesystem-Hierarchy/html/dev.html
-- name: Create dev files
+- name: Ensure dev files
   ansible.builtin.command:
       cmd: "mknod -m {{ dev_file.mode }} {{ skeleton_root_dir }}/dev/{{ dev_file.name }} {{ dev_file.type }} {{ dev_file.major }} {{ dev_file.minor }}"
       creates: "{{ skeleton_root_dir }}/dev/{{ dev_file.name }}"
@@ -79,7 +79,7 @@
       loop_var: "dev_file"
   tags: [always]
 
-- name: Create hardlinks for required system files
+- name: Ensure hardlinks for required system files
   ansible.builtin.file:
       src: "{{ php_hardlink.src }}"
       dest: "{{ php_hardlink.dest }}"
@@ -101,7 +101,7 @@
       loop_var: php_hardlink
   tags: [always]
 
-- name: Create symlinks
+- name: Ensure symlinks
   ansible.builtin.file:
       src: "{{ php_symlink.src }}"
       path: "{{ php_symlink.path }}"

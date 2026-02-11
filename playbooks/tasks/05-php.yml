@@ -82,7 +82,7 @@
       - restart php-fpm
   tags: ["php-fpm", "php"]
 
-- name: Create PHP-FPM log directory
+- name: Ensure PHP-FPM log directory
   ansible.builtin.file:
       path: /var/log/php
       state: directory

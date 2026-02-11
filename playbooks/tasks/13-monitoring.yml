@@ -38,7 +38,7 @@
   notify: restart monit
   tags: ["monitoring"]
 
-- name: Create Monit service configurations
+- name: Ensure Monit service configurations
   ansible.builtin.template:
       src: "files/etc/monit/conf.d/{{ monit_service }}"
       dest: "/etc/monit/conf.d/{{ monit_service }}"
