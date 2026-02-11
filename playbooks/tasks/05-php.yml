@@ -52,6 +52,13 @@
   notify: restart php-fpm
   tags: ["php-fpm", "php"]
 
+- name: Suppress deprecation warnings for PHP CLI, to not spam wp-cli output etc.
+  ansible.builtin.lineinfile:
+      path: "/etc/php/{{ php_version }}/cli/php.ini"
+      regexp: "^error_reporting\\s*="
+      line: "error_reporting = E_ALL & ~E_DEPRECATED"
+  tags: ["php"]
+
 - name: Remove default www pool
   ansible.builtin.file:
       path: "/etc/php/fpm/pool.d/www.conf"

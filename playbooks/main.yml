@@ -36,7 +36,7 @@
         tags: [always]
 
       - name: PHP-FPM
-        ansible.builtin.include_tasks: tasks/05-php-fpm.yml
+        ansible.builtin.include_tasks: tasks/05-php.yml
         tags: [always]
 
       - name: MariaDB
