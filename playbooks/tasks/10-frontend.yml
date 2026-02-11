@@ -35,7 +35,7 @@
       cmd: bun install
       chdir: "{{ _frontend_build_dir.path }}"
   delegate_to: localhost
-  changed_when: true
+  changed_when: false
   tags: ["nocost", "frontend"]
 
 - name: Build frontend
@@ -43,7 +43,7 @@
       cmd: bun run build
       chdir: "{{ _frontend_build_dir.path }}"
   delegate_to: localhost
-  changed_when: true
+  changed_when: false
   tags: ["nocost", "frontend"]
 
 - name: Ensure frontend root directory exists

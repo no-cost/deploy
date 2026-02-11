@@ -120,6 +120,12 @@
       mode: "644"
   tags: ["nocost", "geoip", "backend"]
 
+- name: Run geoipupdate
+  ansible.builtin.command:
+      cmd: "/usr/bin/geoipupdate"
+  changed_when: false
+  tags: ["nocost", "geoip", "backend"]
+
 - name: Run alembic migrations
   ansible.builtin.shell:
       cmd: "set -a && source .env && set +a && .venv/bin/alembic upgrade head"
