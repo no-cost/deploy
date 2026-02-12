@@ -1,4 +1,19 @@
 ---
+- name: Ensure backup roots
+  ansible.builtin.file:
+      path: "{{ backup_root }}"
+      state: directory
+      owner: nocost
+      group: nocost
+      mode: "0700"
+  loop:
+      - "{{ paths.backup_system_root }}"
+      - "{{ paths.backup_host_root }}"
+      - "{{ paths.backup_attic_root }}"
+  loop_control:
+      loop_var: backup_root
+  tags: ["nocost", "backend"]
+
 - name: Add nocost user to sudoers
   ansible.builtin.copy:
       content: "nocost ALL=(ALL) NOPASSWD: ALL\n"

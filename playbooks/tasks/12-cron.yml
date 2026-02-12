@@ -20,8 +20,15 @@
         hour: "0"
         job: >-
             cd {{ paths.backend_root }} &&
-            {{ paths.backend_bin_root }}/backupsite --periodic --delete-older-than 7
+            {{ paths.backend_bin_root }}/backup_site --periodic --delete-older-than 7
             >> /var/log/cron/backup-sites.log 2>&1
+      - name: "Backup system directories (7-day retention)"
+        minute: "0"
+        hour: "23"
+        job: >-
+            cd {{ paths.backend_root }} &&
+            {{ paths.backend_bin_root }}/backup_system --delete-older-than 7
+            >> /var/log/cron/backup-system.log 2>&1
   loop_control:
       loop_var: job
   tags: ["cron"]
