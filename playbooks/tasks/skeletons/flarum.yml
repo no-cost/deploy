@@ -14,9 +14,9 @@
 
 - name: Upgrade all Flarum forums
   ansible.builtin.command:
-      cmd: "{{ paths.backend_bin_root }}/upgrade-site -s flarum"
+      cmd: "{{ paths.backend_bin_root }}/upgrade_site -s flarum"
       chdir: "{{ paths.backend_root }}"
   become: true
   become_user: nocost
   changed_when: false
-  tags: ["upgrade"]
+  tags: [never, "upgrade"]

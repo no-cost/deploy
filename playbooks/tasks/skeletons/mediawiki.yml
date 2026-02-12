@@ -67,9 +67,9 @@
 
 - name: Upgrade all MediaWiki sites
   ansible.builtin.command:
-      cmd: "{{ paths.backend_bin_root }}/upgrade-site -s mediawiki"
+      cmd: "{{ paths.backend_bin_root }}/upgrade_site -s mediawiki"
       chdir: "{{ paths.backend_root }}"
   become: true
   become_user: nocost
   changed_when: false
-  tags: ["upgrade"]
+  tags: [never, "upgrade"]
