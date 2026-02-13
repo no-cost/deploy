@@ -37,4 +37,6 @@
   become: true
   become_user: nocost
   changed_when: false
+  async: 3600
+  poll: 0
   tags: [never, "upgrade"]

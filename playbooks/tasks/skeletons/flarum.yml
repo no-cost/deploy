@@ -12,7 +12,6 @@
       sync_dest: "{{ paths.tenants.flarum_skeleton }}/app"
   tags: ["skeleton", "flarum"]
 
-# todo: run in bg & consider adding flag to also sync new stuff e.g. missing files/new hardlinks/mounts
 - name: Upgrade all Flarum forums
   ansible.builtin.command:
       cmd: "{{ paths.backend_bin_root }}/upgrade_site -s flarum"
@@ -20,4 +19,6 @@
   become: true
   become_user: nocost
   changed_when: false
+  async: 3600
+  poll: 0
   tags: [never, "upgrade"]
