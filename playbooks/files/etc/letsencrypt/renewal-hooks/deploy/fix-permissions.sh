@@ -7,6 +7,7 @@
 chmod 0750 /etc/letsencrypt/{live,archive}
 chgrp www-data /etc/letsencrypt/{live,archive}
 
+# https://heavydeck.net/blog/automating-certificate-renewal-and-deployment#deployment
 archive_dir="/etc/letsencrypt/archive/$(basename "$RENEWED_LINEAGE")"
 chgrp -R www-data "$archive_dir"
 chmod 0750 "$archive_dir"
