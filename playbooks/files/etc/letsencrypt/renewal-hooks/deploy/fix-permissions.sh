@@ -1,5 +1,7 @@
 #!/bin/bash
-# https://community.letsencrypt.org/t/recommended-permissions-on-files-distributed-by-lets-encrypt/104266/3
+# https://community.letsencrypt.org/t/recommended-permissions-on-files-distributed-by-lets-encrypt/104266
+# https://community.letsencrypt.org/t/certbot-must-be-run-as-root-but-i-need-it-to-create-the-files-with-a-different-owner/151376
+# https://heavydeck.net/blog/automating-certificate-renewal-and-deployment#deployment
 # ensure nginx (www-data) can read Let's Encrypt certificates:
 # normally, if the certs would load at boot time, nginx could read them as the master process is often root
 # however, in our setup, the cert path is dynamic and read by workers, which are www-data
@@ -7,7 +9,6 @@
 chmod 0750 /etc/letsencrypt/{live,archive}
 chgrp www-data /etc/letsencrypt/{live,archive}
 
-# https://heavydeck.net/blog/automating-certificate-renewal-and-deployment#deployment
 archive_dir="/etc/letsencrypt/archive/$(basename "$RENEWED_LINEAGE")"
 chgrp -R www-data "$archive_dir"
 chmod 0750 "$archive_dir"
