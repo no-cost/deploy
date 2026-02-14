@@ -64,6 +64,13 @@
       mode: "755"
   tags: ["nocost", "backend"]
 
+- name: Set up log rotation for no-cost backend
+  ansible.builtin.copy:
+      src: files/etc/logrotate.d/nocost
+      dest: /etc/logrotate.d/nocost
+      mode: "644"
+  tags: ["nocost", "backend"]
+
 - name: Ensure no-cost run directory
   ansible.builtin.file:
       path: /run/nocost

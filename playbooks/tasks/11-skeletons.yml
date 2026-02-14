@@ -16,6 +16,13 @@
       mode: "755"
   tags: ["skeleton", "chroot", "flarum", "mediawiki", "wordpress"]
 
+- name: Set up log rotation for tenant logs
+  ansible.builtin.template:
+      src: files/etc/logrotate.d/tenant
+      dest: /etc/logrotate.d/tenant
+      mode: "644"
+  tags: ["skeleton", "chroot", "flarum", "mediawiki", "wordpress"]
+
 - name: Include all skeleton tasks
   ansible.builtin.include_tasks: "{{ item }}"
   with_fileglob:
