@@ -19,7 +19,6 @@
       - /etc/letsencrypt
       - /var/lib/letsencrypt
       - /var/log/letsencrypt
-      - /srv/certbot
   loop_control:
       loop_var: le_path
   tags: ["ssl", "certificates", "certbot"]
