@@ -9,18 +9,38 @@
 
 - name: Ensure SSL directories
   ansible.builtin.file:
-      path: "{{ le_path }}"
+      path: "{{ le_dir.path }}"
       state: directory
-      mode: "755"
+      mode: "{{ le_dir.mode }}"
+      owner: root
+      group: "{{ le_dir.group }}"
+  loop:
+      - path: /etc/ssl/cloudflare
+        mode: "0755"
+        group: www-data
+      - path: /etc/letsencrypt
+        mode: "0750"
+        group: www-data
+      - path: /etc/letsencrypt/renewal-hooks/deploy
+        mode: "0755"
+        group: root
+      - path: /var/lib/letsencrypt
+        mode: "0755"
+        group: root
+      - path: /var/log/letsencrypt
+        mode: "0755"
+        group: root
+  loop_control:
+      loop_var: le_dir
+  tags: ["ssl", "certificates", "certbot"]
+
+- name: Deploy Certbot renewal hook for nginx permissions
+  ansible.builtin.copy:
+      src: files/etc/letsencrypt/renewal-hooks/deploy/fix-permissions.sh
+      dest: /etc/letsencrypt/renewal-hooks/deploy/fix-permissions.sh
+      mode: "0755"
       owner: root
       group: root
-  loop:
-      - /etc/ssl/cloudflare
-      - /etc/letsencrypt
-      - /var/lib/letsencrypt
-      - /var/log/letsencrypt
-  loop_control:
-      loop_var: le_path
   tags: ["ssl", "certificates", "certbot"]
 
 - name: Install dhparam for better SSL grade
