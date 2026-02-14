@@ -1,0 +1,12 @@
+/var/log/php/*.log {
+    daily
+    missingok
+    rotate 14
+    compress
+    delaycompress
+    notifempty
+    create 0640 www-data www-data
+    postrotate
+        invoke-rc.d php{{ php_version }}-fpm reload >/dev/null 2>&1
+    endscript
+}

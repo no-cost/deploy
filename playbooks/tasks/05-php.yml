@@ -91,6 +91,13 @@
       mode: "755"
   tags: ["php-fpm", "php"]
 
+- name: Set up log rotation for PHP-FPM
+  ansible.builtin.template:
+      src: files/etc/logrotate.d/php-fpm
+      dest: /etc/logrotate.d/php-fpm
+      mode: "644"
+  tags: ["php-fpm", "php"]
+
 - name: Ensure mods-available directory exists
   ansible.builtin.file:
       path: /etc/php/mods-available
