@@ -119,17 +119,23 @@
 
 - name: Copy backend-managed Nginx maps
   ansible.builtin.copy:
-      src: "files/etc/nginx/maps/{{ nginx_map }}"
-      dest: "/etc/nginx/maps/{{ nginx_map }}"
+      src: files/etc/nginx/maps/sites.conf
+      dest: /etc/nginx/maps/sites.conf
       owner: nocost
       group: www-data
       mode: "0640"
       force: false
-  loop:
-      - sites.conf
-      - custom-server-names.conf
-  loop_control:
-      loop_var: nginx_map
+  notify: reload nginx
+  tags: ["nginx", "web"]
+
+- name: Copy backend-managed custom server names snippet
+  ansible.builtin.copy:
+      src: files/etc/nginx/snippets/custom-server-names.conf
+      dest: /etc/nginx/snippets/custom-server-names.conf
+      owner: nocost
+      group: www-data
+      mode: "0640"
+      force: false
   notify: reload nginx
   tags: ["nginx", "web"]
 
