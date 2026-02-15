@@ -1,6 +1,6 @@
 # Deploy
 
-Contains Ansible playbooks for deploying a production no-cost.site server.
+Contains Ansible playbooks for deploying a production [no-cost.site](https://no-cost.site) server.
 
 ## Prerequisites
 
@@ -31,22 +31,22 @@ The [`backend`](https://github.com/no-cost/backend) repository is cloned into `/
 
 ```plaintext
 /srv/
-├── nocost/  # frontend + backend
-├── host/  # tenant chroots
+├── nocost/ # frontend + backend
+├── host/ # tenant chroots
 │   ├── site1/
 │   │   ├── app/
 │   │   │   ├── index.php
 │   │   │   ├── ...
-│   │   │   └── vendor/  # hard-linked from /srv/skeleton/.../vendor
+│   │   │   └── vendor/ # hard-linked from /srv/skeleton/.../vendor
 │   │   ├── etc/
 │   │   │   └── config.json
-│   │   ├── lib/  # hard-links from /srv/skeleton/...
+│   │   ├── lib/ # hard-links from /srv/skeleton/...
 │   │   ├── logs/
 │   │   │   ├── ...
 │   │   │   └── flarum/
 │   │   ├── tmp/
 │   │   ├── usr/
-│   │   ├── public/  # symlink to app/public
+│   │   ├── public/ # symlink to app/public
 │   └── site2/
 ├── skeleton/
 │   ├── flarum/
@@ -62,7 +62,7 @@ The [`backend`](https://github.com/no-cost/backend) repository is cloned into `/
 │   │   │   └── flarum/
 │   │   ├── tmp/
 │   │   ├── usr/
-│   │   ├── public/  # symlink to app/public
+│   │   ├── public/ # symlink to app/public
 │   └── wordpress/
 │   │   ├── app/
 │   │   │   ├── index.php
@@ -74,8 +74,8 @@ The [`backend`](https://github.com/no-cost/backend) repository is cloned into `/
 │   │   ├── usr/
 │   │   └── var/
 
-/backup/  # backups
-├── host/  # active hosts
+/backup/ # backups
+├── host/ # active hosts
 │   ├── forum1/
 │   │   ├── 2025-01-01/
 │   │   │   ├── files.tar.xz  # contains only media files, no vendor etc.
@@ -88,7 +88,7 @@ The [`backend`](https://github.com/no-cost/backend) repository is cloned into `/
 │   │   │   ├── database.sql.xz
 │   │   │   └── database.sql.xz.sha256
 │   └── forum2/
-├── attic/  # archived/inactive hosts
+├── attic/ # archived/inactive hosts
 │   ├── forum1/
 │   │   ├── files.tar.xz
 │   │   ├── files.tar.xz.sha256
@@ -154,15 +154,12 @@ NB you must connect on the server at least one (to add its key to the `~/.ssh/kn
 ### Deploy Specific Components
 
 ```bash
-# base system only
-./prod --tags base,system
+# update only backend + tenant skeletons
+./prod --tags backend,skeleton
 
-# security hardening and packages
-./prod --tags security
-
-# web services (Nginx + PHP)
+# just nginx + php-fpm
 ./prod --tags nginx,php-fpm
 
 # main site deployment
-./prod --tags mainsite
+./prod --tags frontend,backend
 ```
