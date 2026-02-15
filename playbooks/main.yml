@@ -70,3 +70,7 @@
       - name: Monitoring
         ansible.builtin.include_tasks: tasks/13-monitoring.yml
         tags: [always]
+
+      - name: Tests
+        ansible.builtin.include_tasks: tasks/14-tests.yml
+        tags: [always]
