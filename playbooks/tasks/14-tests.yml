@@ -1,19 +1,18 @@
 ---
 - name: Run unit tests
   ansible.builtin.command:
-      cmd: ".venv/bin/python -m pytest tests/unit/ -v"
+      cmd: ".venv/bin/python -m pytest tests/ -v"
       chdir: "{{ paths.backend_root }}"
   become: true
   become_user: nocost
   changed_when: false
-  tags: ["tests"]
+  tags: ["tests", "unit"]
 
-- name: Run integration tests
-  ansible.builtin.command:
-      cmd: ".venv/bin/python -m pytest tests/integration/ -v"
-      chdir: "{{ paths.backend_root }}"
-  become: true
-  become_user: nocost
-  changed_when: false
-  timeout: 1800
-  tags: ["tests"]
+- name: "Run integration lifecycle test"
+  ansible.builtin.include_tasks: integration_tests/_lifecycle.yml
+  vars:
+      api_base: "https://api.{{ main_domain }}"
+  loop: "{{ public_services }}"
+  loop_control:
+      loop_var: site_type
+  tags: ["tests", "integration"]

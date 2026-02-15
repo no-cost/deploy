@@ -1,0 +1,220 @@
+---
+# full tenant lifecycle test for a single site_type
+
+- name: "{{ site_type }}: set test variables"
+  ansible.builtin.set_fact:
+      test_tag: "inttest_{{ site_type }}"
+      test_email: "inttest_{{ site_type }}@example.com"
+      test_password: "TestPassword123!"
+      test_new_password: "NewPassword456!"
+  tags: ["tests", "integration"]
+
+- name: "{{ site_type }}: cleanup stale test record"
+  community.mysql.mysql_query:
+      query: "DELETE FROM sites WHERE tag = %s"
+      positional_args:
+          - "{{ test_tag }}"
+      login_db: nocost
+      login_unix_socket: /run/mysqld/mysqld.sock
+  tags: ["tests", "integration"]
+
+- name: "{{ site_type }}: lifecycle"
+  tags: ["tests", "integration"]
+  block:
+      - name: "{{ site_type }}: health check"
+        ansible.builtin.uri:
+            url: "{{ api_base }}/v1/"
+            validate_certs: false
+        register: health_result
+        failed_when: health_result.json.status != "ok"
+
+      - name: "{{ site_type }}: get allowed domains"
+        ansible.builtin.uri:
+            url: "{{ api_base }}/v1/signup/allowed-domains"
+            validate_certs: false
+        register: domains_result
+        failed_when: domains_result.json | length == 0
+
+      - name: "{{ site_type }}: signup"
+        ansible.builtin.uri:
+            url: "{{ api_base }}/v1/signup/"
+            method: POST
+            body_format: json
+            body:
+                tag: "{{ test_tag }}"
+                email: "{{ test_email }}"
+                site_type: "{{ site_type }}"
+                turnstile_token: "bypassed-by-x-token"
+            headers:
+                X-Test-Token: "{{ integration_test_token }}"
+            validate_certs: false
+            status_code: 200
+        register: signup_result
+        failed_when: signup_result.json.site_tag != test_tag
+
+      - name: "{{ site_type }}: store hostname"
+        ansible.builtin.set_fact:
+            test_hostname: "{{ signup_result.json.hostname }}"
+
+      - name: "{{ site_type }}: request reset token"
+        ansible.builtin.uri:
+            url: "{{ api_base }}/v1/account/reset-password/request"
+            method: POST
+            body_format: json
+            body:
+                site: "{{ test_tag }}"
+            headers:
+                X-Test-Token: "{{ integration_test_token }}"
+            validate_certs: false
+            status_code: 200
+        register: reset_request_result
+        failed_when: reset_request_result.json.token is not defined
+
+      - name: "{{ site_type }}: set password via reset token"
+        ansible.builtin.uri:
+            url: "{{ api_base }}/v1/account/reset-password"
+            method: POST
+            body_format: json
+            body:
+                token: "{{ reset_request_result.json.token }}"
+                password: "{{ test_password }}"
+            validate_certs: false
+            status_code: 200
+
+      - name: "{{ site_type }}: login"
+        ansible.builtin.uri:
+            url: "{{ api_base }}/v1/account/login"
+            method: POST
+            body_format: form-urlencoded
+            body:
+                username: "{{ test_tag }}"
+                password: "{{ test_password }}"
+            validate_certs: false
+            status_code: 200
+        register: login_result
+        failed_when: login_result.json.access_token is not defined
+
+      - name: "{{ site_type }}: store access token"
+        ansible.builtin.set_fact:
+            test_token: "{{ login_result.json.access_token }}"
+
+      - name: "{{ site_type }}: wait until site is installed"
+        ansible.builtin.uri:
+            url: "{{ api_base }}/v1/account/"
+            headers:
+                Authorization: "Bearer {{ test_token }}"
+            validate_certs: false
+            status_code: 200
+        register: install_poll
+        until: install_poll.json.installed_at is not none
+        retries: 5
+        delay: 20
+
+      - name: "{{ site_type }}: verify account details"
+        ansible.builtin.uri:
+            url: "{{ api_base }}/v1/account/"
+            headers:
+                Authorization: "Bearer {{ test_token }}"
+            validate_certs: false
+            status_code: 200
+        register: account_result
+        failed_when: >-
+            account_result.json.tag != test_tag or
+            account_result.json.admin_email != test_email or
+            account_result.json.site_type != site_type or
+            account_result.json.installed_at is none
+
+      - name: "{{ site_type }}: verify app is reachable"
+        ansible.builtin.uri:
+            url: "https://{{ test_hostname }}"
+            validate_certs: false
+            timeout: 15
+            status_code: 200
+
+      - name: "{{ site_type }}: change password"
+        ansible.builtin.uri:
+            url: "{{ api_base }}/v1/account/change-password"
+            method: POST
+            body_format: json
+            body:
+                old_password: "{{ test_password }}"
+                new_password: "{{ test_new_password }}"
+            headers:
+                Authorization: "Bearer {{ test_token }}"
+            validate_certs: false
+            status_code: 200
+
+      - name: "{{ site_type }}: login with new password"
+        ansible.builtin.uri:
+            url: "{{ api_base }}/v1/account/login"
+            method: POST
+            body_format: form-urlencoded
+            body:
+                username: "{{ test_tag }}"
+                password: "{{ test_new_password }}"
+            validate_certs: false
+            status_code: 200
+        register: new_login_result
+        failed_when: new_login_result.json.access_token is not defined
+
+      - name: "{{ site_type }}: update access token"
+        ansible.builtin.set_fact:
+            test_token: "{{ new_login_result.json.access_token }}"
+
+      - name: "{{ site_type }}: change parent domain"
+        ansible.builtin.uri:
+            url: "{{ api_base }}/v1/settings/parent-domain"
+            method: PATCH
+            body_format: json
+            body:
+                parent_domain: "{{ domains_result.json[1] }}"
+            headers:
+                Authorization: "Bearer {{ test_token }}"
+            validate_certs: false
+            status_code: 200
+        when: domains_result.json | length >= 2
+
+      - name: "{{ site_type }}: get updated hostname after domain change"
+        ansible.builtin.uri:
+            url: "{{ api_base }}/v1/account/"
+            headers:
+                Authorization: "Bearer {{ test_token }}"
+            validate_certs: false
+            status_code: 200
+        register: updated_account
+        when: domains_result.json | length >= 2
+
+      - name: "{{ site_type }}: verify app reachable after domain change"
+        ansible.builtin.uri:
+            url: "https://{{ updated_account.json.hostname }}"
+            validate_certs: false
+            timeout: 15
+            status_code: 200
+        when: domains_result.json | length >= 2
+
+      - name: "{{ site_type }}: run fixup"
+        ansible.builtin.uri:
+            url: "{{ api_base }}/v1/settings/fixup"
+            method: POST
+            headers:
+                Authorization: "Bearer {{ test_token }}"
+            validate_certs: false
+            status_code: 200
+
+      - name: "{{ site_type }}: delete site"
+        ansible.builtin.uri:
+            url: "{{ api_base }}/v1/account/"
+            method: DELETE
+            headers:
+                Authorization: "Bearer {{ test_token }}"
+            validate_certs: false
+            status_code: 200
+
+  always:
+      - name: "{{ site_type }}: cleanup test record"
+        community.mysql.mysql_query:
+            query: "DELETE FROM sites WHERE tag = %s"
+            positional_args:
+                - "{{ test_tag }}"
+            login_db: nocost
+            login_unix_socket: /run/mysqld/mysqld.sock
