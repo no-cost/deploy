@@ -4,13 +4,17 @@ Contains Ansible playbooks for deploying a production no-cost.site server.
 
 ## Prerequisites
 
+For production (max. approx. 3000 sites of varying sizes and types):
+
 - Ubuntu 22.04+ server
-- 16 GB RAM minimum
+- 16 GB RAM VPS minimum
 - 160 GB main disk + 100GB backup disk
 - Root access (or sudo)
 - Domains configured with Cloudflare
 - Install required Ansible modules on local machine: `ansible-galaxy install -r requirements.yml`
 - Define `nocost` and `nocost-dev` hosts in your `~/.ssh/config`
+
+For dev, 4 GB RAM VPS is sufficient.
 
 ## Basic Info
 
