@@ -21,4 +21,4 @@
   changed_when: false
   async: 3600
   poll: 0
-  tags: [never, "upgrade"]
+  tags: [never, "flarum-upgrade"]
