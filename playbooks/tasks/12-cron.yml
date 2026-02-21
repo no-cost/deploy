@@ -17,14 +17,14 @@
         job: "/usr/bin/geoipupdate"
       - name: "Backup all tenant sites (periodic, 7-day retention)"
         minute: "0"
-        hour: "0"
+        hour: "23"
         job: >-
             PATH={{ paths.backend_bin_root }}:$PATH
             {{ paths.backend_bin_root }}/backup_site --periodic --delete-older-than 7
             >> /var/log/cron/backup-sites.log 2>&1
       - name: "Backup system directories (7-day retention)"
         minute: "0"
-        hour: "23"
+        hour: "22"
         job: >-
             PATH={{ paths.backend_bin_root }}:$PATH
             {{ paths.backend_bin_root }}/backup_system --delete-older-than 7
