@@ -29,6 +29,14 @@
             PATH={{ paths.backend_bin_root }}:$PATH
             {{ paths.backend_bin_root }}/backup_system --delete-older-than 7
             >> /var/log/cron/backup-system.log 2>&1
+      - name: "Collect tenant site stats (weekly)"
+        minute: "0"
+        hour: "4"
+        weekday: "0"
+        job: >-
+            PATH={{ paths.backend_bin_root }}:$PATH
+            {{ paths.backend_bin_root }}/collect_stats
+            >> /var/log/cron/collect-stats.log 2>&1
   loop_control:
       loop_var: job
   tags: ["cron"]
