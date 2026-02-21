@@ -32,7 +32,7 @@
       - name: "Collect tenant site stats (weekly)"
         minute: "0"
         hour: "4"
-        weekday: "0"
+        weekday: "7"
         job: >-
             PATH={{ paths.backend_bin_root }}:$PATH
             {{ paths.backend_bin_root }}/collect_stats
