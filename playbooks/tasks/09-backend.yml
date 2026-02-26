@@ -102,7 +102,7 @@
       mode: "0640"
   tags: ["nocost", "backend"]
 
-- name: Ensure database for nocost backend
+- name: Ensure database for no-cost backend
   community.mysql.mysql_db:
       name: nocost
       encoding: utf8mb4
@@ -111,7 +111,7 @@
       state: present
   tags: ["nocost", "backend"]
 
-- name: Ensure database user for nocost backend
+- name: Ensure database user for no-cost backend
   community.mysql.mysql_user:
       name: nocost
       password: "{{ main_db_password }}"
