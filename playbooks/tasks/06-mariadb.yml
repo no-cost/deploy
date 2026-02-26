@@ -38,14 +38,14 @@
       state: directory
       owner: mysql
       group: adm
-      mode: "750"
+      mode: "0750"
   tags: ["mariadb", "database"]
 
 - name: Configure MariaDB for production
   ansible.builtin.template:
       src: files/etc/mysql/mariadb.conf.d/50-server.cnf
       dest: /etc/mysql/mariadb.conf.d/50-server.cnf
-      mode: "644"
+      mode: "0644"
   notify: restart mariadb
   tags: ["mariadb", "database"]
 
@@ -53,14 +53,14 @@
   ansible.builtin.file:
       path: /etc/systemd/system/mariadb.service.d
       state: directory
-      mode: "644"
+      mode: "0644"
   tags: ["mariadb", "database"]
 
 - name: Set MariaDB systemd limits
   ansible.builtin.copy:
       src: files/etc/systemd/system/mariadb.service.d/limits.conf
       dest: /etc/systemd/system/mariadb.service.d/limits.conf
-      mode: "644"
+      mode: "0644"
   tags: ["mariadb", "database"]
 
 - name: Ensure MariaDB is running
@@ -123,5 +123,5 @@
   ansible.builtin.copy:
       src: files/etc/logrotate.d/mariadb
       dest: /etc/logrotate.d/mariadb
-      mode: "644"
+      mode: "0644"
   tags: ["mariadb", "database"]

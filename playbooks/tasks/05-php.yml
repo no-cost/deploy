@@ -42,7 +42,7 @@
   ansible.builtin.template:
       src: "files{{ php_conf }}"
       dest: "{{ php_conf }}"
-      mode: "644"
+      mode: "0644"
   loop:
       - /etc/php/fpm/php-fpm.conf
       - /etc/php/fpm/php.ini
@@ -69,14 +69,14 @@
   ansible.builtin.file:
       path: /etc/systemd/system/php{{ php_version }}-fpm.service.d
       state: directory
-      mode: "644"
+      mode: "0644"
   tags: ["php-fpm", "php"]
 
 - name: Configure PHP-FPM systemd override
   ansible.builtin.template:
       src: files/etc/systemd/system/php-fpm.service.d/override.conf
       dest: "/etc/systemd/system/php{{ php_version }}-fpm.service.d/override.conf"
-      mode: "644"
+      mode: "0644"
   notify:
       - daemon reload
       - restart php-fpm
@@ -88,28 +88,28 @@
       state: directory
       owner: www-data
       group: www-data
-      mode: "755"
+      mode: "0755"
   tags: ["php-fpm", "php"]
 
 - name: Set up log rotation for PHP-FPM
   ansible.builtin.template:
       src: files/etc/logrotate.d/php-fpm
       dest: /etc/logrotate.d/php-fpm
-      mode: "644"
+      mode: "0644"
   tags: ["php-fpm", "php"]
 
 - name: Ensure mods-available directory exists
   ansible.builtin.file:
       path: /etc/php/mods-available
       state: directory
-      mode: "644"
+      mode: "0644"
   tags: ["php-fpm", "php"]
 
 - name: Configure OPcache for production
   ansible.builtin.copy:
       src: files/etc/php/mods-available/opcache.ini
       dest: /etc/php/mods-available/opcache.ini
-      mode: "644"
+      mode: "0644"
   notify: restart php-fpm
   tags: ["php-fpm", "php"]
 

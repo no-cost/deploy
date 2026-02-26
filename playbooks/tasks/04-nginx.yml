@@ -152,7 +152,7 @@
   ansible.builtin.copy:
       src: files/etc/logrotate.d/nginx
       dest: /etc/logrotate.d/nginx
-      mode: "644"
+      mode: "0644"
   tags: ["nginx", "web"]
 
 - name: Restart Nginx

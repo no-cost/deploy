@@ -22,7 +22,7 @@
   ansible.builtin.copy:
       content: "{{ postfix.mail_pem }}"
       dest: "/etc/ssl/cloudflare/{{ postfix.host }}.pem"
-      mode: "644"
+      mode: "0644"
       owner: www-data
       group: www-data
   tags: ["email", "mail", "postfix", "ssl"]
@@ -31,7 +31,7 @@
   ansible.builtin.copy:
       content: "{{ postfix.mail_key }}"
       dest: "/etc/ssl/cloudflare/{{ postfix.host }}.key"
-      mode: "600"
+      mode: "0600"
       owner: www-data
       group: www-data
   tags: ["email", "mail", "postfix", "ssl"]
@@ -40,21 +40,21 @@
   ansible.builtin.template:
       src: files/etc/postfix/main.cf
       dest: /etc/postfix/main.cf
-      mode: "644"
+      mode: "0644"
   tags: ["email", "mail", "postfix"]
 
 - name: Configure Postfix master.cf
   ansible.builtin.template:
       src: files/etc/postfix/master.cf
       dest: /etc/postfix/master.cf
-      mode: "644"
+      mode: "0644"
   tags: ["email", "mail", "postfix"]
 
 - name: Ensure virtual mailbox domains
   ansible.builtin.template:
       src: files/etc/postfix/virtual
       dest: /etc/postfix/virtual
-      mode: "644"
+      mode: "0644"
   tags: ["email", "mail", "postfix"]
 
 - name: Generate virtual.db
@@ -67,7 +67,7 @@
   ansible.builtin.template:
       src: files/etc/postfix/sender_access
       dest: /etc/postfix/sender_access
-      mode: "644"
+      mode: "0644"
   tags: ["email", "mail", "postfix"]
 
 - name: Generate sender_access.db
@@ -93,7 +93,7 @@
       path: "/var/spool/postfix/{{ milter }}"
       owner: "{{ milter }}"
       group: "{{ milter }}"
-      mode: "750"
+      mode: "0750"
       state: directory
   loop:
       - opendkim
@@ -106,7 +106,7 @@
   ansible.builtin.template:
       src: "files/etc/{{ milter_conf }}.conf"
       dest: "/etc/{{ milter_conf }}.conf"
-      mode: "644"
+      mode: "0644"
   loop:
       - opendkim
       - opendmarc
@@ -136,7 +136,7 @@
       state: directory
       owner: opendkim
       group: opendkim
-      mode: "700"
+      mode: "0700"
   tags: ["email", "mail", "postfix"]
 
 - name: Ensure OpenDKIM main domain key directory
@@ -145,7 +145,7 @@
       state: directory
       owner: opendkim
       group: opendkim
-      mode: "700"
+      mode: "0700"
   tags: ["email", "mail", "postfix"]
 
 - name: Copy OpenDKIM mail.private for main domain
@@ -154,7 +154,7 @@
       content: "{{ postfix.opendkim_domain_key }}"
       owner: opendkim
       group: opendkim
-      mode: "600"
+      mode: "0600"
   tags: ["email", "mail", "postfix"]
 
 - name: Copy OpenDKIM mail.txt for main domain
@@ -163,7 +163,7 @@
       content: "{{ postfix.opendkim_dns_txt }}"
       owner: opendkim
       group: opendkim
-      mode: "644"
+      mode: "0644"
   tags: ["email", "mail", "postfix"]
 
 - name: Render OpenDKIM tables
@@ -172,7 +172,7 @@
       src: "files{{ dkim_table }}"
       owner: opendkim
       group: opendkim
-      mode: "644"
+      mode: "0644"
   loop:
       - /etc/opendkim/KeyTable
       - /etc/opendkim/SigningTable
@@ -186,21 +186,21 @@
   ansible.builtin.template:
       src: files/etc/spamassassin/local.cf
       dest: /etc/spamassassin/local.cf
-      mode: "644"
+      mode: "0644"
   notify: restart spamassassin
 
 - name: Configure Postgrey
   ansible.builtin.template:
       src: files/etc/default/postgrey
       dest: /etc/default/postgrey
-      mode: "644"
+      mode: "0644"
   notify: restart postgrey
 
 - name: Set up mail log rotation
   ansible.builtin.copy:
       src: files/etc/logrotate.d/postfix
       dest: /etc/logrotate.d/postfix
-      mode: "644"
+      mode: "0644"
 
 - name: Enable and start milter services
   ansible.builtin.systemd:

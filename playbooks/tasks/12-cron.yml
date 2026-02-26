@@ -45,12 +45,12 @@
   ansible.builtin.file:
       path: /var/log/cron
       state: directory
-      mode: "755"
+      mode: "0755"
   tags: ["cron"]
 
 - name: Configure cron log rotation
   ansible.builtin.copy:
       dest: /etc/logrotate.d/cron-scripts
       src: files/etc/logrotate.d/cron-scripts
-      mode: "644"
+      mode: "0644"
   tags: ["cron"]

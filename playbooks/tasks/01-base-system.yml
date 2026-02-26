@@ -4,7 +4,7 @@
       path: /root/.ssh/
       owner: root
       group: root
-      mode: "600"
+      mode: "0600"
       recurse: true
   tags: ["base", "system"]
 
@@ -26,21 +26,21 @@
   ansible.builtin.copy:
       src: files/root/.ssh/known_hosts
       dest: /root/.ssh/known_hosts
-      mode: "644"
+      mode: "0644"
   tags: ["base", "system"]
 
 - name: Write id_rsa
   ansible.builtin.copy:
       dest: /root/.ssh/id_rsa
       content: "{{ id_rsa }}"
-      mode: "600"
+      mode: "0600"
   tags: ["base", "system"]
 
 - name: Write id_rsa.pub
   ansible.builtin.copy:
       dest: /root/.ssh/id_rsa.pub
       content: "{{ id_rsa_pub }}"
-      mode: "644"
+      mode: "0644"
   tags: ["base", "system"]
 
 # TODO: auto-mount /data and /backup with 1k partition?
@@ -54,7 +54,7 @@
   ansible.builtin.copy:
       dest: /etc/default/locale
       content: "LANG=C.UTF-8\n"
-      mode: "644"
+      mode: "0644"
   tags: ["base", "system"]
 
 # https://www.gnu.org/software/bash/manual/html_node/Bash-Startup-Files.html
@@ -62,14 +62,14 @@
   ansible.builtin.template:
       src: files/root/.bashrc
       dest: /root/.bashrc
-      mode: "644"
+      mode: "0644"
   tags: ["base", "system"]
 
 - name: Register public IP address
   ansible.builtin.get_url:
       url: https://api.ipify.org
       dest: /etc/public_ip
-      mode: "644"
+      mode: "0644"
   tags: ["base", "system"]
 
 # https://linux.die.net/man/5/limits.conf
@@ -204,6 +204,6 @@
   ansible.builtin.copy:
       src: "files/etc/powerdns/recursor.conf"
       dest: "/etc/powerdns/recursor.conf"
-      mode: "644"
+      mode: "0644"
   notify: restart pdns-recursor
   tags: ["base", "system"]

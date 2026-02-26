@@ -38,7 +38,7 @@
       dest: "/etc/ssl/certs/dhparam.pem"
       owner: root
       group: root
-      mode: "644"
+      mode: "0644"
   notify: reload nginx
   tags: ["ssl", "certificates", "dhparam"]
 
@@ -56,14 +56,14 @@
   ansible.builtin.template:
       src: files/etc/letsencrypt/cli.ini
       dest: /etc/letsencrypt/cli.ini
-      mode: "644"
+      mode: "0644"
   tags: ["ssl", "certificates", "certbot"]
 
 - name: Ensure wildcard SSL certificate directories
   ansible.builtin.file:
       path: "/etc/ssl/cloudflare/{{ domain }}"
       state: directory
-      mode: "755"
+      mode: "0755"
       owner: www-data
       group: www-data
   loop: "{{ domains.keys() | list }}"
@@ -76,7 +76,7 @@
   ansible.builtin.copy:
       content: "{{ domains[domain].ssl_certificate_pem }}"
       dest: "/etc/ssl/cloudflare/{{ domain }}/fullchain.pem"
-      mode: "644"
+      mode: "0644"
       owner: www-data
       group: www-data
   loop: "{{ domains.keys() | list }}"
@@ -90,7 +90,7 @@
   ansible.builtin.copy:
       content: "{{ domains[domain_key].ssl_certificate_key }}"
       dest: "/etc/ssl/cloudflare/{{ domain_key }}/privkey.pem"
-      mode: "600"
+      mode: "0600"
       owner: www-data
       group: www-data
   loop: "{{ domains.keys() | list }}"

@@ -22,7 +22,7 @@
       force: true
       owner: root
       group: root
-      mode: "755"
+      mode: "0755"
   loop:
       - src: "/usr/bin/diff3"
         dest: "{{ paths.tenants.mediawiki_skeleton }}/usr/bin/diff3"

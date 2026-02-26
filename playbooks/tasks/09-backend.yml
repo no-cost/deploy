@@ -61,14 +61,14 @@
       state: directory
       owner: nocost
       group: nocost
-      mode: "755"
+      mode: "0755"
   tags: ["nocost", "backend"]
 
 - name: Set up log rotation for no-cost backend
   ansible.builtin.copy:
       src: files/etc/logrotate.d/nocost
       dest: /etc/logrotate.d/nocost
-      mode: "644"
+      mode: "0644"
   tags: ["nocost", "backend"]
 
 - name: Ensure no-cost run directory
@@ -77,14 +77,14 @@
       state: directory
       owner: nocost
       group: nocost
-      mode: "755"
+      mode: "0755"
   tags: ["nocost", "backend"]
 
 - name: Ensure systemd service files for no-cost
   ansible.builtin.template:
       src: "files/etc/systemd/system/{{ nocost_service }}"
       dest: "/etc/systemd/system/{{ nocost_service }}"
-      mode: "644"
+      mode: "0644"
   loop:
       - nocost.service
   loop_control:
@@ -139,7 +139,7 @@
   ansible.builtin.template:
       src: files/etc/GeoIP.conf
       dest: /etc/GeoIP.conf
-      mode: "644"
+      mode: "0644"
   tags: ["nocost", "geoip", "backend"]
 
 - name: Run geoipupdate

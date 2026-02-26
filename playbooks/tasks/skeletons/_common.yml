@@ -10,7 +10,7 @@
       path: "{{ skeleton_root_dir }}/{{ php_dir }}"
       owner: www-data
       group: www-data
-      mode: "775"
+      mode: "0775"
       recurse: true
   loop:
       - "app/public"
@@ -39,42 +39,42 @@
         type: "c"
         major: 1
         minor: 3
-        mode: "666"
+        mode: "0666"
       - name: "zero"
         type: "c"
         major: 1
         minor: 5
-        mode: "666"
+        mode: "0666"
       - name: "full"
         type: "c"
         major: 1
         minor: 7
-        mode: "666"
+        mode: "0666"
       - name: "random"
         type: "c"
         major: 1
         minor: 8
-        mode: "444"
+        mode: "0444"
       - name: "urandom"
         type: "c"
         major: 1
         minor: 9
-        mode: "444"
+        mode: "0444"
       - name: "tty"
         type: "c"
         major: 5
         minor: 0
-        mode: "666"
+        mode: "0666"
       - name: "console"
         type: "c"
         major: 5
         minor: 1
-        mode: "600"
+        mode: "0600"
       - name: "ptmx"
         type: "c"
         major: 5
         minor: 2
-        mode: "666"
+        mode: "0666"
   loop_control:
       loop_var: "dev_file"
   tags: [always]
@@ -84,7 +84,7 @@
       src: "{{ php_hardlink.src }}"
       dest: "{{ php_hardlink.dest }}"
       state: hard
-      mode: "755"
+      mode: "0755"
       owner: root
       group: root
       force: true

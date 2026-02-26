@@ -3,7 +3,7 @@
   ansible.builtin.copy:
       src: files/etc/default/ufw
       dest: /etc/default/ufw
-      mode: "644"
+      mode: "0644"
   tags: ["security"]
 
 - name: Configure UFW rules
@@ -42,7 +42,7 @@
   ansible.builtin.copy:
       src: files/etc/rkhunter.conf
       dest: /etc/rkhunter.conf
-      mode: "644"
+      mode: "0644"
   tags: ["security"]
 
 # https://aide.github.io/

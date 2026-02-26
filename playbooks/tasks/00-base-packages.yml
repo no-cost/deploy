@@ -48,7 +48,7 @@
   ansible.builtin.copy:
       src: files/etc/apt/apt.conf.d/20auto-upgrades
       dest: /etc/apt/apt.conf.d/20auto-upgrades
-      mode: "644"
+      mode: "0644"
   tags: ["base", "system", "packages"]
 
 - name: Enable APT unattended upgrades
@@ -56,5 +56,5 @@
   ansible.builtin.copy:
       src: files/etc/apt/apt.conf.d/50unattended-upgrades
       dest: /etc/apt/apt.conf.d/50unattended-upgrades
-      mode: "644"
+      mode: "0644"
   tags: ["base", "system", "packages"]

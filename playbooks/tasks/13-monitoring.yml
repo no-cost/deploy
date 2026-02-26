@@ -34,7 +34,7 @@
       dest: /etc/monit/monitrc
       owner: root
       group: root
-      mode: "600"
+      mode: "0600"
   notify: restart monit
   tags: ["monitoring"]
 
@@ -44,7 +44,7 @@
       dest: "/etc/monit/conf.d/{{ monit_service }}"
       owner: root
       group: root
-      mode: "644"
+      mode: "0644"
   loop:
       - nginx
       - php-fpm
@@ -70,7 +70,7 @@
       dest: /etc/logwatch/conf/logwatch.conf
       owner: root
       group: root
-      mode: "644"
+      mode: "0644"
   tags: ["monitoring"]
 
 - name: Disable daily logwatch cron
@@ -85,5 +85,5 @@
       dest: /etc/cron.d/logwatch
       owner: root
       group: root
-      mode: "644"
+      mode: "0644"
   tags: ["monitoring"]
