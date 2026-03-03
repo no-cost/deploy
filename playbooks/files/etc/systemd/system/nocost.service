@@ -7,11 +7,12 @@ Type=notify
 
 User=nocost
 Group=www-data
+RuntimeDirectory=nocost
 
 WorkingDirectory={{ paths.backend_root }}
 Environment="PATH={{ paths.backend_root }}/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 EnvironmentFile={{ paths.backend_root }}/.env
-ExecStart={{ paths.backend_root }}/.venv/bin/gunicorn main:API --bind=unix:/run/nocost-api.sock -m 007 -k uvicorn.workers.UvicornWorker -w 4 --forwarded-allow-ips='*' --capture-output --log-file /var/log/nocost/api.error.log
+ExecStart={{ paths.backend_root }}/.venv/bin/gunicorn main:API --bind=unix:/run/nocost/api.sock -m 007 -k uvicorn.workers.UvicornWorker -w 4 --forwarded-allow-ips='*' --capture-output --log-file /var/log/nocost/api.error.log
 ExecReload=/bin/kill -s HUP $MAINPID
 
 KillMode=mixed
