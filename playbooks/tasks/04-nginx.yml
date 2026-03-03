@@ -52,10 +52,6 @@
         owner: www-data
         group: www-data
         mode: "0755"
-      - path: /run/nginx
-        owner: www-data
-        group: www-data
-        mode: "0755"
   tags: ["nginx", "web"]
 
 - name: Fetch Cloudflare IPv4 ranges
