@@ -42,6 +42,19 @@
   notify: reload nginx
   tags: ["ssl", "certificates", "dhparam"]
 
+- name: Disable default Certbot systemd timer
+  ansible.builtin.systemd:
+      name: certbot.timer
+      enabled: false
+      state: stopped
+  tags: ["ssl", "certificates", "certbot"]
+
+- name: Remove default Certbot cron job
+  ansible.builtin.file:
+      path: /etc/cron.d/certbot
+      state: absent
+  tags: ["ssl", "certificates", "certbot"]
+
 - name: Set up Certbot renewal cron job
   ansible.builtin.cron:
       name: "Renew Let's Encrypt certificates"
@@ -50,7 +63,7 @@
       job: "/usr/bin/certbot renew --quiet"
       user: www-data
       state: present
-  tags: ["ssl", "certificates"]
+  tags: ["ssl", "certificates", "certbot"]
 
 - name: Configure Certbot webroot
   ansible.builtin.template:
