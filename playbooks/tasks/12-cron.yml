@@ -20,7 +20,7 @@
         hour: "23"
         job: >-
             PATH={{ paths.backend_bin_root }}:$PATH
-            {{ paths.backend_bin_root }}/backup_site --periodic --delete-older-than 7
+            {{ paths.backend_bin_root }}/backup_site --delete-older-than 7
             >> /var/log/cron/backup-sites.log 2>&1
       - name: "Backup system directories (7-day retention)"
         minute: "0"
