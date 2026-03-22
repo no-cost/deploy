@@ -8,7 +8,7 @@
 
 - name: Setup MariaDB 11.8 repository
   ansible.builtin.command:
-      cmd: "/tmp/mariadb_repo_setup --mariadb-server-version={{ ('mariadb-' + mariadb_version) | quote }}"
+      cmd: "/tmp/mariadb_repo_setup --skip-maxscale --mariadb-server-version={{ ('mariadb-' + mariadb_version) | quote }}"
       creates: /etc/apt/sources.list.d/mariadb.list
   tags: ["mariadb", "database"]
 
