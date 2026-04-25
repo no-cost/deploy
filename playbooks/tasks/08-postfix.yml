@@ -76,6 +76,13 @@
       creates: /etc/postfix/sender_access.db
   tags: ["email", "mail", "postfix"]
 
+- name: Ensure sender canonical regexp file
+  ansible.builtin.template:
+      src: files/etc/postfix/sender_canonical
+      dest: /etc/postfix/sender_canonical
+      mode: "0644"
+  tags: ["email", "mail", "postfix"]
+
 - name: Add postfix user to milter groups
   ansible.builtin.user:
       name: postfix
