@@ -35,8 +35,6 @@ smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
 
 virtual_alias_domains = $mydomain
 virtual_alias_maps = hash:/etc/postfix/virtual
-sender_canonical_maps = pcre:/etc/postfix/sender_canonical
-sender_canonical_classes = envelope_sender, header_sender
 
 # DKIM
 milter_default_action = accept

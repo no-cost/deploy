@@ -1,3 +1,0 @@
-/^noreply(\+[^@]+)?@{{ main_domain | regex_escape }}$/    $0
-/^info@{{ main_domain | regex_escape }}$/                 $0
-/.+/                                                      noreply@{{ main_domain }}
