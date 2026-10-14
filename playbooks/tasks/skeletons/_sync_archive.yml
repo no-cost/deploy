@@ -28,8 +28,8 @@
       rsync_opts:
           - "--no-delay-updates"
           - "--inplace"
-          - "--chown=www-data:www-data"
-          - "--chmod=D0775,F0444"
+          - "--chown=root:root"
+          - "--chmod=D0755,F0444"
   delegate_to: "{{ inventory_hostname }}"
   tags: [always]
 

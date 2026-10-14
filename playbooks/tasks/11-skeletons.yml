@@ -7,13 +7,16 @@
       force: true
   tags: ["skeleton", "chroot", "flarum", "mediawiki", "wordpress"]
 
-- name: Ensure tenants root
+- name: Ensure tenant and skeleton roots
   ansible.builtin.file:
-      path: "{{ paths.tenants.root }}"
+      path: "{{ item }}"
       state: directory
-      owner: www-data
-      group: www-data
+      owner: root
+      group: root
       mode: "0755"
+  loop:
+      - "{{ paths.tenants.root }}"
+      - "{{ paths.tenants.skeleton_root }}"
   tags: ["skeleton", "chroot", "flarum", "mediawiki", "wordpress"]
 
 - name: Set up log rotation for tenant logs

@@ -14,31 +14,33 @@
       update_cache: true
   tags: ["skeleton", "mediawiki"]
 
-- name: Ensure hardlink for MediaWiki diff3 binary
-  ansible.builtin.file:
-      src: "{{ mw_hardlink.src }}"
-      dest: "{{ mw_hardlink.dest }}"
-      state: hard
-      force: true
-      owner: root
-      group: root
-      mode: "0755"
+- name: Read source modes for MediaWiki binaries
+  ansible.builtin.stat:
+      path: "{{ mw_hardlink.src }}"
+      get_checksum: false
+      get_mime: false
+      get_attributes: false
+  register: mediawiki_hardlink_sources
   loop:
       - src: "/usr/bin/diff3"
         dest: "{{ paths.tenants.mediawiki_skeleton }}/usr/bin/diff3"
+      - src: "/usr/bin/convert-im6.q16"
+        dest: "{{ paths.tenants.mediawiki_skeleton }}/usr/bin/convert"
   loop_control:
       loop_var: mw_hardlink
   tags: ["skeleton", "chroot", "mediawiki"]
 
-- name: Ensure hardlink for ImageMagick binary
+- name: Ensure MediaWiki binary hardlinks
   ansible.builtin.file:
-      src: "/usr/bin/convert-im6.q16"
-      dest: "{{ paths.tenants.mediawiki_skeleton }}/usr/bin/convert"
+      src: "{{ item.mw_hardlink.src }}"
+      dest: "{{ item.mw_hardlink.dest }}"
       state: hard
-      mode: "0755"
-      owner: root
-      group: root
-  tags: ["skeleton", "mediawiki"]
+      mode: "{{ item.stat.mode }}"
+      force: true
+  loop: "{{ mediawiki_hardlink_sources.results }}"
+  loop_control:
+      label: "{{ item.mw_hardlink.dest }}"
+  tags: ["skeleton", "chroot", "mediawiki"]
 
 - name: Recursively hardlink ImageMagick configuration into skeleton
   ansible.posix.synchronize:
@@ -60,8 +62,8 @@
   ansible.builtin.template:
       src: files/srv/skeleton/mediawiki/secrets.php
       dest: "{{ paths.tenants.mediawiki_skeleton }}/app/public/secrets.php"
-      owner: "www-data"
-      group: "www-data"
+      owner: root
+      group: root
       mode: "0644"
   tags: ["skeleton", "mediawiki"]
 

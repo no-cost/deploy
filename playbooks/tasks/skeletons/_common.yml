@@ -6,24 +6,40 @@
 
 - name: Ensure required directories for {{ skeleton_root_dir }}
   ansible.builtin.file:
-      state: "directory"
+      state: directory
+      path: "{{ skeleton_root_dir }}/{{ php_dir }}"
+      owner: root
+      group: root
+      mode: "0755"
+  loop:
+      - ""
+      - "app"
+      - "app/public"
+      - "dev"
+      - "etc"
+      - "etc/ssl"
+      - "etc/ssl/certs"
+      - "usr"
+      - "usr/bin"
+      - "usr/lib"
+      - "usr/sbin"
+      - "usr/share"
+      - "usr/share/zoneinfo"
+  loop_control:
+      loop_var: "php_dir"
+  tags: [always]
+
+- name: Ensure runtime directories for {{ skeleton_root_dir }}
+  ansible.builtin.file:
+      state: directory
       path: "{{ skeleton_root_dir }}/{{ php_dir }}"
       owner: www-data
       group: www-data
       mode: "0775"
-      recurse: true
   loop:
-      - "app/public"
-      - "bin"
-      - "dev"
-      - "etc/ssl/certs"
       - "logs"
       - "session"
       - "tmp"
-      - "usr/bin"
-      - "usr/lib"
-      - "usr/sbin"
-      - "usr/share/zoneinfo"
   loop_control:
       loop_var: "php_dir"
   tags: [always]
@@ -79,15 +95,13 @@
       loop_var: "dev_file"
   tags: [always]
 
-- name: Ensure hardlinks for required system files
-  ansible.builtin.file:
-      src: "{{ php_hardlink.src }}"
-      dest: "{{ php_hardlink.dest }}"
-      state: hard
-      mode: "0755"
-      owner: root
-      group: root
-      force: true
+- name: Read source modes for required system hardlinks
+  ansible.builtin.stat:
+      path: "{{ php_hardlink.src }}"
+      get_checksum: false
+      get_mime: false
+      get_attributes: false
+  register: system_hardlink_sources
   loop:
       - src: "/etc/ssl/certs/ca-certificates.crt"
         dest: "{{ skeleton_root_dir }}/etc/ssl/certs/ca-certificates.crt"
@@ -101,12 +115,24 @@
       loop_var: php_hardlink
   tags: [always]
 
+- name: Ensure hardlinks without changing host file permissions
+  ansible.builtin.file:
+      src: "{{ item.php_hardlink.src }}"
+      dest: "{{ item.php_hardlink.dest }}"
+      state: hard
+      mode: "{{ item.stat.mode }}"
+      force: true
+  loop: "{{ system_hardlink_sources.results }}"
+  loop_control:
+      label: "{{ item.php_hardlink.dest }}"
+  tags: [always]
+
 - name: Ensure symlinks
   ansible.builtin.file:
       src: "{{ php_symlink.src }}"
       path: "{{ php_symlink.path }}"
-      owner: www-data
-      group: www-data
+      owner: root
+      group: root
       force: true
       follow: false
       state: link

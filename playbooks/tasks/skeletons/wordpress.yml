@@ -25,8 +25,8 @@
   ansible.builtin.template:
       src: files/srv/skeleton/wordpress/secrets.php
       dest: "{{ paths.tenants.wordpress_skeleton }}/app/public/secrets.php"
-      owner: "www-data"
-      group: "www-data"
+      owner: root
+      group: root
       mode: "0644"
   tags: ["skeleton", "wordpress"]
 

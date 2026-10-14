@@ -37,7 +37,7 @@ The [`backend`](https://github.com/no-cost/backend) repository is cloned into `/
 │   │   ├── app/
 │   │   │   ├── index.php
 │   │   │   ├── ...
-│   │   │   └── vendor/ # hard-linked from /srv/skeleton/.../vendor
+│   │   │   └── vendor/ # ro bind mount
 │   │   ├── etc/
 │   │   │   └── config.json
 │   │   ├── lib/ # hard-links from /srv/skeleton/...
