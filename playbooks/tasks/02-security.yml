@@ -38,6 +38,21 @@
       mode: "0755"
   tags: ["security"]
 
+- name: Disallow SSH password logins
+  ansible.builtin.copy:
+      src: files/etc/ssh/sshd_config.d/10-key-only.conf
+      dest: /etc/ssh/sshd_config.d/10-key-only.conf
+      mode: "0644"
+  notify: restart sshd
+  tags: ["security", "ssh"]
+
+# a broken sshd configuration fails the play here, before the handler restarts sshd
+- name: Check the SSH server configuration
+  ansible.builtin.command:
+      cmd: /usr/sbin/sshd -t
+  changed_when: false
+  tags: ["security", "ssh"]
+
 # https://rkhunter.sourceforge.net/
 - name: Set up rkhunter
   ansible.builtin.apt:
