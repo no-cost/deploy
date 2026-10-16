@@ -1,7 +1,8 @@
-check process php-fpm with pidfile /run/php/php{{ php_version }}-fpm.pid
-  start program = "/usr/bin/systemctl start php{{ php_version }}-fpm"
-  stop program = "/usr/bin/systemctl stop php{{ php_version }}-fpm"
-  if failed unixsocket /run/php/php{{ php_version }}-fpm.sock then restart
+# pid file from /etc/php/fpm/php-fpm.conf. No restarts by monit: with thousands of pools a PHP-FPM restart
+# stops every site for minutes, and the master's memory includes all workers (see php-fpm.service.d/memory.conf)
+check process php-fpm with pidfile /run/php/php-fpm.pid
+  start program = "/usr/bin/systemctl start php{{ php_version }}-fpm" with timeout 600 seconds
+  stop program = "/usr/bin/systemctl stop php{{ php_version }}-fpm" with timeout 600 seconds
   if 5 restarts within 5 cycles then timeout
-  if cpu > 60% for 2 cycles then alert
-  if totalmem > 500.0 MB for 5 cycles then restart
+  if cpu > 90% for 10 cycles then alert
+  if totalmem > 40% for 5 cycles then alert
