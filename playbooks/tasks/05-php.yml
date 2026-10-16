@@ -82,6 +82,15 @@
       - restart php-fpm
   tags: ["php-fpm", "php"]
 
+# OOMPolicy and MemoryMax take effect with a daemon reload, no PHP-FPM restart
+- name: Configure PHP-FPM memory management (OOM policy, memory limit)
+  ansible.builtin.template:
+      src: files/etc/systemd/system/php-fpm.service.d/memory.conf
+      dest: "/etc/systemd/system/php{{ php_version }}-fpm.service.d/memory.conf"
+      mode: "0644"
+  notify: daemon reload
+  tags: ["php-fpm", "php"]
+
 - name: Ensure PHP-FPM log directory
   ansible.builtin.file:
       path: /var/log/php

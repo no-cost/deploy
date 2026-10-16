@@ -29,6 +29,8 @@
           - mariadb-server
           - mariadb-client
           - python3-pymysql
+          # malloc for mariadbd, see mariadb.service.d/memory.conf
+          - libjemalloc2
       state: present
   tags: ["mariadb", "database"]
 
@@ -61,13 +63,23 @@
       src: files/etc/systemd/system/mariadb.service.d/limits.conf
       dest: /etc/systemd/system/mariadb.service.d/limits.conf
       mode: "0644"
+  notify: restart mariadb
   tags: ["mariadb", "database"]
 
+- name: Set MariaDB memory management (jemalloc, OOM killer priority)
+  ansible.builtin.template:
+      src: files/etc/systemd/system/mariadb.service.d/memory.conf
+      dest: /etc/systemd/system/mariadb.service.d/memory.conf
+      mode: "0644"
+  notify: restart mariadb
+  tags: ["mariadb", "database"]
+
+# restarted only by the handler when its configuration changed, not on every deploy
 - name: Ensure MariaDB is running
   ansible.builtin.systemd:
       name: mariadb
       enabled: true
-      state: restarted
+      state: started
       daemon_reload: true
   tags: ["mariadb", "database"]
 

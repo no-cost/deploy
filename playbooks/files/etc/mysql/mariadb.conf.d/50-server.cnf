@@ -76,6 +76,8 @@ expire_logs_days        = 10
 #
 # InnoDB is enabled by default with a 10MB datafile in /var/lib/mysql/.
 # Read the manual for more InnoDB related options. There are many!
-# Most important is to give InnoDB 80 % of the system RAM for buffer use:
+# Not the usual 80 % of RAM: MariaDB needs several GB on top of the buffer pool (with thousands of tenant
+# databases: table caches, InnoDB dictionary, per-thread malloc arenas), and PHP-FPM needs the rest.
+# The FreeFlarum server (16 GB): 25 % = 3.9 GB pool, 7.5 GB mariadbd RSS under glibc malloc (mariadb.service.d/memory.conf).
 # https://mariadb.com/kb/en/innodb-system-variables/#innodb_buffer_pool_size
-innodb_buffer_pool_size = {{ ((ansible_memtotal_mb * 0.8) | int) }}M
+innodb_buffer_pool_size = {{ ((ansible_memtotal_mb * 0.25) | int) }}M
