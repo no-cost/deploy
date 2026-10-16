@@ -52,8 +52,30 @@
       state: present
   tags: ["security"]
 
+- name: Exclude variable data (tenants, backups, databases) from AIDE
+  ansible.builtin.template:
+      src: files/etc/aide/aide.conf.d/90_aide_hosting
+      dest: /etc/aide/aide.conf.d/90_aide_hosting
+      mode: "0644"
+  register: _aide_rules
+  tags: ["security"]
+
+- name: Check AIDE database
+  ansible.builtin.stat:
+      path: /var/lib/aide/aide.db
+  register: _aide_db
+  tags: ["security"]
+
+# the baseline must be built with the current rules: initialize again whenever they change
 - name: Initialize AIDE database
   ansible.builtin.command:
-      cmd: aideinit
-      creates: /var/lib/aide/aide.db
+      cmd: nice -n 19 ionice -c 3 aideinit --yes --force
+  when: _aide_rules.changed or not _aide_db.stat.exists
+  tags: ["security"]
+
+- name: Enable the daily AIDE check
+  ansible.builtin.systemd:
+      name: dailyaidecheck.timer
+      enabled: true
+      state: started
   tags: ["security"]
