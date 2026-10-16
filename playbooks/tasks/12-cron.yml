@@ -10,6 +10,11 @@
       user: "{{ job.user | default('root') }}"
       state: present
   loop:
+      - name: "Mail the fail2ban bans of the last week"
+        minute: "0"
+        hour: "7"
+        weekday: "1"
+        job: "/usr/local/bin/fail2ban-weekly-report"
       - name: "Run geoipupdate"
         minute: "0"
         hour: "0"

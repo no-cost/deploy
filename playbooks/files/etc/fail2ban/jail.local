@@ -3,7 +3,8 @@ bantime = 3600
 findtime = 600
 maxretry = 5
 destemail = root@localhost
-action = %(action_mwl)s
+# ban only, no mail per ban: a weekly summary is mailed by /usr/local/bin/fail2ban-weekly-report (cron)
+action = %(action_)s
 
 [sshd]
 enabled = true

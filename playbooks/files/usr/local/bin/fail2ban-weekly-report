@@ -1,0 +1,29 @@
+#!/bin/bash
+# Mails a summary of the fail2ban bans of the last 7 days to root (forwarded like all system mail):
+# one mail a week instead of one per ban (jail.local bans without mailing, `action_`).
+# Run weekly from cron (playbooks/tasks/12-cron.yml).
+set -euo pipefail
+
+since=$(date -d '7 days ago' '+%Y-%m-%d %H:%M:%S')
+
+# "2026-10-16 07:02:29,315 fail2ban.actions [2013734]: NOTICE  [sshd] Ban 190.105.160.5" -> "[sshd] 190.105.160.5"
+bans=$(zcat -f /var/log/fail2ban.log* 2>/dev/null | awk -v since="$since" '
+    ($1 " " $2) >= since && / Ban / {
+        jail = "?"
+        for (i = 3; i <= NF; i++) if ($i ~ /^\[[^0-9]/) jail = $i
+        print jail, $NF
+    }')
+
+[ -n "$bans" ] || exit 0
+
+{
+    echo "From: fail2ban@{{ main_domain }}"
+    echo "To: root"
+    echo "Subject: fail2ban: $(wc -l <<< "$bans") bans in the last 7 days on $(hostname)"
+    echo
+    echo "Bans per jail:"
+    awk '{ print $1 }' <<< "$bans" | sort | uniq -c | sort -rn
+    echo
+    echo "Banned IPs (times banned, jail, IP), most frequent first, at most 200:"
+    sort <<< "$bans" | uniq -c | sort -rn | head -n 200
+} | /usr/sbin/sendmail -t -f "fail2ban@{{ main_domain }}"
