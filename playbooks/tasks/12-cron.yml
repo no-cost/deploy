@@ -37,6 +37,15 @@
             PATH={{ paths.backend_bin_root }}:$PATH
             {{ paths.backend_bin_root }}/collect_stats
             >> /var/log/cron/collect-stats.log 2>&1
+      # Flarum's LESS compiler caches every parsed .less file in each forum's storage/less (tens of MB per compile
+      # and forum, every color scheme separately) and prunes only files older than 7 days, on its next compile.
+      # The cache only helps within one compile, so anything older than 10 minutes goes.
+      - name: "Purge Flarum LESS caches (every 10 minutes)"
+        minute: "*/10"
+        hour: "*"
+        job: >-
+            ionice -c 3 nice -n 19 find {{ paths.tenants.root }}/*/app/storage/less -maxdepth 1 -type f
+            \( -name '*.lesscache' -o -name 'lesscache_*' \) -mmin +10 -delete 2>/dev/null
   loop_control:
       loop_var: job
   tags: ["cron"]
