@@ -13,6 +13,7 @@
         fi
     endscript
     postrotate
-        invoke-rc.d nginx rotate >/dev/null 2>&1
+        # nginx.org's package has no init script for `invoke-rc.d nginx rotate`: USR1 reopens the logs
+        [ ! -f /run/nginx.pid ] || kill -USR1 "$(cat /run/nginx.pid)"
     endscript
 }

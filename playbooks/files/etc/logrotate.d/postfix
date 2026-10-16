@@ -1,4 +1,5 @@
-/var/log/mail.log /var/log/mail.err /var/log/mail.warn {
+# mail.log is rotated by rsyslog's own logrotate config: listing it twice makes logrotate skip that whole file
+/var/log/mail.err /var/log/mail.warn {
     daily
     missingok
     rotate 14

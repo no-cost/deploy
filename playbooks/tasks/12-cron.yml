@@ -46,6 +46,14 @@
         job: >-
             ionice -c 3 nice -n 19 find {{ paths.tenants.root }}/*/app/storage/less -maxdepth 1 -type f
             \( -name '*.lesscache' -o -name 'lesscache_*' \) -mmin +10 -delete 2>/dev/null
+      # Flarum writes one log file per forum and day (storage/logs/flarum-YYYY-MM-DD.log, Monolog's
+      # RotatingFileHandler without a file limit) and never deletes them
+      - name: "Purge Flarum logs older than 30 days (daily)"
+        minute: "30"
+        hour: "3"
+        job: >-
+            ionice -c 3 nice -n 19 find {{ paths.tenants.root }}/*/app/storage/logs -maxdepth 1 -type f
+            -name 'flarum-*.log' -mtime +30 -delete 2>/dev/null
   loop_control:
       loop_var: job
   tags: ["cron"]

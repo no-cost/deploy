@@ -7,6 +7,7 @@
     notifempty
     create 0640 www-data www-data
     postrotate
-        invoke-rc.d php{{ php_version }}-fpm reload >/dev/null 2>&1
+        # USR1 reopens the log files; a reload restarts every pool (~1 min with thousands of them)
+        [ ! -f /run/php/php-fpm.pid ] || kill -USR1 "$(cat /run/php/php-fpm.pid)"
     endscript
 }
