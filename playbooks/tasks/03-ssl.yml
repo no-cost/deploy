@@ -14,6 +14,22 @@
       mode: "0755"
       owner: www-data
       group: www-data
+  loop:
+      - /etc/letsencrypt
+      - /var/lib/letsencrypt
+      - /var/log/letsencrypt
+  loop_control:
+      loop_var: le_path
+  tags: ["ssl", "certificates", "certbot"]
+
+# certbot runs as www-data, so everything below must be owned by it; the modes stay as certbot
+# sets them (private keys 0600, archive/ and accounts/ 0700)
+- name: Ensure SSL directory contents are owned by www-data
+  ansible.builtin.file:
+      path: "{{ le_path }}"
+      state: directory
+      owner: www-data
+      group: www-data
       recurse: true
   loop:
       - /etc/letsencrypt
