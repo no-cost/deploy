@@ -12,11 +12,14 @@ RuntimeDirectory=nocost
 WorkingDirectory={{ paths.backend_root }}
 Environment="PATH={{ paths.backend_root }}/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 EnvironmentFile={{ paths.backend_root }}/.env
-ExecStart={{ paths.backend_root }}/.venv/bin/gunicorn main:API --bind=unix:/run/nocost/api.sock -m 007 -k uvicorn.workers.UvicornWorker -w 4 --forwarded-allow-ips='*' --capture-output --log-file /var/log/nocost/api.error.log
+# --graceful-timeout: on reload (HUP, new workers start at once) and stop, old workers first finish their background
+# jobs (site installs, removals, exports), at most the backend's ANSIBLE_TIMEOUT (900 s) per playbook
+ExecStart={{ paths.backend_root }}/.venv/bin/gunicorn main:API --bind=unix:/run/nocost/api.sock -m 007 -k uvicorn.workers.UvicornWorker -w 4 --graceful-timeout 900 --forwarded-allow-ips='*' --capture-output --log-file /var/log/nocost/api.error.log
 ExecReload=/bin/kill -s HUP $MAINPID
 
+# gunicorn stops its workers within --graceful-timeout, the rest of the cgroup is killed then (ansible children)
 KillMode=mixed
-TimeoutStopSec=5
+TimeoutStopSec=930
 
 # https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html
 # "The file system namespace related options (PrivateTmp=, PrivateDevices=, ProtectSystem=, ProtectHome=, ...) require

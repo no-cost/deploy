@@ -42,6 +42,15 @@
             PATH={{ paths.backend_bin_root }}:$PATH
             {{ paths.backend_bin_root }}/collect_stats
             >> /var/log/cron/collect-stats.log 2>&1
+      # certbot per due certificate (as www-data); a domain whose renewal fails is unlinked and its owner e-mailed,
+      # certbot's output goes to Sentry (backend site_manager/certificates.py)
+      - name: "Renew Let's Encrypt certificates of custom domains (daily)"
+        minute: "0"
+        hour: "2"
+        job: >-
+            PATH={{ paths.backend_bin_root }}:$PATH
+            {{ paths.backend_bin_root }}/renew_certificates
+            >> /var/log/cron/renew-certificates.log 2>&1
       # Flarum's LESS compiler caches every parsed .less file in each forum's storage/less (tens of MB per compile
       # and forum, every color scheme separately) and prunes only files older than 7 days, on its next compile.
       # The cache only helps within one compile, so anything older than 10 minutes goes.

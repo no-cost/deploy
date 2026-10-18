@@ -149,9 +149,26 @@
   changed_when: false
   tags: ["nocost", "backend"]
 
-- name: Enable and start no-cost backend service
+# a reload starts new workers on the new code at once while the old ones finish their background jobs, see
+# --graceful-timeout in nocost.service. The master keeps its command line and environment (.env is read by
+# systemd at start), so a unit or .env newer than the running service needs a restart, which waits for the jobs too;
+# comparing times also catches a change templated by an earlier run that failed before this point.
+# (A gunicorn/uvicorn upgrade needs a restart by hand, the master keeps the old one.)
+- name: Check whether the backend service predates its unit or .env
+  ansible.builtin.shell:
+      cmd: |
+          started=$(date -d "$(systemctl show nocost -p ActiveEnterTimestamp --value)" +%s)
+          newest=$(stat -c %Y /etc/systemd/system/nocost.service {{ paths.backend_root | quote }}/.env | sort -n | tail -n 1)
+          if [ "$newest" -gt "$started" ]; then echo restarted; else echo reloaded; fi
+      executable: /bin/bash
+  register: nocost_service_state
+  changed_when: false
+  tags: ["nocost", "backend"]
+
+- name: Reload no-cost backend service
   ansible.builtin.systemd:
       name: nocost
       enabled: true
-      state: restarted
+      daemon_reload: true
+      state: "{{ nocost_service_state.stdout }}"
   tags: ["nocost", "backend"]

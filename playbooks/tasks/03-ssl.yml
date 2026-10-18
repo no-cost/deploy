@@ -71,16 +71,6 @@
       state: absent
   tags: ["ssl", "certificates", "certbot"]
 
-- name: Set up Certbot renewal cron job
-  ansible.builtin.cron:
-      name: "Renew Let's Encrypt certificates"
-      minute: "0"
-      hour: "2"
-      job: "/usr/bin/certbot renew --quiet"
-      user: www-data
-      state: present
-  tags: ["ssl", "certificates", "certbot"]
-
 - name: Configure Certbot webroot
   ansible.builtin.template:
       src: files/etc/letsencrypt/cli.ini

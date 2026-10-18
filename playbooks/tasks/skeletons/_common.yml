@@ -22,6 +22,7 @@
       - "usr"
       - "usr/bin"
       - "usr/lib"
+      - "usr/lib/ssl"
       - "usr/sbin"
       - "usr/share"
       - "usr/share/zoneinfo"
@@ -105,6 +106,11 @@
   loop:
       - src: "/etc/ssl/certs/ca-certificates.crt"
         dest: "{{ skeleton_root_dir }}/etc/ssl/certs/ca-certificates.crt"
+      # PHP reads OpenSSL's config file (from OpenSSL's default directory, /usr/lib/ssl/openssl.cnf is a symlink to it on
+      # the host) for every key generation (openssl_pkey_new), which fails without it in the chroot, e.g. PWA VAPID
+      # keys ("Unable to create the key")
+      - src: "/etc/ssl/openssl.cnf"
+        dest: "{{ skeleton_root_dir }}/usr/lib/ssl/openssl.cnf"
       - src: "/usr/bin/bash"
         dest: "{{ skeleton_root_dir }}/usr/bin/bash"
       - src: "/usr/bin/dash"

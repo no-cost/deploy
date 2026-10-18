@@ -26,6 +26,8 @@ The [`backend`](https://github.com/no-cost/backend) repository is cloned into `/
 - `create <tag> <service> <admin e-mail>` – create a new site with given tag, service type (`flarum`/`wordpress`/`mediawiki`, etc.), and admin e-mail. There can only be 1 site per e-mail, multiple sites per account aren't supported (1 account = 1 site);
 - `info <tag/hostname/admin e-mail>` – get detailed information about a specific site;
 - `sync_vendor [tag]` – sync the `vendor/` directory from skeleton (`/srv/skeleton/<service>`) to specific site, or all sites by default;
+- `renew_certificates [--dry-run]` – renew the Let's Encrypt certificates of custom domains (nightly cron); a domain whose renewal fails is unlinked and its owner gets an e-mail with the cause, certbot's output goes to Sentry;
+- `provision_ssl_certificate <tag> --off` – no Let's Encrypt for the site's custom domain (linking and renewal), e.g. for the owner's own certificate installed by hand in `/etc/letsencrypt/live/<domain>/` (`fullchain.pem`, `privkey.pem`); without `--off` turns it on again;
 
 ### Structure
 
@@ -163,3 +165,5 @@ NB you must connect on the server at least one (to add its key to the `~/.ssh/kn
 # main site deployment
 ./prod --tags frontend,backend
 ```
+
+The backend deploy reloads the API gracefully: new workers serve the new code at once, the old ones finish their background jobs first (site installs, removals, exports; at most 15 minutes, see `--graceful-timeout` in [`nocost.service`](./playbooks/files/etc/systemd/system/nocost.service)). A changed service unit or `.env` restarts it instead, which also waits for those jobs.

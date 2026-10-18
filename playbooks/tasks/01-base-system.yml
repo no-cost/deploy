@@ -45,9 +45,10 @@
 
 # TODO: auto-mount /data and /backup with 1k partition?
 
+# Etc/UTC: plain UTC fails on Ubuntu 26.04
 - name: Enforce UTC
   community.general.timezone:
-      name: UTC
+      name: Etc/UTC
   tags: ["base", "system"]
 
 - name: Enforce UTF8 locale

@@ -5,9 +5,11 @@
 #   - archive_url: URL of the tar.gz to download
 #   - sync_dest: destination directory to sync to
 
+# on disk: /tmp can be a tmpfs (default since Ubuntu 25.10), the extracted skeleton would take that much RAM
 - name: Create staging directory
   ansible.builtin.tempfile:
       state: directory
+      path: /var/tmp
       prefix: staging_
   register: _staging_dir
   tags: [always]
