@@ -66,25 +66,3 @@
       dest: /etc/rkhunter.conf
       mode: "0644"
   tags: ["security"]
-
-# AIDE's daily check took 4-10 GB of RAM (the whole system hashed every night) and ran the server out of memory
-- name: Remove AIDE
-  ansible.builtin.apt:
-      name:
-          - aide
-          - aide-common
-      state: absent
-      purge: true
-  tags: ["security"]
-
-- name: Remove AIDE's database and configuration leftovers
-  ansible.builtin.file:
-      path: "{{ aide_leftover }}"
-      state: absent
-  loop:
-      - /var/lib/aide
-      - /var/log/aide
-      - /etc/aide
-  loop_control:
-      loop_var: aide_leftover
-  tags: ["security"]
