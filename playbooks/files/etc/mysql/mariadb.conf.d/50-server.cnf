@@ -11,7 +11,8 @@ user                    = mysql
 pid-file                 = /run/mysqld/mysqld.pid
 basedir                 = /usr
 datadir                 = /var/lib/mysql
-tmpdir                  = /tmp
+# not /tmp: a tmpfs, on-disk temporary tables and sort files would take RAM (and not count in mariadbd's RSS)
+tmpdir                  = /var/lib/mysql-tmp
 
 # Broken reverse DNS slows down connections considerably and name resolve is
 # safe to skip if there are no "host by domain name" access grants

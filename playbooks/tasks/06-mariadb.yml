@@ -43,6 +43,15 @@
       mode: "0750"
   tags: ["mariadb", "database"]
 
+- name: Ensure MariaDB temporary directory exists
+  ansible.builtin.file:
+      path: /var/lib/mysql-tmp
+      state: directory
+      owner: mysql
+      group: mysql
+      mode: "0700"
+  tags: ["mariadb", "database"]
+
 - name: Configure MariaDB for production
   ansible.builtin.template:
       src: files/etc/mysql/mariadb.conf.d/50-server.cnf
