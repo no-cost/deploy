@@ -1,27 +1,38 @@
 ---
-- name: Download MariaDB repository setup script
-  ansible.builtin.get_url:
-      url: https://r.mariadb.com/downloads/mariadb_repo_setup
-      dest: /tmp/mariadb_repo_setup
-      mode: "0755"
-  tags: ["mariadb", "database"]
-
-- name: Setup MariaDB 11.8 repository
+# mariadb_repo_setup writes mariadb.sources and keeps the previous one as mariadb.sources.old_<n>.disabled:
+# run it only when mariadb.sources doesn't point to mariadb_version yet (a new server or a version change)
+- name: Check the MariaDB repository version
   ansible.builtin.command:
-      cmd: "/tmp/mariadb_repo_setup --skip-maxscale --mariadb-server-version={{ ('mariadb-' + mariadb_version) | quote }}"
-      creates: /etc/apt/sources.list.d/mariadb.list
+      cmd: "grep -qF {{ ('/mariadb-server/' + mariadb_version + '/') | quote }} /etc/apt/sources.list.d/mariadb.sources"
+  register: _mariadb_repo
+  changed_when: false
+  failed_when: false # 1: another version, 2: no mariadb.sources yet
+  check_mode: false
   tags: ["mariadb", "database"]
 
-- name: Remove mariadb_repo_setup tmp file
-  ansible.builtin.file:
-      path: /tmp/mariadb_repo_setup
-      state: absent
+- name: Set up the MariaDB repository
+  when: _mariadb_repo.rc != 0
   tags: ["mariadb", "database"]
+  block:
+      - name: Download MariaDB repository setup script
+        ansible.builtin.get_url:
+            url: https://r.mariadb.com/downloads/mariadb_repo_setup
+            dest: /tmp/mariadb_repo_setup
+            mode: "0755"
 
-- name: Update apt cache after adding MariaDB repository
-  ansible.builtin.apt:
-      update_cache: true
-  tags: ["mariadb", "database"]
+      - name: Setup MariaDB repository
+        ansible.builtin.command:
+            cmd: "/tmp/mariadb_repo_setup --skip-maxscale --mariadb-server-version={{ ('mariadb-' + mariadb_version) | quote }}"
+        changed_when: true
+
+      - name: Remove mariadb_repo_setup tmp file
+        ansible.builtin.file:
+            path: /tmp/mariadb_repo_setup
+            state: absent
+
+      - name: Update apt cache after adding MariaDB repository
+        ansible.builtin.apt:
+            update_cache: true
 
 - name: Install MariaDB
   ansible.builtin.apt:
