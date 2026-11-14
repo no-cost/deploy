@@ -1,7 +1,11 @@
 check process sshd with pidfile /run/sshd.pid
   start program = "/usr/bin/systemctl start ssh"
   stop program = "/usr/bin/systemctl stop ssh"
-  if failed port 22 protocol ssh then restart
+  # alert at once, restart only when sshd keeps failing: out of memory, a slow but working sshd missed the banner
+  # timeout, and the restart stopped its listener and couldn't start it (freeflarum, 12 Nov 2026: no SSH logins for
+  # 3.5 min)
+  if failed port 22 protocol ssh then alert
+  if failed port 22 protocol ssh for 3 cycles then restart
   if 5 restarts within 5 cycles then timeout
 
 check process cron with pidfile /run/crond.pid

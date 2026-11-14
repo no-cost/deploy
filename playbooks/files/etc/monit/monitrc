@@ -13,6 +13,9 @@ set mail-format {
 }
 
 set alert root@localhost
+# alerts that can't be mailed (Postfix stalled too) wait here and go out once it answers again (freeflarum, 12 Nov
+# 2026: out of memory, the sshd failure was never mailed, only the recovery)
+set eventqueue basedir /var/lib/monit/events slots 100
 
 # the service checks (conf.d/*, deployed by playbooks/tasks/13-monitoring.yml)
 include /etc/monit/conf.d/*
