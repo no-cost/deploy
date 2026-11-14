@@ -21,6 +21,12 @@ ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed
 TimeoutStopSec=930
 
+# Gunicorn replaces an OOM-killed worker itself. OOMPolicy=stop stopped the whole API on freeflarum (12 Nov 2026);
+# without a restart policy, registrations stayed down for hours. Restart the master if it fails too.
+OOMPolicy=continue
+Restart=on-failure
+RestartSec=5s
+
 # https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html
 # "The file system namespace related options (PrivateTmp=, PrivateDevices=, ProtectSystem=, ProtectHome=, ...) require
 # that mount and unmount propagation from the unit's file system namespace is disabled, and hence downgrade shared to slave."

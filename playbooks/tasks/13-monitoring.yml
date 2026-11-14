@@ -51,6 +51,7 @@
       - mariadb
       - postfix
       - disk
+      - nocost
       - system
   loop_control:
       loop_var: monit_service

@@ -1,0 +1,9 @@
+# The API (gunicorn master, the oldest match). systemd restarts it after a crash; Monit alerts
+# and starts it if it remains stopped, including after systemd's start limit is reached.
+# No restart on a failed request: a stop waits up to 15 min for the workers' background jobs (site installs).
+check process nocost matching "gunicorn main:API"
+  start program = "/usr/bin/systemctl start nocost" with timeout 120 seconds
+  stop program = "/usr/bin/systemctl stop nocost" with timeout 960 seconds
+  # Monit's restricted capabilities cannot write to the API socket; check the public endpoint through nginx.
+  if failed host "api.{{ main_domain }}" port 443 protocol https request "/v1/" status = 200 for 2 cycles then alert
+  if 5 restarts within 5 cycles then timeout
