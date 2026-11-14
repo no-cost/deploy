@@ -133,10 +133,19 @@
       mode: "0644"
   tags: ["nocost", "geoip", "backend"]
 
-- name: Run geoipupdate
+# only the first download: the databases are kept up to date by geoipupdate.timer. A download on every deploy
+# counted against MaxMind's daily download limit (shared by everything using the account), past it the deploy failed
+- name: Download the GeoIP databases
   ansible.builtin.command:
       cmd: "/usr/bin/geoipupdate"
-  changed_when: false
+      creates: /var/lib/GeoIP/GeoLite2-Country.mmdb
+  tags: ["nocost", "geoip", "backend"]
+
+- name: Enable the GeoIP databases update timer
+  ansible.builtin.systemd:
+      name: geoipupdate.timer
+      enabled: true
+      state: started
   tags: ["nocost", "geoip", "backend"]
 
 - name: Run alembic migrations
