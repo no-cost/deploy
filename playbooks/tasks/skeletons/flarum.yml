@@ -12,13 +12,15 @@
       sync_dest: "{{ paths.tenants.flarum_skeleton }}/app"
   tags: ["skeleton", "flarum"]
 
+# 2 at a time (freeflarum: ~12 s a forum, ~5 h for 3000). The async limit kills the run when it's reached, 12 h
+# leaves room for more sites and a loaded server.
 - name: Upgrade all Flarum forums
   ansible.builtin.command:
-      cmd: "{{ paths.backend_bin_root }}/upgrade_site -s flarum"
+      cmd: "{{ paths.backend_bin_root }}/upgrade_site --service flarum --jobs 2"
       chdir: "{{ paths.backend_root }}"
   become: true
   become_user: nocost
   changed_when: false
-  async: 3600
+  async: 43200
   poll: 0
   tags: [never, "flarum-upgrade"]

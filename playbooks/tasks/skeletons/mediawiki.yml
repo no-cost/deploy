@@ -67,13 +67,14 @@
       mode: "0644"
   tags: ["skeleton", "mediawiki"]
 
+# 2 at a time, the async limit kills the run when it's reached (see flarum.yml)
 - name: Upgrade all MediaWiki sites
   ansible.builtin.command:
-      cmd: "{{ paths.backend_bin_root }}/upgrade_site -s mediawiki"
+      cmd: "{{ paths.backend_bin_root }}/upgrade_site --service mediawiki --jobs 2"
       chdir: "{{ paths.backend_root }}"
   become: true
   become_user: nocost
   changed_when: false
-  async: 3600
+  async: 43200
   poll: 0
   tags: [never, "mediawiki-upgrade"]
