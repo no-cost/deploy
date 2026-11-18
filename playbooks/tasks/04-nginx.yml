@@ -1,8 +1,41 @@
 ---
+# nginx.org's stable branch: Ubuntu ships the older (legacy) branch, and backports security fixes days after
+# nginx.org releases them
+- name: Add nginx.org signing key
+  ansible.builtin.get_url:
+      url: https://nginx.org/keys/nginx_signing.key
+      dest: /etc/apt/keyrings/nginx.asc
+      mode: "0644"
+  tags: ["nginx", "web"]
+
+- name: Add nginx.org stable repository
+  ansible.builtin.copy:
+      dest: /etc/apt/sources.list.d/nginx.sources
+      content: |
+          Types: deb
+          URIs: https://nginx.org/packages/ubuntu
+          Suites: {{ ansible_facts['distribution_release'] }}
+          Components: nginx
+          Signed-By: /etc/apt/keyrings/nginx.asc
+      mode: "0644"
+  tags: ["nginx", "web"]
+
+- name: Prefer nginx.org packages over Ubuntu's
+  ansible.builtin.copy:
+      dest: /etc/apt/preferences.d/99nginx
+      content: |
+          Package: *
+          Pin: origin nginx.org
+          Pin-Priority: 900
+      mode: "0644"
+  tags: ["nginx", "web"]
+
+# latest: replaces Ubuntu's nginx on a server set up before nginx.org
 - name: Install Nginx
   ansible.builtin.apt:
       name: nginx
-      state: present
+      state: latest
+      update_cache: true
   tags: ["nginx", "web"]
 
 - name: Remove default Nginx sites
@@ -12,6 +45,7 @@
   loop:
       - /etc/nginx/sites-enabled/default
       - /etc/nginx/sites-available
+      - /etc/nginx/conf.d/default.conf # nginx.org package, not included by our nginx.conf anyway
   loop_control:
       loop_var: nginx_path
   tags: ["nginx", "web"]

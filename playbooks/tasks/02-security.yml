@@ -53,6 +53,16 @@
   changed_when: false
   tags: ["security", "ssh"]
 
+# nothing here speaks SCTP, and the module is a kernel attack surface any local process can load by opening a
+# socket: nginx2root used an SCTP bug to get from an nginx worker to root
+- name: Block the SCTP kernel module
+  ansible.builtin.copy:
+      dest: /etc/modprobe.d/no-sctp.conf
+      content: |
+          install sctp /bin/false
+      mode: "0644"
+  tags: ["security"]
+
 # https://rkhunter.sourceforge.net/
 - name: Set up rkhunter
   ansible.builtin.apt:
