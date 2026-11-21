@@ -8,9 +8,13 @@ python_version: "3.14"
 php_version: "8.5" # a change needs the switch in README.md ("Changing the PHP version")
 mariadb_version: "11.8" # MW is not compat with 12.x: https://phabricator.wikimedia.org/T401570
 
-# PHP-FPM workers of all sites together (process.max in php-fpm.conf, 147 on 16 GB); nginx's limit of concurrent PHP
-# requests (apps/*.conf) and MariaDB's max_connections (50-server.cnf) follow it
+# PHP-FPM workers of all sites together (process.max in php-fpm.conf, 147 on 16 GB); MariaDB's max_connections
+# (50-server.cnf) follows it
 php_fpm_process_max: "{{ (ansible_memtotal_mb * 0.4 * 0.9 / 38) | int }}"
+# concurrent PHP requests of all sites in nginx (apps/*.conf): 6 per CPU, 48 on 8, at most process.max. With memory
+# to spare the CPU is the limit: on FreeFlarum (the same setup, 21 Nov 2026) 148 workers shared 8 CPUs (pressure
+# 99 %), each request took long enough for its client to give up, and forums answered almost only 499/502/504.
+php_concurrent_max: "{{ [php_fpm_process_max | int, ansible_processor_vcpus * 6] | min }}"
 
 ufw_allowed_ports:
     - 22
