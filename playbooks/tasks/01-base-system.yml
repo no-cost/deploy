@@ -152,13 +152,17 @@
 
       # This control is used to define how aggressive the kernel will swap
       # memory pages. Higher values will increase aggressiveness, lower values
-      # decrease the amount of swap. A value of 0 instructs the kernel not to
-      # initiate swap until the amount of free and file-backed pages is less
-      # than the high water mark in a zone.
+      # decrease the amount of swap. The default value is 60.
       #
-      # The default value is 60.
+      # 100: anonymous and file pages cost the same to reclaim. The swap is zram (compressed RAM, see
+      # zram-generator.conf), as fast as rereading a cached file; with 10 the kernel kept evicting the cached code
+      # and files of PHP-FPM, MariaDB and nginx before swapping out idle memory.
       - name: "vm.swappiness"
-        value: "10"
+        value: "100"
+
+      # pages read from swap at once (2^n): zram decompresses each page alone, readahead only costs
+      - name: "vm.page-cluster"
+        value: "0"
 
       # The value in file-max denotes the maximum number of file-
       # handles that the Linux kernel will allocate. When you get lots
@@ -181,7 +185,28 @@
         value: "2097152"
   loop_control:
       loop_var: sysctl_conf
-  tags: ["base", "system"]
+  tags: ["base", "system", "swap"]
+
+# compressed swap in RAM (zram-generator.conf); the generator writes dev-zram0.swap at boot and on a daemon reload
+- name: Install zram swap
+  ansible.builtin.apt:
+      name: systemd-zram-generator
+      state: present
+  tags: ["base", "system", "swap"]
+
+- name: Configure zram swap
+  ansible.builtin.copy:
+      src: files/etc/systemd/zram-generator.conf
+      dest: /etc/systemd/zram-generator.conf
+      mode: "0644"
+  tags: ["base", "system", "swap"]
+
+- name: Enable zram swap
+  ansible.builtin.systemd:
+      name: dev-zram0.swap
+      state: started
+      daemon_reload: true
+  tags: ["base", "system", "swap"]
 
 # https://chrony-project.org/doc/3.4/chrony.conf.html
 - name: Configure chrony for time synchronization
