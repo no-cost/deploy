@@ -80,3 +80,14 @@
       src: files/etc/logrotate.d/cron-scripts
       mode: "0644"
   tags: ["cron"]
+
+# cron jobs (site backups, stats, certificate renewals) get a tenth of the CPU share of PHP-FPM, MariaDB and nginx when
+# the CPU is busy, and at most a fifth of the RAM (their page cache included); a daemon reload applies it to running
+# jobs too
+- name: Limit the CPU weight and memory of cron jobs
+  ansible.builtin.copy:
+      src: files/etc/systemd/system/cron.service.d/resources.conf
+      dest: /etc/systemd/system/cron.service.d/
+      mode: "0644"
+  notify: daemon reload
+  tags: ["cron"]
