@@ -10,7 +10,7 @@ For production (max. approx. 3000 sites of varying sizes and types):
 - 16 GB RAM VPS minimum
 - 160 GB main disk + 100GB backup disk
 - Root access (or sudo)
-- Domains configured with Cloudflare
+- Domains configured with Cloudflare. Every record pointing to the server is proxied except `cname.no-cost.site` (sites' custom domains CNAME to it) and `mail.no-cost.site`: nginx closes requests for our domains that don't come from Cloudflare (`maps/origin-access.conf`)
 - Install required Ansible modules on local machine: `ansible-galaxy install -r requirements.yml`
 - Define `nocost` and `nocost-dev` hosts in your `~/.ssh/config`
 

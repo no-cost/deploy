@@ -86,6 +86,10 @@
         owner: www-data
         group: www-data
         mode: "0755"
+      - path: /etc/nginx/apps
+        owner: root
+        group: root
+        mode: "0755"
   tags: ["nginx", "web"]
 
 - name: Fetch Cloudflare IPv4 ranges
@@ -123,8 +127,12 @@
       mode: "0644"
   loop:
       - /etc/nginx/nginx.conf
+      - /etc/nginx/apps/flarum.conf
+      - /etc/nginx/apps/mediawiki.conf
+      - /etc/nginx/apps/wordpress.conf
       - /etc/nginx/maps/ssl.conf
       - /etc/nginx/maps/needs_redirect.conf
+      - /etc/nginx/maps/origin-access.conf
       - /etc/nginx/sites-enabled/dynamic.conf
       - /etc/nginx/sites-enabled/main-site.conf
       - /etc/nginx/snippets/gzip.conf
@@ -166,14 +174,6 @@
       group: www-data
       mode: "0640"
       force: false
-  notify: reload nginx
-  tags: ["nginx", "web"]
-
-- name: Copy all service-specific Nginx rules
-  ansible.builtin.copy:
-      src: "files/etc/nginx/apps/"
-      dest: /etc/nginx/apps/
-      mode: "0644"
   notify: reload nginx
   tags: ["nginx", "web"]
 

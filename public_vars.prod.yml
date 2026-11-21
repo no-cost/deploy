@@ -8,6 +8,10 @@ python_version: "3.14"
 php_version: "8.5" # a change needs the switch in README.md ("Changing the PHP version")
 mariadb_version: "11.8" # MW is not compat with 12.x: https://phabricator.wikimedia.org/T401570
 
+# PHP-FPM workers of all sites together (process.max in php-fpm.conf, 147 on 16 GB); nginx's limit of concurrent PHP
+# requests (apps/*.conf) and MariaDB's max_connections (50-server.cnf) follow it
+php_fpm_process_max: "{{ (ansible_memtotal_mb * 0.4 * 0.9 / 38) | int }}"
+
 ufw_allowed_ports:
     - 22
     - 80

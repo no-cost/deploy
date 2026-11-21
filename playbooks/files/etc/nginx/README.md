@@ -7,7 +7,8 @@ Holds configuration for the nginx web server:
     - check, if this is the correct canonical hostname: `mysite.no-cost.forum` etc. would return 404
     - figure out which service the site is running, so we can route it to different nginx configs. For example, if site was provisioned as a MediaWiki instance, we don't want to use config for WordPress.
   - [`maps/ssl.conf`](./maps/ssl.conf) - file for mapping SSL server names to SSL certificate directories. We use Cloudflare wildcard certificates for domains provided by us, for user-linked (external/third-party) domains we use Let's Encrypt.
-- [`apps/*.conf`](./apps/) - contains configuration files for service/app internal proxies, to differentiate nginx configs for different apps (Flarum/MediaWiki/WordPress). When we figure out which `service_type` a site has, we can route it to the correct proxy.
+  - [`maps/origin-access.conf`](./maps/origin-access.conf) - `$direct_to_origin` for requests to our domains that don't come from Cloudflare (or this server); `dynamic.conf` and `main-site.conf` close them (444). Custom domains reach the server directly.
+- [`apps/*.conf`](./apps/) - contains configuration files for service/app internal proxies, to differentiate nginx configs for different apps (Flarum/MediaWiki/WordPress). When we figure out which `service_type` a site has, we can route it to the correct proxy. Their PHP locations limit requests per client, per site and for all sites (zones in `snippets/rate-limits.conf`).
 - [`sites-enabled/`](./sites-enabled/) - contains configs for all sites/domains:
   - [`sites-enabled/dynamic.conf`](./sites-enabled/dynamic.conf) - handles routing for provisioned tenant instances;
   - [`sites-enabled/main-site.conf`](./sites-enabled/main-site.conf) - handles routes for the main site, e. g. `no-cost.site`. Other root domains redirect to this site. It is the user frontend for all tenant management tasks;
