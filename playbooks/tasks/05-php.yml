@@ -1,9 +1,25 @@
 ---
+# Ondřej Surý's packages.sury.org on every release, Ubuntu 26.04 included: his builds of a PHP release come out the same
+# day, Ubuntu's own php8.5 lags (19 Nov 2026: 8.5.13 fixed 18 CVEs, among them PHP-FPM local privilege escalation;
+# Ubuntu's 26.04 package was still 8.5.4 with "needs evaluation"). It's his canonical repository for 26.04: his Launchpad
+# PPA (ppa:ondrej/php) is being merged into it and has no builds of new PHP versions for 26.04.
+- name: Add PHP repository signing key
+  ansible.builtin.get_url:
+      url: https://packages.sury.org/php/apt.gpg
+      dest: /etc/apt/keyrings/sury-php.gpg
+      mode: "0644"
+  tags: ["php-fpm", "php"]
+
 - name: Add PHP repository
-  ansible.builtin.apt_repository:
-      repo: "ppa:ondrej/php"
-      state: present
-      update_cache: true
+  ansible.builtin.copy:
+      dest: /etc/apt/sources.list.d/sury-php.sources
+      content: |
+          Types: deb
+          URIs: https://packages.sury.org/php
+          Suites: {{ ansible_facts['distribution_release'] }}
+          Components: main
+          Signed-By: /etc/apt/keyrings/sury-php.gpg
+      mode: "0644"
   tags: ["php-fpm", "php"]
 
 - name: Install PHP-FPM and extensions
@@ -27,6 +43,7 @@
           - "php{{ php_version }}-ldap"
           - "php{{ php_version }}-exif"
       state: present
+      update_cache: true
   tags: ["php-fpm", "php"]
 
 - name: Symlink configuration directory

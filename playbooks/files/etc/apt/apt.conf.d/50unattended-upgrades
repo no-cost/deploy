@@ -2,6 +2,9 @@ Unattended-Upgrade::Allowed-Origins {
     "${distro_id}:${distro_codename}-security";
     // nginx.org's stable repository (04-nginx.yml): its package upgrades the running binary in place
     "nginx:stable";
+    // Ondřej Surý's PHP packages (05-php.yml). A php-fpm upgrade stops and starts PHP-FPM (prerm/postinst), all sites
+    // answer 502 until every pool is started again
+    "deb.sury.org:${distro_codename}";
 };
 Unattended-Upgrade::AutoFixInterruptedDpkg "true";
 Unattended-Upgrade::MinimalSteps "true";
