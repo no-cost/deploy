@@ -31,7 +31,10 @@ bind-address = 127.0.0.1
 # This replaces the startup script and checks MyISAM tables if needed
 # the first time they are touched
 #myisam_recover_options = BACKUP
-#max_connections        = 100
+# every PHP-FPM worker can hold a connection (process.max, php-fpm.conf), next to the API's pool, the backups and
+# Monit: with the default 151, PHP-FPM at process.max left none for the rest (FreeFlarum, 21 Nov 2026: "Too many
+# connections", 390 refused in 7 days)
+max_connections = {{ php_fpm_process_max | int + 60 }}
 #table_cache            = 64
 
 #
@@ -79,6 +82,8 @@ expire_logs_days        = 10
 # Read the manual for more InnoDB related options. There are many!
 # Not the usual 80 % of RAM: MariaDB needs several GB on top of the buffer pool (with thousands of tenant
 # databases: table caches, InnoDB dictionary, per-thread malloc arenas), and PHP-FPM needs the rest.
-# The FreeFlarum server (16 GB): 25 % = 3.9 GB pool, 7.5 GB mariadbd RSS under glibc malloc (mariadb.service.d/memory.conf).
+# FreeFlarum (16 GB, the same setup): with 25 % (3.9 GB) mariadbd took 6.7 GB (43 % of RAM, under jemalloc), PHP-FPM
+# ~30 % and the rest ~10 % left too little for the page cache and the server thrashed for over 8 hours (21 Nov 2026,
+# 99.93 % buffer pool hit rate then); 20 % = 3.1 GB.
 # https://mariadb.com/kb/en/innodb-system-variables/#innodb_buffer_pool_size
-innodb_buffer_pool_size = {{ ((ansible_memtotal_mb * 0.25) | int) }}M
+innodb_buffer_pool_size = {{ ((ansible_memtotal_mb * 0.20) | int) }}M
